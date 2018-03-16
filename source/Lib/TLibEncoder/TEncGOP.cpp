@@ -1075,7 +1075,11 @@ printHash(const HashType hashType, const std::string &digestStr)
 // Public member functions
 // ====================================================================================================================
 Void TEncGOP::compressGOP( Int iPOCLast, Int iNumPicRcvd, TComList<TComPic*>& rcListPic,
-                           TComList<TComPicYuv*>& rcListPicYuvRecOut, std::list<AccessUnit>& accessUnitsInGOP,
+                           TComList<TComPicYuv*>& rcListPicYuvRecOut,
+#if RM_4DLF_MI_BUFFER
+						   TComPicYuv* pcPic4DLFMI,
+#endif
+						   std::list<AccessUnit>& accessUnitsInGOP,
                            Bool isField, Bool isTff, const InputColourSpaceConversion snr_conversion, const Bool printFrameMSE )
 {
   // TODO: Split this function up.
@@ -1850,6 +1854,61 @@ Void TEncGOP::compressGOP( Int iPOCLast, Int iNumPicRcvd, TComList<TComPic*>& rc
     pcPic->getPicYuvRec()->copyToPic(pcPicYuvRecOut);
 
     pcPic->setReconMark   ( true );
+
+#if RM_4DLF_MI_BUFFER
+    Pel* Y = pcPic4DLFMI->getAddr(COMPONENT_Y);
+    Pel* CB = pcPic4DLFMI->getAddr(COMPONENT_Cb);
+    Pel* CR = pcPic4DLFMI->getAddr(COMPONENT_Cr);
+    // TODO: get MISize from config file or
+    //       number of frames (sqrt(number of frames)) - limited to 1, 4, 9, 16, 25, 36, 49, 64, 81, 100, 121, 144, 169
+    Int iMISize = sqrt(m_pcCfg->getFramesToBeEncoded()), initX, initY;
+
+    // TODO: Create function or lookup table to with these values for a MATLAB spiral
+    if(m_totalCoded == 0) {initX = 0; initY = 0;}
+    else if(m_totalCoded == 1) {initX = 1; initY = 0;}
+    else if(m_totalCoded == 2) {initX = 1; initY = 1;}
+    else {initX = 0; initY = 1;}
+
+    // DEBUG only
+    // COMPONENT_Y
+    Y += initY * pcPic4DLFMI->getStride(COMPONENT_Y);
+    for(Int j = 0; j < pcPic4DLFMI->getHeight(COMPONENT_Y); j+=iMISize)
+    {
+        for(Int i = 0; i < pcPic4DLFMI->getWidth(COMPONENT_Y); i+=iMISize)
+        {
+        	Y[i + initX] = pcPic->getPicYuvRec()->getAddr(COMPONENT_Y)[(j/iMISize)*pcPic->getPicYuvRec()->getStride(COMPONENT_Y) + i/iMISize];
+        }
+    	Y += iMISize * pcPic4DLFMI->getStride(COMPONENT_Y);
+    }
+    // COMPONENT_CB
+    CB += initY * pcPic4DLFMI->getStride(COMPONENT_Cb);
+    for(Int j = 0; j < pcPic4DLFMI->getHeight(COMPONENT_Cb); j+=iMISize)
+    {
+        for(Int i = 0; i < pcPic4DLFMI->getWidth(COMPONENT_Cb); i+=iMISize)
+        {
+        	CB[i + initX] = pcPic->getPicYuvRec()->getAddr(COMPONENT_Cb)[(j/iMISize)*pcPic->getPicYuvRec()->getStride(COMPONENT_Cb) + i/iMISize];
+        }
+        CB += iMISize * pcPic4DLFMI->getStride(COMPONENT_Cb);
+    }
+    // COMPONENT_CR
+    CR += initY * pcPic4DLFMI->getStride(COMPONENT_Cr);
+    for(Int j = 0; j < pcPic4DLFMI->getHeight(COMPONENT_Cr); j+=iMISize)
+    {
+        for(Int i = 0; i < pcPic4DLFMI->getWidth(COMPONENT_Cr); i+=iMISize)
+        {
+        	CR[i + initX] = pcPic->getPicYuvRec()->getAddr(COMPONENT_Cr)[(j/iMISize)*pcPic->getPicYuvRec()->getStride(COMPONENT_Cr) + i/iMISize];
+        }
+        CR += iMISize * pcPic4DLFMI->getStride(COMPONENT_Cr);
+    }
+    fstream fileID;
+    fileID.open("4DLFMI.yuv", ios::binary | ios::app);
+    writePlane(fileID, pcPic4DLFMI->getAddr(COMPONENT_Y), true, pcPic4DLFMI->getStride(COMPONENT_Y), pcPic4DLFMI->getWidth(COMPONENT_Y), pcPic4DLFMI->getHeight(COMPONENT_Y), COMPONENT_Y, CHROMA_444, CHROMA_444, 10);
+    writePlane(fileID, pcPic4DLFMI->getAddr(COMPONENT_Cb), true, pcPic4DLFMI->getStride(COMPONENT_Cb), pcPic4DLFMI->getWidth(COMPONENT_Cb), pcPic4DLFMI->getHeight(COMPONENT_Cb), COMPONENT_Cb, CHROMA_444, CHROMA_444, 10);
+    writePlane(fileID, pcPic4DLFMI->getAddr(COMPONENT_Cr), true, pcPic4DLFMI->getStride(COMPONENT_Cr), pcPic4DLFMI->getWidth(COMPONENT_Cr), pcPic4DLFMI->getHeight(COMPONENT_Cr), COMPONENT_Cr, CHROMA_444, CHROMA_444, 10);
+    fileID.close();
+    // DEBUG only END
+#endif
+
     m_bFirst = false;
     m_iNumPicCoded++;
     m_totalCoded ++;
@@ -1861,12 +1920,140 @@ Void TEncGOP::compressGOP( Int iPOCLast, Int iNumPicRcvd, TComList<TComPic*>& rc
     {
       iGOPid=effFieldIRAPMap.restoreGOPid(iGOPid);
     }
+
   } // iGOPid-loop
 
   delete pcBitstreamRedirect;
 
   assert ( (m_iNumPicCoded == iNumPicRcvd) );
 }
+
+#if RM_4DLF_MI_BUFFER
+// DEBUG only
+Bool TEncGOP::writePlane(ostream& fd, Pel* src, Bool is16bit,
+                       UInt stride444,
+                       UInt width444, UInt height444,
+                       ComponentID compID,
+                       ChromaFormat srcFormat,
+                       ChromaFormat fileFormat,
+                       UInt fileBitDepth)
+{
+  const UInt csx_file =getComponentScaleX(compID, fileFormat);
+  const UInt csy_file =getComponentScaleY(compID, fileFormat);
+  const UInt csx_src  =getComponentScaleX(compID, srcFormat);
+  const UInt csy_src  =getComponentScaleY(compID, srcFormat);
+
+  const UInt stride_src      = stride444>>csx_src;
+
+  const UInt stride_file      = (width444 * (is16bit ? 2 : 1)) >> csx_file;
+  const UInt width_file       = width444 >>csx_file;
+  const UInt height_file      = height444>>csy_file;
+
+  std::vector<UChar> bufVec(stride_file);
+  UChar *buf=&(bufVec[0]);
+
+  if (compID!=COMPONENT_Y && (fileFormat==CHROMA_400 || srcFormat==CHROMA_400))
+  {
+    if (fileFormat!=CHROMA_400)
+    {
+      const UInt value=1<<(fileBitDepth-1);
+
+      for(UInt y=0; y< height_file; y++)
+      {
+        if (!is16bit)
+        {
+          UChar val(value);
+          for (UInt x = 0; x < width_file; x++)
+          {
+            buf[x]=val;
+          }
+        }
+        else
+        {
+          UShort val(value);
+          for (UInt x = 0; x < width_file; x++)
+          {
+            buf[2*x+0]= (val>>0) & 0xff;
+            buf[2*x+1]= (val>>8) & 0xff;
+          }
+        }
+
+        fd.write(reinterpret_cast<const TChar*>(buf), stride_file);
+        if (fd.eof() || fd.fail() )
+        {
+          return false;
+        }
+      }
+    }
+  }
+  else
+  {
+    const UInt mask_y_file=(1<<csy_file)-1;
+    const UInt mask_y_src =(1<<csy_src )-1;
+    for(UInt y444=0; y444<height444; y444++)
+    {
+      if ((y444&mask_y_file)==0)
+      {
+        // write a new line
+        if (csx_file < csx_src)
+        {
+          // eg file is 444, source is 422.
+          const UInt sx=csx_src-csx_file;
+          if (!is16bit)
+          {
+            for (UInt x = 0; x < width_file; x++)
+            {
+              buf[x] = (UChar)(src[x>>sx]);
+            }
+          }
+          else
+          {
+            for (UInt x = 0; x < width_file; x++)
+            {
+              buf[2*x  ] = (src[x>>sx]>>0) & 0xff;
+              buf[2*x+1] = (src[x>>sx]>>8) & 0xff;
+            }
+          }
+        }
+        else
+        {
+          // eg file is 422, src is 444.
+          const UInt sx=csx_file-csx_src;
+          if (!is16bit)
+          {
+            for (UInt x = 0; x < width_file; x++)
+            {
+              buf[x] = (UChar)(src[x<<sx]);
+            }
+          }
+          else
+          {
+            for (UInt x = 0; x < width_file; x++)
+            {
+              buf[2*x  ] = (src[x<<sx]>>0) & 0xff;
+              buf[2*x+1] = (src[x<<sx]>>8) & 0xff;
+            }
+          }
+        }
+
+        fd.write(reinterpret_cast<const TChar*>(buf), stride_file);
+        if (fd.eof() || fd.fail() )
+        {
+          return false;
+        }
+      }
+
+      if ((y444&mask_y_src)==0)
+      {
+        src += stride_src;
+      }
+
+    }
+  }
+  return true;
+}
+// DEBUG only END
+#endif
 
 Void TEncGOP::printOutSummary(UInt uiNumAllPicCoded, Bool isField, const Bool printMSEBasedSNR, const Bool printSequenceMSE, const BitDepths &bitDepths)
 {

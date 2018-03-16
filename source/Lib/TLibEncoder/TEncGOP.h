@@ -146,7 +146,13 @@ public:
 
   Void  init        ( TEncTop* pcTEncTop );
   Void  compressGOP ( Int iPOCLast, Int iNumPicRcvd, TComList<TComPic*>& rcListPic, TComList<TComPicYuv*>& rcListPicYuvRec,
+#if RM_4DLF_MI_BUFFER
+		  	  	  	  TComPicYuv* pcPic4DLFMI,
+#endif
                       std::list<AccessUnit>& accessUnitsInGOP, Bool isField, Bool isTff, const InputColourSpaceConversion snr_conversion, const Bool printFrameMSE );
+#if RM_4DLF_MI_BUFFER
+  Bool writePlane(ostream& fd, Pel* src, Bool is16bit, UInt stride444, UInt width444, UInt height444, ComponentID compID, ChromaFormat srcFormat, ChromaFormat fileFormat, UInt fileBitDepth);
+#endif
   Void  xAttachSliceDataToNalUnit (OutputNALUnit& rNalu, TComOutputBitstream* pcBitstreamRedirect);
 
 

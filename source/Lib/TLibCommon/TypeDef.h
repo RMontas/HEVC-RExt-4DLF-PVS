@@ -44,6 +44,11 @@
 
 #include <vector>
 
+// ====================================================================================================================
+// HEVC-RExt-4DLF-PVS : Ricardo Monteiro
+// ====================================================================================================================
+#define RM_4DLF_MI_BUFFER							      1 ///< Generates buffer of encoded pixels in a 4DLF_MI format
+
 //! \ingroup TLibCommon
 //! \{
 
@@ -68,7 +73,7 @@
 
 // This can be enabled by the makefile
 #ifndef ENC_DEC_TRACE
-#define ENC_DEC_TRACE                                     0
+#define ENC_DEC_TRACE                                     1
 #endif
 #define DEC_NUH_TRACE                                     0 ///< When trace enabled, enable tracing of NAL unit headers at the decoder (currently not possible at the encoder)
 

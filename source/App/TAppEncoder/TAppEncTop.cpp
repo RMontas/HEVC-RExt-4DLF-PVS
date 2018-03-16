@@ -476,6 +476,9 @@ Void TAppEncTop::encode()
 
   TComPicYuv*       pcPicYuvOrg = new TComPicYuv;
   TComPicYuv*       pcPicYuvRec = NULL;
+#if RM_4DLF_MI_BUFFER
+  TComPicYuv*       pcPic4DLFMI = new TComPicYuv;
+#endif
 
   // initialize internal class & member variables
   xInitLibCfg();
@@ -507,6 +510,11 @@ Void TAppEncTop::encode()
     cPicYuvTrueOrg.create(m_iSourceWidth, m_iSourceHeight, m_chromaFormatIDC, m_uiMaxCUWidth, m_uiMaxCUHeight, m_uiMaxTotalCUDepth, true );
   }
 
+#if RM_4DLF_MI_BUFFER
+  Int iMISize = sqrt(m_framesToBeEncoded); // DEBUG // TODO: Add as conf file input
+  pcPic4DLFMI->create( m_iSourceWidth * iMISize, m_iSourceHeight * iMISize, m_chromaFormatIDC, m_uiMaxCUWidth, m_uiMaxCUHeight, m_uiMaxTotalCUDepth, true );
+#endif
+
   while ( !bEos )
   {
     // get buffers
@@ -533,11 +541,19 @@ Void TAppEncTop::encode()
     // call encoding function for one frame
     if ( m_isField )
     {
-      m_cTEncTop.encode( bEos, flush ? 0 : pcPicYuvOrg, flush ? 0 : &cPicYuvTrueOrg, snrCSC, m_cListPicYuvRec, outputAccessUnits, iNumEncoded, m_isTopFieldFirst );
+      m_cTEncTop.encode( bEos, flush ? 0 : pcPicYuvOrg, flush ? 0 : &cPicYuvTrueOrg, snrCSC, m_cListPicYuvRec, outputAccessUnits, iNumEncoded
+#if RM_4DLF_MI_BUFFER
+			   , pcPic4DLFMI
+#endif
+			   , m_isTopFieldFirst );
     }
     else
     {
-      m_cTEncTop.encode( bEos, flush ? 0 : pcPicYuvOrg, flush ? 0 : &cPicYuvTrueOrg, snrCSC, m_cListPicYuvRec, outputAccessUnits, iNumEncoded );
+      m_cTEncTop.encode( bEos, flush ? 0 : pcPicYuvOrg, flush ? 0 : &cPicYuvTrueOrg, snrCSC, m_cListPicYuvRec, outputAccessUnits, iNumEncoded
+#if RM_4DLF_MI_BUFFER
+			   , pcPic4DLFMI
+#endif
+			   );
     }
 
     // write bistream to file if necessary
