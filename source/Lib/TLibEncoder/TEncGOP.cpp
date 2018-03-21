@@ -1856,19 +1856,15 @@ Void TEncGOP::compressGOP( Int iPOCLast, Int iNumPicRcvd, TComList<TComPic*>& rc
     pcPic->setReconMark   ( true );
 
 #if RM_4DLF_MI_BUFFER
+
     Pel* Y = pcPic4DLFMI->getAddr(COMPONENT_Y);
     Pel* CB = pcPic4DLFMI->getAddr(COMPONENT_Cb);
     Pel* CR = pcPic4DLFMI->getAddr(COMPONENT_Cr);
     // TODO: get MISize from config file or
-    //       number of frames (sqrt(number of frames)) - limited to 1, 4, 9, 16, 25, 36, 49, 64, 81, 100, 121, 144, 169
+    //       number of frames (sqrt(number of frames)) - limited to 1, 9, 25, 49, 81, 121, 169, 225
     Int iMISize = sqrt(m_pcCfg->getFramesToBeEncoded()), initX, initY;
 
-    // TODO: Create function or lookup table to with these values for a MATLAB spiral
-    if(m_totalCoded == 0) {initX = 0; initY = 0;}
-    else if(m_totalCoded == 1) {initX = 1; initY = 0;}
-    else if(m_totalCoded == 2) {initX = 1; initY = 1;}
-    else {initX = 0; initY = 1;}
-
+    spiral(m_totalCoded, iMISize, &initX, &initY);
     // DEBUG only
     // COMPONENT_Y
     Y += initY * pcPic4DLFMI->getStride(COMPONENT_Y);
@@ -1929,6 +1925,83 @@ Void TEncGOP::compressGOP( Int iPOCLast, Int iNumPicRcvd, TComList<TComPic*>& rc
 }
 
 #if RM_4DLF_MI_BUFFER
+Void TEncGOP::spiral(Int idx, Int size, Int* x, Int* y)
+{
+	Int init = floor(size/2);
+	Int current_idx = 0;
+	char current_direction = 'R';
+	Int original_steps_to_update = 1;
+	Int original_steps_to_change_dir = 1;
+	Int steps_to_update = 2;
+	Int steps_to_change_dir = 1;
+	Int step = 0;
+	Int x_pos = init;
+	Int y_pos = init;
+	while(current_idx < idx)
+	{
+		if(current_direction == 'R') // RIGHT
+		{
+			x_pos++;
+			if(step == steps_to_change_dir-1)
+			{
+				step = 0;
+				steps_to_change_dir = original_steps_to_change_dir;
+				current_direction = 'D';
+			}
+			else
+				step++;
+		}
+		else if(current_direction == 'D') // DOWN
+		{
+			y_pos++;
+			if(step == steps_to_change_dir-1)
+			{
+				step = 0;
+				steps_to_change_dir = original_steps_to_change_dir;
+				current_direction = 'L';
+			}
+			else
+				step++;
+		}
+		else if(current_direction == 'L') // LEFT
+		{
+			x_pos--;
+			if(step == steps_to_change_dir-1)
+			{
+				step = 0;
+				steps_to_change_dir = original_steps_to_change_dir;
+				current_direction = 'U';
+			}
+			else
+				step++;
+		}
+		else // UP
+		{
+			y_pos--;
+			if(step == steps_to_change_dir-1)
+			{
+				step = 0;
+				steps_to_change_dir = original_steps_to_change_dir;
+				current_direction = 'R';
+			}
+			else
+				step++;
+		}
+		current_idx++;
+		steps_to_update--;
+		if(steps_to_update == 0)
+		{
+			original_steps_to_change_dir++;
+			steps_to_change_dir = original_steps_to_change_dir;
+			original_steps_to_update++;
+			steps_to_update = original_steps_to_update * 2; // 1, 2, 4, 6, 8, 10...
+		}
+	}
+
+	*x = x_pos;
+	*y = y_pos;
+}
+
 // DEBUG only
 Bool TEncGOP::writePlane(ostream& fd, Pel* src, Bool is16bit,
                        UInt stride444,
