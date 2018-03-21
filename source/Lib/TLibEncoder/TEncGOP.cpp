@@ -1929,7 +1929,9 @@ Void TEncGOP::spiral(Int idx, Int size, Int* x, Int* y)
 {
 	Int init = floor(size/2);
 	Int current_idx = 0;
-	char current_direction = 'R';
+	//char current_direction = 'R';
+	char current_direction[] = "RDLU";
+	Int dir_idx = 0;
 	Int original_steps_to_update = 1;
 	Int original_steps_to_change_dir = 1;
 	Int steps_to_update = 2;
@@ -1939,54 +1941,24 @@ Void TEncGOP::spiral(Int idx, Int size, Int* x, Int* y)
 	Int y_pos = init;
 	while(current_idx < idx)
 	{
-		if(current_direction == 'R') // RIGHT
-		{
+		if(current_direction[dir_idx] == 'R') // RIGHT
 			x_pos++;
-			if(step == steps_to_change_dir-1)
-			{
-				step = 0;
-				steps_to_change_dir = original_steps_to_change_dir;
-				current_direction = 'D';
-			}
-			else
-				step++;
-		}
-		else if(current_direction == 'D') // DOWN
-		{
+		else if(current_direction[dir_idx] == 'D') // DOWN
 			y_pos++;
-			if(step == steps_to_change_dir-1)
-			{
-				step = 0;
-				steps_to_change_dir = original_steps_to_change_dir;
-				current_direction = 'L';
-			}
-			else
-				step++;
-		}
-		else if(current_direction == 'L') // LEFT
-		{
+		else if(current_direction[dir_idx] == 'L') // LEFT
 			x_pos--;
-			if(step == steps_to_change_dir-1)
-			{
-				step = 0;
-				steps_to_change_dir = original_steps_to_change_dir;
-				current_direction = 'U';
-			}
-			else
-				step++;
-		}
 		else // UP
-		{
 			y_pos--;
-			if(step == steps_to_change_dir-1)
-			{
-				step = 0;
-				steps_to_change_dir = original_steps_to_change_dir;
-				current_direction = 'R';
-			}
-			else
-				step++;
+		if(step == steps_to_change_dir-1)
+		{
+			step = 0;
+			steps_to_change_dir = original_steps_to_change_dir;
+			dir_idx++;
+			if(dir_idx > 3)
+				dir_idx = 0;
 		}
+		else
+			step++;
 		current_idx++;
 		steps_to_update--;
 		if(steps_to_update == 0)
