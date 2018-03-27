@@ -43,6 +43,9 @@
 #include "TComPicSym.h"
 #include "TComPicYuv.h"
 #include "TComBitStream.h"
+#if RM_4DLF_MI_BUFFER
+#include <cmath>
+#endif
 
 //! \ingroup TLibCommon
 //! \{
@@ -66,7 +69,13 @@ private:
   Bool                  m_bIsLongTerm;            //  IS long term picture
   TComPicSym            m_picSym;                 //  Symbol
   TComPicYuv*           m_apcPicYuv[NUM_PIC_YUV];
-
+#if RM_4DLF_MI_BUFFER
+  TComPicYuv*			m_pcPic4DLFMI;
+  UInt					m_uiMicroImageSize;
+  UInt					m_uiTotalNumberOfSAIs;
+  UInt					m_uiCurrentSAIsSpiralPosX;
+  UInt					m_uiCurrentSAIsSpiralPosY;
+#endif
   TComPicYuv*           m_pcPicYuvPred;           //  Prediction
   TComPicYuv*           m_pcPicYuvResi;           //  Residual
 
@@ -110,7 +119,20 @@ public:
 
   TComPicYuv*   getPicYuvOrg()        { return  m_apcPicYuv[PIC_YUV_ORG]; }
   TComPicYuv*   getPicYuvRec()        { return  m_apcPicYuv[PIC_YUV_REC]; }
-
+#if RM_4DLF_MI_BUFFER
+  TComPicYuv*   getPicYuv4DLFMI()       				{ return  m_pcPic4DLFMI; }
+  Void          setPicYuv4DLFMI( TComPicYuv* pcPicYuv ) { m_pcPic4DLFMI = pcPicYuv; }
+  UInt   		getMicroImageSize()       				{ return  m_uiMicroImageSize; }
+  Void          setMicroImageSize( UInt uiMISize ) { m_uiMicroImageSize = uiMISize; }
+  UInt   		getTotalNumberOfSAIs()       				{ return  m_uiTotalNumberOfSAIs; }
+  Void          setTotalNumberOfSAIs( UInt uiNumOfSAIs ) { m_uiTotalNumberOfSAIs = uiNumOfSAIs; }
+  UInt   		getCurrentSAIsSpiralPosX()       				{ return  m_uiCurrentSAIsSpiralPosX; }
+  Void          setCurrentSAIsSpiralPosX( UInt posX ) { m_uiCurrentSAIsSpiralPosX = posX; }
+  UInt   		getCurrentSAIsSpiralPosY()       				{ return  m_uiCurrentSAIsSpiralPosY; }
+  Void          setCurrentSAIsSpiralPosY( UInt posY ) { m_uiCurrentSAIsSpiralPosY = posY; }
+  Bool 			writePlane(ostream& fd, Pel* src, Bool is16bit, UInt stride444, UInt width444, UInt height444, ComponentID compID, ChromaFormat srcFormat, ChromaFormat fileFormat, UInt fileBitDepth);
+  Void 			spiral(UInt idx, UInt size, UInt* x, UInt* y);
+#endif
   TComPicYuv*   getPicYuvPred()       { return  m_pcPicYuvPred; }
   TComPicYuv*   getPicYuvResi()       { return  m_pcPicYuvResi; }
   Void          setPicYuvPred( TComPicYuv* pcPicYuv )       { m_pcPicYuvPred = pcPicYuv; }

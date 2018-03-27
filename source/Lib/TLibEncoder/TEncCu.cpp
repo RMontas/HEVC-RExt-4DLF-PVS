@@ -855,6 +855,9 @@ Void TEncCu::xCompressCU( TComDataCU*& rpcBestCU, TComDataCU*& rpcTempCU, const 
   rpcBestCU->copyToPic(uiDepth);                                                     // Copy Best data to Picture for next partition prediction.
 
   xCopyYuv2Pic( rpcBestCU->getPic(), rpcBestCU->getCtuRsAddr(), rpcBestCU->getZorderIdxInCtu(), uiDepth, uiDepth );   // Copy Yuv data to picture Yuv
+#if RM_4DLF_MI_BUFFER
+  xCopyYuv2Pic4DLFMI( rpcBestCU->getPic(), rpcBestCU->getCtuRsAddr(), rpcBestCU->getZorderIdxInCtu(), uiDepth, uiDepth );
+#endif
   if (bBoundary)
   {
     return;
@@ -1542,9 +1545,31 @@ Void TEncCu::xCopyYuv2Pic(TComPic* rpcPic, UInt uiCUAddr, UInt uiAbsPartIdx, UIn
   UInt uiPartIdxY = ( ( uiAbsPartIdxInRaster / rpcPic->getNumPartInCtuWidth() ) % uiSrcBlkWidth) / uiBlkWidth;
   UInt uiPartIdx = uiPartIdxY * ( uiSrcBlkWidth / uiBlkWidth ) + uiPartIdxX;
   m_ppcRecoYuvBest[uiSrcDepth]->copyToPicYuv( rpcPic->getPicYuvRec (), uiCUAddr, uiAbsPartIdx, uiDepth - uiSrcDepth, uiPartIdx);
-
   m_ppcPredYuvBest[uiSrcDepth]->copyToPicYuv( rpcPic->getPicYuvPred (), uiCUAddr, uiAbsPartIdx, uiDepth - uiSrcDepth, uiPartIdx);
 }
+
+#if RM_4DLF_MI_BUFFER
+Void TEncCu::xCopyYuv2Pic4DLFMI(TComPic* rpcPic, UInt uiCUAddr, UInt uiAbsPartIdx, UInt uiDepth, UInt uiSrcDepth )
+{
+  UInt uiAbsPartIdxInRaster = g_auiZscanToRaster[uiAbsPartIdx];
+  UInt uiSrcBlkWidth = rpcPic->getNumPartInCtuWidth() >> (uiSrcDepth);
+  UInt uiBlkWidth    = rpcPic->getNumPartInCtuWidth() >> (uiDepth);
+  UInt uiPartIdxX = ( ( uiAbsPartIdxInRaster % rpcPic->getNumPartInCtuWidth() ) % uiSrcBlkWidth) / uiBlkWidth;
+  UInt uiPartIdxY = ( ( uiAbsPartIdxInRaster / rpcPic->getNumPartInCtuWidth() ) % uiSrcBlkWidth) / uiBlkWidth;
+  UInt uiPartIdx = uiPartIdxY * ( uiSrcBlkWidth / uiBlkWidth ) + uiPartIdxX;
+ // m_ppcRecoYuvBest[uiSrcDepth]->copyToPicYuv( rpcPic->getPicYuvRec (), uiCUAddr, uiAbsPartIdx, uiDepth - uiSrcDepth, uiPartIdx);
+ // m_ppcPredYuvBest[uiSrcDepth]->copyToPicYuv( rpcPic->getPicYuvPred (), uiCUAddr, uiAbsPartIdx, uiDepth - uiSrcDepth, uiPartIdx);
+  UInt uiPosX = (uiAbsPartIdxInRaster % 16) * 4 + (uiCUAddr % rpcPic->getFrameWidthInCtus()) * 64;
+  UInt uiPosY = (uiAbsPartIdxInRaster / 16) * 4 + (uiCUAddr / rpcPic->getFrameWidthInCtus()) * 64;
+  cout << "uiAbsPartIdx = " << uiAbsPartIdx
+	   << " uiAbsPartIdxInRaster = " << uiAbsPartIdxInRaster
+	   << " uiCUAddr =  " << uiCUAddr
+	   << " uiPosX = " << uiPosX
+	   << " uiPosY = " << uiPosY << endl;
+  m_ppcRecoYuvBest[uiSrcDepth]->copyToPicYuv4DLFMI( rpcPic->getPicYuv4DLFMI(), uiPosX, uiPosY, uiPartIdx, rpcPic->getTotalNumberOfSAIs(),
+		  	  	  	  	  	  	  	  	  	  	  	rpcPic->getMicroImageSize(), rpcPic->getCurrentSAIsSpiralPosX(), rpcPic->getCurrentSAIsSpiralPosY());
+}
+#endif
 
 Void TEncCu::xCopyYuv2Tmp( UInt uiPartUnitIdx, UInt uiNextDepth )
 {

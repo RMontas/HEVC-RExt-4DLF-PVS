@@ -1171,6 +1171,16 @@ Void TEncGOP::compressGOP( Int iPOCLast, Int iNumPicRcvd, TComList<TComPic*>& rc
 
     m_pcSliceEncoder->initEncSlice ( pcPic, iPOCLast, pocCurr, iGOPid, pcSlice, isField );
 
+#if RM_4DLF_MI_BUFFER
+    pcPic->setPicYuv4DLFMI(pcPic4DLFMI); // set 4DLF_MI buffer
+    pcPic->setMicroImageSize(sqrt(m_pcCfg->getFramesToBeEncoded())); //number of frames (sqrt(number of frames)) - limited to 1, 9, 25, 49, 81, 121, 169, 225
+    pcPic->setTotalNumberOfSAIs(m_totalCoded);
+    UInt posX = 0, posY = 0;
+    pcPic->spiral(m_totalCoded, sqrt(m_pcCfg->getFramesToBeEncoded()), &posX, &posY);
+    pcPic->setCurrentSAIsSpiralPosX(posX);
+    pcPic->setCurrentSAIsSpiralPosY(posY);
+#endif
+
     //Set Frame/Field coding
     pcSlice->getPic()->setField(isField);
 
@@ -1856,15 +1866,13 @@ Void TEncGOP::compressGOP( Int iPOCLast, Int iNumPicRcvd, TComList<TComPic*>& rc
     pcPic->setReconMark   ( true );
 
 #if RM_4DLF_MI_BUFFER
-
     Pel* Y = pcPic4DLFMI->getAddr(COMPONENT_Y);
     Pel* CB = pcPic4DLFMI->getAddr(COMPONENT_Cb);
     Pel* CR = pcPic4DLFMI->getAddr(COMPONENT_Cr);
     // TODO: get MISize from config file or
-    //       number of frames (sqrt(number of frames)) - limited to 1, 9, 25, 49, 81, 121, 169, 225
-    Int iMISize = sqrt(m_pcCfg->getFramesToBeEncoded()), initX, initY;
+    UInt iMISize = sqrt(m_pcCfg->getFramesToBeEncoded()), initX, initY;
 
-    spiral(m_totalCoded, iMISize, &initX, &initY);
+    pcPic->spiral(m_totalCoded, iMISize, &initX, &initY); //number of frames (sqrt(number of frames)) - limited to 1, 9, 25, 49, 81, 121, 169, 225
     // DEBUG only
     // COMPONENT_Y
     Y += initY * pcPic4DLFMI->getStride(COMPONENT_Y);
@@ -1898,9 +1906,9 @@ Void TEncGOP::compressGOP( Int iPOCLast, Int iNumPicRcvd, TComList<TComPic*>& rc
     }
     fstream fileID;
     fileID.open("4DLFMI.yuv", ios::binary | ios::app);
-    writePlane(fileID, pcPic4DLFMI->getAddr(COMPONENT_Y), true, pcPic4DLFMI->getStride(COMPONENT_Y), pcPic4DLFMI->getWidth(COMPONENT_Y), pcPic4DLFMI->getHeight(COMPONENT_Y), COMPONENT_Y, CHROMA_444, CHROMA_444, 10);
-    writePlane(fileID, pcPic4DLFMI->getAddr(COMPONENT_Cb), true, pcPic4DLFMI->getStride(COMPONENT_Cb), pcPic4DLFMI->getWidth(COMPONENT_Cb), pcPic4DLFMI->getHeight(COMPONENT_Cb), COMPONENT_Cb, CHROMA_444, CHROMA_444, 10);
-    writePlane(fileID, pcPic4DLFMI->getAddr(COMPONENT_Cr), true, pcPic4DLFMI->getStride(COMPONENT_Cr), pcPic4DLFMI->getWidth(COMPONENT_Cr), pcPic4DLFMI->getHeight(COMPONENT_Cr), COMPONENT_Cr, CHROMA_444, CHROMA_444, 10);
+    pcPic->writePlane(fileID, pcPic4DLFMI->getAddr(COMPONENT_Y), true, pcPic4DLFMI->getStride(COMPONENT_Y), pcPic4DLFMI->getWidth(COMPONENT_Y), pcPic4DLFMI->getHeight(COMPONENT_Y), COMPONENT_Y, CHROMA_444, CHROMA_444, 10);
+    pcPic->writePlane(fileID, pcPic4DLFMI->getAddr(COMPONENT_Cb), true, pcPic4DLFMI->getStride(COMPONENT_Cb), pcPic4DLFMI->getWidth(COMPONENT_Cb), pcPic4DLFMI->getHeight(COMPONENT_Cb), COMPONENT_Cb, CHROMA_444, CHROMA_444, 10);
+    pcPic->writePlane(fileID, pcPic4DLFMI->getAddr(COMPONENT_Cr), true, pcPic4DLFMI->getStride(COMPONENT_Cr), pcPic4DLFMI->getWidth(COMPONENT_Cr), pcPic4DLFMI->getHeight(COMPONENT_Cr), COMPONENT_Cr, CHROMA_444, CHROMA_444, 10);
     fileID.close();
     // DEBUG only END
 #endif
@@ -1923,182 +1931,6 @@ Void TEncGOP::compressGOP( Int iPOCLast, Int iNumPicRcvd, TComList<TComPic*>& rc
 
   assert ( (m_iNumPicCoded == iNumPicRcvd) );
 }
-
-#if RM_4DLF_MI_BUFFER
-Void TEncGOP::spiral(Int idx, Int size, Int* x, Int* y)
-{
-	Int init = floor(size/2);
-	Int current_idx = 0;
-	//char current_direction = 'R';
-	char current_direction[] = "RDLU";
-	Int dir_idx = 0;
-	Int original_steps_to_update = 1;
-	Int original_steps_to_change_dir = 1;
-	Int steps_to_update = 2;
-	Int steps_to_change_dir = 1;
-	Int step = 0;
-	Int x_pos = init;
-	Int y_pos = init;
-	while(current_idx < idx)
-	{
-		if(current_direction[dir_idx] == 'R') // RIGHT
-			x_pos++;
-		else if(current_direction[dir_idx] == 'D') // DOWN
-			y_pos++;
-		else if(current_direction[dir_idx] == 'L') // LEFT
-			x_pos--;
-		else // UP
-			y_pos--;
-		if(step == steps_to_change_dir-1)
-		{
-			step = 0;
-			steps_to_change_dir = original_steps_to_change_dir;
-			dir_idx++;
-			if(dir_idx > 3)
-				dir_idx = 0;
-		}
-		else
-			step++;
-		current_idx++;
-		steps_to_update--;
-		if(steps_to_update == 0)
-		{
-			original_steps_to_change_dir++;
-			steps_to_change_dir = original_steps_to_change_dir;
-			original_steps_to_update++;
-			steps_to_update = original_steps_to_update * 2; // 1, 2, 4, 6, 8, 10...
-		}
-	}
-
-	*x = x_pos;
-	*y = y_pos;
-}
-
-// DEBUG only
-Bool TEncGOP::writePlane(ostream& fd, Pel* src, Bool is16bit,
-                       UInt stride444,
-                       UInt width444, UInt height444,
-                       ComponentID compID,
-                       ChromaFormat srcFormat,
-                       ChromaFormat fileFormat,
-                       UInt fileBitDepth)
-{
-  const UInt csx_file =getComponentScaleX(compID, fileFormat);
-  const UInt csy_file =getComponentScaleY(compID, fileFormat);
-  const UInt csx_src  =getComponentScaleX(compID, srcFormat);
-  const UInt csy_src  =getComponentScaleY(compID, srcFormat);
-
-  const UInt stride_src      = stride444>>csx_src;
-
-  const UInt stride_file      = (width444 * (is16bit ? 2 : 1)) >> csx_file;
-  const UInt width_file       = width444 >>csx_file;
-  const UInt height_file      = height444>>csy_file;
-
-  std::vector<UChar> bufVec(stride_file);
-  UChar *buf=&(bufVec[0]);
-
-  if (compID!=COMPONENT_Y && (fileFormat==CHROMA_400 || srcFormat==CHROMA_400))
-  {
-    if (fileFormat!=CHROMA_400)
-    {
-      const UInt value=1<<(fileBitDepth-1);
-
-      for(UInt y=0; y< height_file; y++)
-      {
-        if (!is16bit)
-        {
-          UChar val(value);
-          for (UInt x = 0; x < width_file; x++)
-          {
-            buf[x]=val;
-          }
-        }
-        else
-        {
-          UShort val(value);
-          for (UInt x = 0; x < width_file; x++)
-          {
-            buf[2*x+0]= (val>>0) & 0xff;
-            buf[2*x+1]= (val>>8) & 0xff;
-          }
-        }
-
-        fd.write(reinterpret_cast<const TChar*>(buf), stride_file);
-        if (fd.eof() || fd.fail() )
-        {
-          return false;
-        }
-      }
-    }
-  }
-  else
-  {
-    const UInt mask_y_file=(1<<csy_file)-1;
-    const UInt mask_y_src =(1<<csy_src )-1;
-    for(UInt y444=0; y444<height444; y444++)
-    {
-      if ((y444&mask_y_file)==0)
-      {
-        // write a new line
-        if (csx_file < csx_src)
-        {
-          // eg file is 444, source is 422.
-          const UInt sx=csx_src-csx_file;
-          if (!is16bit)
-          {
-            for (UInt x = 0; x < width_file; x++)
-            {
-              buf[x] = (UChar)(src[x>>sx]);
-            }
-          }
-          else
-          {
-            for (UInt x = 0; x < width_file; x++)
-            {
-              buf[2*x  ] = (src[x>>sx]>>0) & 0xff;
-              buf[2*x+1] = (src[x>>sx]>>8) & 0xff;
-            }
-          }
-        }
-        else
-        {
-          // eg file is 422, src is 444.
-          const UInt sx=csx_file-csx_src;
-          if (!is16bit)
-          {
-            for (UInt x = 0; x < width_file; x++)
-            {
-              buf[x] = (UChar)(src[x<<sx]);
-            }
-          }
-          else
-          {
-            for (UInt x = 0; x < width_file; x++)
-            {
-              buf[2*x  ] = (src[x<<sx]>>0) & 0xff;
-              buf[2*x+1] = (src[x<<sx]>>8) & 0xff;
-            }
-          }
-        }
-
-        fd.write(reinterpret_cast<const TChar*>(buf), stride_file);
-        if (fd.eof() || fd.fail() )
-        {
-          return false;
-        }
-      }
-
-      if ((y444&mask_y_src)==0)
-      {
-        src += stride_src;
-      }
-
-    }
-  }
-  return true;
-}
-// DEBUG only END
-#endif
 
 Void TEncGOP::printOutSummary(UInt uiNumAllPicCoded, Bool isField, const Bool printMSEBasedSNR, const Bool printSequenceMSE, const BitDepths &bitDepths)
 {

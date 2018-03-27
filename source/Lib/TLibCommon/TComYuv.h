@@ -106,6 +106,11 @@ public:
   Void         copyToPicYuv               ( TComPicYuv* pcPicYuvDst, const UInt ctuRsAddr, const UInt uiAbsZorderIdx, const UInt uiPartDepth = 0, const UInt uiPartIdx = 0 ) const ;
   Void         copyToPicComponent         ( const ComponentID id, TComPicYuv* pcPicYuvDst, const UInt iCtuRsAddr, const UInt uiAbsZorderIdx, const UInt uiPartDepth = 0, const UInt uiPartIdx = 0 ) const ;
 
+#if RM_4DLF_MI_BUFFER
+  Void         copyToPicYuv4DLFMI         ( TComPicYuv* pcPicYuvDst4DLFMI, const UInt uiPosX, const UInt uiPosY, const UInt uiPartIdx, const UInt uiNumOfSAIs, const UInt uiMISize, const UInt uiSAIsPosX, const UInt uiSAIsPosY ) const ;
+  Void         copyToPicComponent4DLFMI   ( const ComponentID id, TComPicYuv* pcPicYuvDst4DLFMI, const UInt uiPosX, const UInt uiPosY, const UInt uiPartIdx, const UInt uiNumOfSAIs, const UInt uiMISize, const UInt uiSAIsPosX, const UInt uiSAIsPosY ) const ;
+#endif
+
   //  Copy YUV buffer from picture buffer
   Void         copyFromPicYuv             ( const TComPicYuv* pcPicYuvSrc, const  UInt ctuRsAddr, const UInt uiAbsZorderIdx );
   Void         copyFromPicComponent       ( const ComponentID id, const TComPicYuv* pcPicYuvSrc, const UInt iCtuRsAddr, const UInt uiAbsZorderIdx );

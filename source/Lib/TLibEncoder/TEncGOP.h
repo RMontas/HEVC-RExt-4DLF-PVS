@@ -150,10 +150,6 @@ public:
 		  	  	  	  TComPicYuv* pcPic4DLFMI,
 #endif
                       std::list<AccessUnit>& accessUnitsInGOP, Bool isField, Bool isTff, const InputColourSpaceConversion snr_conversion, const Bool printFrameMSE );
-#if RM_4DLF_MI_BUFFER
-  Bool writePlane(ostream& fd, Pel* src, Bool is16bit, UInt stride444, UInt width444, UInt height444, ComponentID compID, ChromaFormat srcFormat, ChromaFormat fileFormat, UInt fileBitDepth);
-  Void spiral(Int idx, Int size, Int* x, Int* y);
-#endif
   Void  xAttachSliceDataToNalUnit (OutputNALUnit& rNalu, TComOutputBitstream* pcBitstreamRedirect);
 
 

@@ -130,8 +130,41 @@ Void TComYuv::copyToPicComponent  ( const ComponentID compID, TComPicYuv* pcPicY
   }
 }
 
+#if RM_4DLF_MI_BUFFER
+Void TComYuv::copyToPicYuv4DLFMI   ( TComPicYuv* pcPicYuvDst4DLFMI, const UInt uiPosX, const UInt uiPosY, const UInt uiPartIdx, const UInt uiNumOfSAIs, const UInt uiMISize, const UInt uiSAIsPosX, const UInt uiSAIsPosY) const
+{
+  for(Int comp=0; comp<getNumberValidComponents(); comp++)
+  {
+    copyToPicComponent4DLFMI  ( ComponentID(comp), pcPicYuvDst4DLFMI, uiPosX, uiPosY, uiPartIdx, uiNumOfSAIs, uiMISize, uiSAIsPosX, uiSAIsPosY);
+  }
+}
 
+Void TComYuv::copyToPicComponent4DLFMI  ( const ComponentID compID, TComPicYuv* pcPicYuvDst4DLFMI, const UInt uiPosX, const UInt uiPosY, const UInt uiPartIdx, const UInt uiNumOfSAIs, const UInt uiMISize, const UInt uiSAIsPosX, const UInt uiSAIsPosY ) const
+{
+  const Int iWidth  = getWidth(compID) ;
+  const Int iHeight = getHeight(compID);
 
+  std::cout << iWidth << " " << iHeight << std::endl;
+
+  const Pel* pSrc     = getAddr(compID, uiPartIdx, iWidth);
+  Pel* pDst     	  = pcPicYuvDst4DLFMI->getAddr ( compID );
+
+  const UInt  iSrcStride  = getStride(compID);
+  const UInt  iDstStride  = pcPicYuvDst4DLFMI->getStride(compID);
+
+  // jump to first pixel position on the 4DLF MI Buffer [ Spiral(N).x() + pixelSAI.x() * MISize ]
+  pDst += uiSAIsPosX + uiPosX * uiMISize + (uiSAIsPosY + uiPosY * uiMISize ) * iDstStride;
+  for(Int j = 0; j < iHeight; j++)
+  {
+	  for(Int i = 0; i < iWidth; i++)
+	  {
+		  pDst[i*uiMISize] = pSrc[i];
+	  }
+	  pDst += uiMISize * iDstStride;
+	  pSrc += iSrcStride;
+  }
+}
+#endif
 
 Void TComYuv::copyFromPicYuv   ( const TComPicYuv* pcPicYuvSrc, const UInt ctuRsAddr, const UInt uiAbsZorderIdx )
 {
