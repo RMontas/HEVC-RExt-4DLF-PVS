@@ -412,6 +412,9 @@ Void TDecCu::xDecompressCU( TComDataCU* pCtu, UInt uiAbsPartIdx,  UInt uiDepth )
   }
 
   xCopyToPic( m_ppcCU[uiDepth], pcPic, uiAbsPartIdx, uiDepth );
+#if RM_4DLF_MI_BUFFER
+  xCopyToPic4DLFMI( pcPic, pCtu->getCtuRsAddr(), uiAbsPartIdx, uiDepth, uiDepth );
+#endif
 }
 
 Void TDecCu::xReconInter( TComDataCU* pcCU, UInt uiDepth )
@@ -734,6 +737,29 @@ Void TDecCu::xCopyToPic( TComDataCU* pcCU, TComPic* pcPic, UInt uiZorderIdx, UIn
 
   return;
 }
+
+#if RM_4DLF_MI_BUFFER
+Void TDecCu::xCopyToPic4DLFMI(TComPic* rpcPic, UInt uiCUAddr, UInt uiAbsPartIdx, UInt uiDepth, UInt uiSrcDepth )
+{
+  UInt uiAbsPartIdxInRaster = g_auiZscanToRaster[uiAbsPartIdx];
+  UInt uiSrcBlkWidth = rpcPic->getNumPartInCtuWidth() >> (uiSrcDepth);
+  UInt uiBlkWidth    = rpcPic->getNumPartInCtuWidth() >> (uiDepth);
+  UInt uiPartIdxX = ( ( uiAbsPartIdxInRaster % rpcPic->getNumPartInCtuWidth() ) % uiSrcBlkWidth) / uiBlkWidth;
+  UInt uiPartIdxY = ( ( uiAbsPartIdxInRaster / rpcPic->getNumPartInCtuWidth() ) % uiSrcBlkWidth) / uiBlkWidth;
+  UInt uiPartIdx = uiPartIdxY * ( uiSrcBlkWidth / uiBlkWidth ) + uiPartIdxX;
+  UInt uiPosX = (uiAbsPartIdxInRaster % 16) * 4 + (uiCUAddr % rpcPic->getFrameWidthInCtus()) * 64;
+  UInt uiPosY = (uiAbsPartIdxInRaster / 16) * 4 + (uiCUAddr / rpcPic->getFrameWidthInCtus()) * 64;
+#if RM_DEBUG_VERBOSE
+  cout << "uiAbsPartIdx = " << uiAbsPartIdx
+	   << " uiAbsPartIdxInRaster = " << uiAbsPartIdxInRaster
+	   << " uiCUAddr =  " << uiCUAddr
+	   << " uiPosX = " << uiPosX
+	   << " uiPosY = " << uiPosY << endl;
+#endif
+  m_ppcYuvReco[uiSrcDepth]->copyToPicYuv4DLFMI( rpcPic->getPicYuv4DLFMI(), uiPosX, uiPosY, uiPartIdx, rpcPic->getTotalNumberOfSAIs(),
+		  	  	  	  	  	  	  	  	  	  	  	rpcPic->getMicroImageSize(), rpcPic->getCurrentSAIsSpiralPosX(), rpcPic->getCurrentSAIsSpiralPosY());
+}
+#endif
 
 Void TDecCu::xDecodeInterTexture ( TComDataCU* pcCU, UInt uiDepth )
 {

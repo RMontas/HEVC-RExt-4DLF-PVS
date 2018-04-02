@@ -1557,15 +1557,15 @@ Void TEncCu::xCopyYuv2Pic4DLFMI(TComPic* rpcPic, UInt uiCUAddr, UInt uiAbsPartId
   UInt uiPartIdxX = ( ( uiAbsPartIdxInRaster % rpcPic->getNumPartInCtuWidth() ) % uiSrcBlkWidth) / uiBlkWidth;
   UInt uiPartIdxY = ( ( uiAbsPartIdxInRaster / rpcPic->getNumPartInCtuWidth() ) % uiSrcBlkWidth) / uiBlkWidth;
   UInt uiPartIdx = uiPartIdxY * ( uiSrcBlkWidth / uiBlkWidth ) + uiPartIdxX;
- // m_ppcRecoYuvBest[uiSrcDepth]->copyToPicYuv( rpcPic->getPicYuvRec (), uiCUAddr, uiAbsPartIdx, uiDepth - uiSrcDepth, uiPartIdx);
- // m_ppcPredYuvBest[uiSrcDepth]->copyToPicYuv( rpcPic->getPicYuvPred (), uiCUAddr, uiAbsPartIdx, uiDepth - uiSrcDepth, uiPartIdx);
   UInt uiPosX = (uiAbsPartIdxInRaster % 16) * 4 + (uiCUAddr % rpcPic->getFrameWidthInCtus()) * 64;
   UInt uiPosY = (uiAbsPartIdxInRaster / 16) * 4 + (uiCUAddr / rpcPic->getFrameWidthInCtus()) * 64;
+#if RM_DEBUG_VERBOSE
   cout << "uiAbsPartIdx = " << uiAbsPartIdx
 	   << " uiAbsPartIdxInRaster = " << uiAbsPartIdxInRaster
 	   << " uiCUAddr =  " << uiCUAddr
 	   << " uiPosX = " << uiPosX
 	   << " uiPosY = " << uiPosY << endl;
+#endif
   m_ppcRecoYuvBest[uiSrcDepth]->copyToPicYuv4DLFMI( rpcPic->getPicYuv4DLFMI(), uiPosX, uiPosY, uiPartIdx, rpcPic->getTotalNumberOfSAIs(),
 		  	  	  	  	  	  	  	  	  	  	  	rpcPic->getMicroImageSize(), rpcPic->getCurrentSAIsSpiralPosX(), rpcPic->getCurrentSAIsSpiralPosY());
 }

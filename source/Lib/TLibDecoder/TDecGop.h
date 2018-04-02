@@ -55,6 +55,10 @@
 #include "TDecBinCoder.h"
 #include "TDecBinCoderCABAC.h"
 
+#if RM_DEBUG_FILES
+#include <fstream>
+#endif
+
 //! \ingroup TLibDecoder
 //! \{
 
@@ -95,7 +99,11 @@ public:
                  );
   Void  create  ();
   Void  destroy ();
-  Void  decompressSlice(TComInputBitstream* pcBitstream, TComPic* pcPic );
+  Void  decompressSlice(TComInputBitstream* pcBitstream, TComPic* pcPic
+#if RM_4DLF_MI_BUFFER
+						   ,TComPicYuv* pcPic4DLFMI
+#endif
+  );
   Void  filterPicture  (TComPic* pcPic );
 
   Void setDecodedPictureHashSEIEnabled(Int enabled) { m_decodedPictureHashSEIEnabled = enabled; }

@@ -100,7 +100,11 @@ Void TDecGop::init( TDecEntropy*            pcEntropyDecoder,
 // Public member functions
 // ====================================================================================================================
 
-Void TDecGop::decompressSlice(TComInputBitstream* pcBitstream, TComPic* pcPic)
+Void TDecGop::decompressSlice(TComInputBitstream* pcBitstream, TComPic* pcPic
+#if RM_4DLF_MI_BUFFER
+						   ,TComPicYuv* pcPic4DLFMI
+#endif
+	)
 {
   TComSlice*  pcSlice = pcPic->getSlice(pcPic->getCurrSliceIdx());
   // Table of extracted substreams.
@@ -120,6 +124,13 @@ Void TDecGop::decompressSlice(TComInputBitstream* pcBitstream, TComPic* pcPic)
   {
     ppcSubstreams[ui] = pcBitstream->extractSubstream(ui+1 < uiNumSubstreams ? (pcSlice->getSubstreamSize(ui)<<3) : pcBitstream->getNumBitsLeft());
   }
+
+#if RM_4DLF_MI_BUFFER
+  UInt posX = 0, posY = 0;
+  pcPic->spiral(pcPic->getPOC(), pcPic->getMicroImageSize(), &posX, &posY);
+  pcPic->setCurrentSAIsSpiralPosX(posX);
+  pcPic->setCurrentSAIsSpiralPosY(posY);
+#endif
 
   m_pcSliceDecoder->decompressSlice( ppcSubstreams, pcPic, m_pcSbacDecoder);
   // deallocate all created substreams, including internal buffers.

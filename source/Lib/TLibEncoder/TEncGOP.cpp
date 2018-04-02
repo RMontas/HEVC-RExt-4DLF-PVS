@@ -1174,7 +1174,7 @@ Void TEncGOP::compressGOP( Int iPOCLast, Int iNumPicRcvd, TComList<TComPic*>& rc
 #if RM_4DLF_MI_BUFFER
     pcPic->setPicYuv4DLFMI(pcPic4DLFMI); // set 4DLF_MI buffer
     pcPic->setMicroImageSize(sqrt(m_pcCfg->getFramesToBeEncoded())); //number of frames (sqrt(number of frames)) - limited to 1, 9, 25, 49, 81, 121, 169, 225
-    pcPic->setTotalNumberOfSAIs(m_totalCoded);
+    pcPic->setTotalNumberOfSAIs(m_pcCfg->getFramesToBeEncoded());
     UInt posX = 0, posY = 0;
     pcPic->spiral(m_totalCoded, sqrt(m_pcCfg->getFramesToBeEncoded()), &posX, &posY);
     pcPic->setCurrentSAIsSpiralPosX(posX);
@@ -1866,6 +1866,14 @@ Void TEncGOP::compressGOP( Int iPOCLast, Int iNumPicRcvd, TComList<TComPic*>& rc
     pcPic->setReconMark   ( true );
 
 #if RM_4DLF_MI_BUFFER
+#if RM_DEBUG_FILES
+    fstream fileID;
+    fileID.open("4DLFMI_ENC_before_inloopfil.yuv", ios::binary | ios::app);
+    pcPic->writePlane(fileID, pcPic4DLFMI->getAddr(COMPONENT_Y), true, pcPic4DLFMI->getStride(COMPONENT_Y), pcPic4DLFMI->getWidth(COMPONENT_Y), pcPic4DLFMI->getHeight(COMPONENT_Y), COMPONENT_Y, CHROMA_444, CHROMA_444, 10);
+    pcPic->writePlane(fileID, pcPic4DLFMI->getAddr(COMPONENT_Cb), true, pcPic4DLFMI->getStride(COMPONENT_Cb), pcPic4DLFMI->getWidth(COMPONENT_Cb), pcPic4DLFMI->getHeight(COMPONENT_Cb), COMPONENT_Cb, CHROMA_444, CHROMA_444, 10);
+    pcPic->writePlane(fileID, pcPic4DLFMI->getAddr(COMPONENT_Cr), true, pcPic4DLFMI->getStride(COMPONENT_Cr), pcPic4DLFMI->getWidth(COMPONENT_Cr), pcPic4DLFMI->getHeight(COMPONENT_Cr), COMPONENT_Cr, CHROMA_444, CHROMA_444, 10);
+    fileID.close();
+#endif
     Pel* Y = pcPic4DLFMI->getAddr(COMPONENT_Y);
     Pel* CB = pcPic4DLFMI->getAddr(COMPONENT_Cb);
     Pel* CR = pcPic4DLFMI->getAddr(COMPONENT_Cr);
@@ -1873,7 +1881,6 @@ Void TEncGOP::compressGOP( Int iPOCLast, Int iNumPicRcvd, TComList<TComPic*>& rc
     UInt iMISize = sqrt(m_pcCfg->getFramesToBeEncoded()), initX, initY;
 
     pcPic->spiral(m_totalCoded, iMISize, &initX, &initY); //number of frames (sqrt(number of frames)) - limited to 1, 9, 25, 49, 81, 121, 169, 225
-    // DEBUG only
     // COMPONENT_Y
     Y += initY * pcPic4DLFMI->getStride(COMPONENT_Y);
     for(Int j = 0; j < pcPic4DLFMI->getHeight(COMPONENT_Y); j+=iMISize)
@@ -1904,13 +1911,13 @@ Void TEncGOP::compressGOP( Int iPOCLast, Int iNumPicRcvd, TComList<TComPic*>& rc
         }
         CR += iMISize * pcPic4DLFMI->getStride(COMPONENT_Cr);
     }
-    fstream fileID;
-    fileID.open("4DLFMI.yuv", ios::binary | ios::app);
+#if RM_DEBUG_FILES
+    fileID.open("4DLFMI_ENC.yuv", ios::binary | ios::app);
     pcPic->writePlane(fileID, pcPic4DLFMI->getAddr(COMPONENT_Y), true, pcPic4DLFMI->getStride(COMPONENT_Y), pcPic4DLFMI->getWidth(COMPONENT_Y), pcPic4DLFMI->getHeight(COMPONENT_Y), COMPONENT_Y, CHROMA_444, CHROMA_444, 10);
     pcPic->writePlane(fileID, pcPic4DLFMI->getAddr(COMPONENT_Cb), true, pcPic4DLFMI->getStride(COMPONENT_Cb), pcPic4DLFMI->getWidth(COMPONENT_Cb), pcPic4DLFMI->getHeight(COMPONENT_Cb), COMPONENT_Cb, CHROMA_444, CHROMA_444, 10);
     pcPic->writePlane(fileID, pcPic4DLFMI->getAddr(COMPONENT_Cr), true, pcPic4DLFMI->getStride(COMPONENT_Cr), pcPic4DLFMI->getWidth(COMPONENT_Cr), pcPic4DLFMI->getHeight(COMPONENT_Cr), COMPONENT_Cr, CHROMA_444, CHROMA_444, 10);
     fileID.close();
-    // DEBUG only END
+#endif
 #endif
 
     m_bFirst = false;

@@ -47,6 +47,8 @@
 // ====================================================================================================================
 // HEVC-RExt-4DLF-PVS : Ricardo Monteiro
 // ====================================================================================================================
+#define RM_DEBUG_FILES									  1 ///< Writes output files for debug purposes
+#define RM_DEBUG_VERBOSE								  1 ///< Prints debug information
 #define RM_4DLF_MI_BUFFER							      1 ///< Generates buffer of encoded pixels in a 4DLF_MI format
 
 //! \ingroup TLibCommon

@@ -144,7 +144,9 @@ Void TComYuv::copyToPicComponent4DLFMI  ( const ComponentID compID, TComPicYuv* 
   const Int iWidth  = getWidth(compID) ;
   const Int iHeight = getHeight(compID);
 
+#if RM_DEBUG_VERBOSE
   std::cout << iWidth << " " << iHeight << std::endl;
+#endif
 
   const Pel* pSrc     = getAddr(compID, uiPartIdx, iWidth);
   Pel* pDst     	  = pcPicYuvDst4DLFMI->getAddr ( compID );

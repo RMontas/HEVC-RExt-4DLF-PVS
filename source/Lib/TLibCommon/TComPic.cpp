@@ -213,7 +213,7 @@ Void TComPic::spiral(UInt idx, UInt size, UInt* x, UInt* y)
 	*y = y_pos;
 }
 
-// DEBUG only
+#if RM_DEBUG_FILES
 Bool TComPic::writePlane(std::ostream& fd, Pel* src, Bool is16bit,
                        UInt stride444,
                        UInt width444, UInt height444,
@@ -342,7 +342,7 @@ Bool TComPic::writePlane(std::ostream& fd, Pel* src, Bool is16bit,
   }
   return true;
 }
-// DEBUG only END
+#endif
 #endif
 
 
