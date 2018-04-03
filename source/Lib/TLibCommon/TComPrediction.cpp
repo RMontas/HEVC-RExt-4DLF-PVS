@@ -387,6 +387,55 @@ Void TComPrediction::xPredIntraAng(       Int bitDepth,
   }
 }
 
+#if RM_4DLF_MI_INTRA_MODE_DC_3x3
+Void TComPrediction::xPred4DLFMI_DC_3x3(       Int bitDepth,
+                                    const Pel* pSrc,     Int srcStride,
+                                          Pel* pTrueDst, Int dstStrideTrue,
+                                          UInt uiWidth, UInt uiHeight, ChannelType channelType,
+                                          UInt dirMode, TComPicYuv *const pcPic4DLFMI, UInt miSize,
+										  UInt currentSAIsSpiralPosX, UInt currentSAIsSpiralPosY,
+										  UInt totalNumberOfSAIs, UInt uiAbsPartIdxInRaster,
+										  UInt uiPosX, UInt uiPosY, ComponentID compID )
+{
+
+	Int width=Int(uiWidth);
+	Int height=Int(uiHeight);
+	Int mi=Int(miSize);
+	UInt const ui4DLFMIStride = pcPic4DLFMI->getStride(compID);
+	Pel* const p4DLFMI = pcPic4DLFMI->getAddr( compID );
+	// first pixel location in the 4DLF MI buffer
+	UInt firstPixelPos = currentSAIsSpiralPosX + uiPosX * mi + (currentSAIsSpiralPosY + uiPosY * mi ) * ui4DLFMIStride;
+	// Create individual pixel predictor for each pixel
+	for (Int y=0; y<height; y++)
+	{
+		for (Int x=0; x<width; x++)
+		{
+			UInt predictor = 0;
+			UInt availablePixels = 0;
+			for (Int j=-1; j<=1; j++)
+			{
+				for (Int i=-1; i<=1; i++)
+				{
+					if(j + y*mi > 0 && i + x*mi > 0) // if valid (inside frame)
+					{
+						if(p4DLFMI[firstPixelPos + i + x*mi + (j + y*mi)*ui4DLFMIStride]) // if available
+						{
+							predictor += p4DLFMI[firstPixelPos + i + x*mi + (j + y*mi)*ui4DLFMIStride];
+							availablePixels++;
+						}
+					}
+				}
+			}
+			if(!availablePixels)
+				availablePixels = 1;
+			predictor /= availablePixels;
+			pTrueDst[x + y*dstStrideTrue] = predictor;
+		}
+	}
+
+}
+#endif
+
 Void TComPrediction::predIntraAng( const ComponentID compID, UInt uiDirMode, Pel* piOrg /* Will be null for decoding */, UInt uiOrgStride, Pel* piPred, UInt uiStride, TComTU &rTu, const Bool bUseFilteredPredSamples, const Bool bUseLosslessDPCM )
 {
   const ChannelType    channelType = toChannelType(compID);
@@ -462,6 +511,24 @@ Void TComPrediction::predIntraAng( const ComponentID compID, UInt uiDirMode, Pel
       const Int channelsBitDepthForPrediction = rTu.getCU()->getSlice()->getSPS()->getBitDepth(channelType);
 #endif
       xPredIntraAng( channelsBitDepthForPrediction, ptrSrc+sw+1, sw, pDst, uiStride, iWidth, iHeight, channelType, uiDirMode, enableEdgeFilters );
+#if RM_4DLF_MI_INTRA_MODE_DC_3x3
+      if( uiDirMode == 3 ) // less probable modes - 3, 7, 11, 15, 19, 23, 27, 31
+      {
+    	  TComPic *const pcPic = rTu.getCU()->getPic();
+    	  TComPicYuv *const pcPic4DLFMI = pcPic->getPicYuv4DLFMI();
+    	  UInt const miSize = pcPic->getMicroImageSize();
+    	  UInt const currentSAIsSpiralPosX = pcPic->getCurrentSAIsSpiralPosX();
+    	  UInt const currentSAIsSpiralPosY = pcPic->getCurrentSAIsSpiralPosY();
+    	  UInt const totalNumberOfSAIs = pcPic->getTotalNumberOfSAIs();
+    	  UInt const pcCUAbsPartIdx = pcCU->getZorderIdxInCtu();
+    	  UInt const uiAbsPartIdxInRaster = g_auiZscanToRaster[pcCUAbsPartIdx];
+    	  UInt const uiPosX = (uiAbsPartIdxInRaster % 16) * 4 + (pcCU->getCtuRsAddr() % pcPic->getFrameWidthInCtus()) * 64;
+    	  UInt const uiPosY = (uiAbsPartIdxInRaster / 16) * 4 + (pcCU->getCtuRsAddr() / pcPic->getFrameWidthInCtus()) * 64;
+
+    	  xPred4DLFMI_DC_3x3( channelsBitDepthForPrediction, ptrSrc+sw+1, sw, pDst, uiStride, iWidth, iHeight, channelType, uiDirMode,
+    			  	  	      pcPic4DLFMI, miSize, currentSAIsSpiralPosX, currentSAIsSpiralPosY, totalNumberOfSAIs, uiAbsPartIdxInRaster, uiPosX, uiPosY, compID );
+      }
+#endif
 
       if( uiDirMode == DC_IDX )
       {

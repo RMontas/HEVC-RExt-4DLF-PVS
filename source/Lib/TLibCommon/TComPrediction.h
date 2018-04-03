@@ -85,6 +85,9 @@ protected:
   Int    m_iLumaRecStride;       ///< stride of #m_pLumaRecBuffer array
 
   Void xPredIntraAng            ( Int bitDepth, const Pel* pSrc, Int srcStride, Pel* pDst, Int dstStride, UInt width, UInt height, ChannelType channelType, UInt dirMode, const Bool bEnableEdgeFilters );
+#if RM_4DLF_MI_INTRA_MODE_DC_3x3
+  Void xPred4DLFMI_DC_3x3       ( Int bitDepth, const Pel* pSrc, Int srcStride, Pel* pTrueDst, Int dstStrideTrue, UInt uiWidth, UInt uiHeight, ChannelType channelType, UInt dirMode, TComPicYuv *const pcPic4DLFMI, UInt miSize, UInt currentSAIsSpiralPosX, UInt currentSAIsSpiralPosY, UInt totalNumberOfSAIs, UInt uiAbsPartIdxInRaster, UInt uiPosX, UInt uiPosY, ComponentID compID );
+#endif
   Void xPredIntraPlanar         ( const Pel* pSrc, Int srcStride, Pel* rpDst, Int dstStride, UInt width, UInt height );
 
   // motion compensation functions
