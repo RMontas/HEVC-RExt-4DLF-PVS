@@ -571,6 +571,12 @@ Void TAppEncTop::encode()
 
   m_cTEncTop.printSummary(m_isField);
 
+#if RM_4DLF_MI_BUFFER
+  pcPic4DLFMI->destroy();
+  delete pcPic4DLFMI;
+  pcPic4DLFMI = NULL;
+#endif
+
   // delete original YUV buffer
   pcPicYuvOrg->destroy();
   delete pcPicYuvOrg;

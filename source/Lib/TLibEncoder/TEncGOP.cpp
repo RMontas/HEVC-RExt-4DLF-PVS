@@ -1934,6 +1934,10 @@ Void TEncGOP::compressGOP( Int iPOCLast, Int iNumPicRcvd, TComList<TComPic*>& rc
 
   } // iGOPid-loop
 
+#if RM_4DLF_MI_BUFFER
+  pcPic->setPicYuv4DLFMI(NULL);
+#endif
+
   delete pcBitstreamRedirect;
 
   assert ( (m_iNumPicCoded == iNumPicRcvd) );

@@ -669,7 +669,7 @@ Bool TDecTop::xDecodeSlice(InputNALUnit &nalu, Int &iSkipFrame, Int iPOCLastDisp
   m_pcPic->setTLayer(nalu.m_temporalId);
 
 #if RM_4DLF_MI_BUFFER
-  Int iMISize = 3; // TODO: transmit MI size to decoder
+  Int iMISize = 13; // TODO: transmit MI size to decoder
   if(!pcSlice->getPOC()){ // first frame only
 	  pcPic4DLFMI->create( m_pcPic->getPicYuvRec()->getWidth(COMPONENT_Y) * iMISize, m_pcPic->getPicYuvRec()->getHeight(COMPONENT_Y) * iMISize,
 			  	  	  	   m_pcPic->getChromaFormat(), pcSlice->getSPS()->getMaxCUWidth(), pcSlice->getSPS()->getMaxCUHeight(),

@@ -436,6 +436,90 @@ Void TComPrediction::xPred4DLFMI_DC_3x3(       Int bitDepth,
 }
 #endif
 
+#if RM_4DLF_MI_INTRA_MODE_LOCO_I
+Void TComPrediction::xPred4DLFMI_LOCO_I(       Int bitDepth,
+                                    const Pel* pSrc,     Int srcStride,
+                                          Pel* pTrueDst, Int dstStrideTrue,
+                                          UInt uiWidth, UInt uiHeight, ChannelType channelType,
+                                          UInt dirMode, TComPicYuv *const pcPic4DLFMI, UInt miSize,
+										  UInt currentSAIsSpiralPosX, UInt currentSAIsSpiralPosY,
+										  UInt totalNumberOfSAIs, UInt uiAbsPartIdxInRaster,
+										  UInt uiPosX, UInt uiPosY, ComponentID compID )
+{
+
+	Int width=Int(uiWidth);
+	Int height=Int(uiHeight);
+	Int mi=Int(miSize);
+	Int a = NOT_VALID;
+	Int b = NOT_VALID;
+	Int c = NOT_VALID;
+	UInt const ui4DLFMIStride = pcPic4DLFMI->getStride(compID);
+	Pel* const p4DLFMI = pcPic4DLFMI->getAddr( compID );
+	// first pixel location in the 4DLF MI buffer
+	UInt firstPixelPos = currentSAIsSpiralPosX + uiPosX * mi + (currentSAIsSpiralPosY + uiPosY * mi ) * ui4DLFMIStride;
+	// Create individual pixel predictor for each pixel
+	for (Int y=0; y<height; y++)
+	{
+		for (Int x=0; x<width; x++)
+		{
+			Int predictor = 0;
+			if(-1 + y*mi > 0 && -1 + x*mi > 0) // if ULeft pixel is inside frame
+			{
+				a = p4DLFMI[firstPixelPos + (-1) + x*mi + (y*mi)*ui4DLFMIStride] ? p4DLFMI[firstPixelPos + (-1) + x*mi + (y*mi)*ui4DLFMIStride] : NOT_VALID; // Left
+				b = p4DLFMI[firstPixelPos + x*mi + ((-1) + y*mi)*ui4DLFMIStride] ? p4DLFMI[firstPixelPos + x*mi + ((-1) + y*mi)*ui4DLFMIStride] : NOT_VALID; // Up
+				c = p4DLFMI[firstPixelPos + (-1) + x*mi + ((-1) + y*mi)*ui4DLFMIStride] ? p4DLFMI[firstPixelPos + (-1) + x*mi + ((-1) + y*mi)*ui4DLFMIStride] : NOT_VALID; // ULeft
+				if(a == NOT_VALID && b == NOT_VALID && c == NOT_VALID)
+					predictor = 0;
+				else if(a == NOT_VALID || b == NOT_VALID || c == NOT_VALID) // median_3x3
+					predictor = median_3x3( p4DLFMI, firstPixelPos + x*mi + (y*mi)*ui4DLFMIStride, ui4DLFMIStride );
+				else // LOCO-I
+					predictor = LOCO_I( a, b, c );
+			}
+			else
+				predictor = 0;
+			pTrueDst[x + y*dstStrideTrue] = UInt(predictor);
+		}
+	}
+
+}
+
+Int TComPrediction::LOCO_I( Int a, Int b, Int c )
+{
+	if(c >= max(a,b))
+		return min(a,b);
+	else if(c <= min(a,b))
+		return max(a,b);
+	else
+		return a + b - c;
+}
+
+Int TComPrediction::median_3x3( Pel* p4DLFMI, UInt const current_pixel_pos, UInt const stride )
+{
+
+	vector<UInt> mArray;
+
+	// get all non zero elements
+	for (Int j=-1; j<=1; j++)
+		for (Int i=-1; i<=1; i++)
+			if(p4DLFMI[current_pixel_pos + i + j * stride])
+				mArray.push_back(p4DLFMI[current_pixel_pos + i + j * stride]);
+
+	if(mArray.size())
+	{
+		if(mArray.size() > 1)
+		{	// sort array & return median
+			std::sort(mArray.begin(), mArray.end());
+			return mArray.size() % 2 ? mArray[mArray.size() / 2] : (mArray[mArray.size() / 2 - 1] + mArray[mArray.size() / 2]) / 2;
+		}
+		else
+			return mArray[0]; // if only one value that value is the median
+	}
+	else
+		return 0; // if no values are larger than 0 than the median is 0
+}
+
+#endif
+
 Void TComPrediction::predIntraAng( const ComponentID compID, UInt uiDirMode, Pel* piOrg /* Will be null for decoding */, UInt uiOrgStride, Pel* piPred, UInt uiStride, TComTU &rTu, const Bool bUseFilteredPredSamples, const Bool bUseLosslessDPCM )
 {
   const ChannelType    channelType = toChannelType(compID);
@@ -511,7 +595,7 @@ Void TComPrediction::predIntraAng( const ComponentID compID, UInt uiDirMode, Pel
       const Int channelsBitDepthForPrediction = rTu.getCU()->getSlice()->getSPS()->getBitDepth(channelType);
 #endif
       xPredIntraAng( channelsBitDepthForPrediction, ptrSrc+sw+1, sw, pDst, uiStride, iWidth, iHeight, channelType, uiDirMode, enableEdgeFilters );
-#if RM_4DLF_MI_INTRA_MODE_DC_3x3
+
       if( uiDirMode == 3 ) // less probable modes - 3, 7, 11, 15, 19, 23, 27, 31
       {
     	  TComPic *const pcPic = rTu.getCU()->getPic();
@@ -524,11 +608,16 @@ Void TComPrediction::predIntraAng( const ComponentID compID, UInt uiDirMode, Pel
     	  UInt const uiAbsPartIdxInRaster = g_auiZscanToRaster[pcCUAbsPartIdx];
     	  UInt const uiPosX = (uiAbsPartIdxInRaster % 16) * 4 + (pcCU->getCtuRsAddr() % pcPic->getFrameWidthInCtus()) * 64;
     	  UInt const uiPosY = (uiAbsPartIdxInRaster / 16) * 4 + (pcCU->getCtuRsAddr() / pcPic->getFrameWidthInCtus()) * 64;
-
+#if RM_4DLF_MI_INTRA_MODE_DC_3x3
     	  xPred4DLFMI_DC_3x3( channelsBitDepthForPrediction, ptrSrc+sw+1, sw, pDst, uiStride, iWidth, iHeight, channelType, uiDirMode,
     			  	  	      pcPic4DLFMI, miSize, currentSAIsSpiralPosX, currentSAIsSpiralPosY, totalNumberOfSAIs, uiAbsPartIdxInRaster, uiPosX, uiPosY, compID );
-      }
 #endif
+#if RM_4DLF_MI_INTRA_MODE_LOCO_I
+    	  xPred4DLFMI_LOCO_I( channelsBitDepthForPrediction, ptrSrc+sw+1, sw, pDst, uiStride, iWidth, iHeight, channelType, uiDirMode,
+    	      			  	  	      pcPic4DLFMI, miSize, currentSAIsSpiralPosX, currentSAIsSpiralPosY, totalNumberOfSAIs, uiAbsPartIdxInRaster, uiPosX, uiPosY, compID );
+#endif
+      }
+
 
       if( uiDirMode == DC_IDX )
       {
