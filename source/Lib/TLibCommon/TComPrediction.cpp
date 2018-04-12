@@ -416,7 +416,7 @@ Void TComPrediction::xPred4DLFMI_DC_3x3(       Int bitDepth,
 			{
 				for (Int i=-1; i<=1; i++)
 				{
-					if(j + y*mi > 0 && i + x*mi > 0) // if valid (inside frame)
+					if((Int)currentSAIsSpiralPosX + (Int)uiPosX * mi + x*mi + i >= 0 && (Int)currentSAIsSpiralPosY + (Int)uiPosY * mi + y*mi + j >= 0) // if valid (inside frame)
 					{
 						if(p4DLFMI[firstPixelPos + i + x*mi + (j + y*mi)*ui4DLFMIStride]) // if available
 						{
@@ -443,7 +443,7 @@ Void TComPrediction::xPred4DLFMI_LOCO_I(       Int bitDepth,
                                           UInt uiWidth, UInt uiHeight, ChannelType channelType,
                                           UInt dirMode, TComPicYuv *const pcPic4DLFMI, UInt miSize,
 										  UInt currentSAIsSpiralPosX, UInt currentSAIsSpiralPosY,
-										  UInt totalNumberOfSAIs, UInt uiAbsPartIdxInRaster,
+										  UInt totalNumberOfSAIs, UInt currentSAI, UInt uiAbsPartIdxInRaster,
 										  UInt uiPosX, UInt uiPosY, ComponentID compID )
 {
 
@@ -463,11 +463,19 @@ Void TComPrediction::xPred4DLFMI_LOCO_I(       Int bitDepth,
 		for (Int x=0; x<width; x++)
 		{
 			Int predictor = 0;
-			if(-1 + y*mi > 0 && -1 + x*mi > 0) // if ULeft pixel is inside frame
+			// firstPixelPosX = currentSAIsSpiralPosX + uiPosX * mi
+			// firstPixelPosY = currentSAIsSpiralPosY + uiPosY * mi
+			// currentPixelOffsetX = x*mi
+			// currentPixelOffsetY = y*mi
+			// -1 / -1 -> ULEFT pixel
+			// ULEFT pixel = (firstPixelPosX + currentPixelPosX - 1, firstPixelPosY + currentPixelPosY - 1)
+			if((Int)currentSAIsSpiralPosX + (Int)uiPosX * (Int)mi - 1 + x*(Int)mi > 0 && (Int)currentSAIsSpiralPosY + (Int)uiPosY * (Int)mi - 1 + y*(Int)mi > 0) // if ULeft pixel is inside frame
 			{
-				a = p4DLFMI[firstPixelPos + (-1) + x*mi + (y*mi)*ui4DLFMIStride] ? p4DLFMI[firstPixelPos + (-1) + x*mi + (y*mi)*ui4DLFMIStride] : NOT_VALID; // Left
-				b = p4DLFMI[firstPixelPos + x*mi + ((-1) + y*mi)*ui4DLFMIStride] ? p4DLFMI[firstPixelPos + x*mi + ((-1) + y*mi)*ui4DLFMIStride] : NOT_VALID; // Up
-				c = p4DLFMI[firstPixelPos + (-1) + x*mi + ((-1) + y*mi)*ui4DLFMIStride] ? p4DLFMI[firstPixelPos + (-1) + x*mi + ((-1) + y*mi)*ui4DLFMIStride] : NOT_VALID; // ULeft
+				getCausalSupportFromSpiral_LOCO_I( &a, &b, &c, (Int)currentSAI, (Int)totalNumberOfSAIs, p4DLFMI, (Int)firstPixelPos + x*(Int)mi + (y*(Int)mi)*(Int)ui4DLFMIStride, (Int)ui4DLFMIStride);
+				//a = p4DLFMI[firstPixelPos + (-1) + x*mi + (y*mi)*ui4DLFMIStride] ? p4DLFMI[firstPixelPos + (-1) + x*mi + (y*mi)*ui4DLFMIStride] : NOT_VALID; // Left
+				//b = p4DLFMI[firstPixelPos + x*mi + ((-1) + y*mi)*ui4DLFMIStride] ? p4DLFMI[firstPixelPos + x*mi + ((-1) + y*mi)*ui4DLFMIStride] : NOT_VALID; // Up
+				//c = p4DLFMI[firstPixelPos + (-1) + x*mi + ((-1) + y*mi)*ui4DLFMIStride] ? p4DLFMI[firstPixelPos + (-1) + x*mi + ((-1) + y*mi)*ui4DLFMIStride] : NOT_VALID; // ULeft
+
 				if(a == NOT_VALID && b == NOT_VALID && c == NOT_VALID)
 					predictor = 0;
 				else if(a == NOT_VALID || b == NOT_VALID || c == NOT_VALID) // median_3x3
@@ -483,15 +491,6 @@ Void TComPrediction::xPred4DLFMI_LOCO_I(       Int bitDepth,
 
 }
 
-Int TComPrediction::LOCO_I( Int a, Int b, Int c )
-{
-	if(c >= max(a,b))
-		return min(a,b);
-	else if(c <= min(a,b))
-		return max(a,b);
-	else
-		return a + b - c;
-}
 
 Int TComPrediction::median_3x3( Pel* p4DLFMI, UInt const current_pixel_pos, UInt const stride )
 {
@@ -518,6 +517,307 @@ Int TComPrediction::median_3x3( Pel* p4DLFMI, UInt const current_pixel_pos, UInt
 		return 0; // if no values are larger than 0 than the median is 0
 }
 
+#endif
+
+#if RM_4DLF_MI_INTRA_MODE_GAP
+Void TComPrediction::xPred4DLFMI_GAP(       Int bitDepth,
+                                    const Pel* pSrc,     Int srcStride,
+                                          Pel* pTrueDst, Int dstStrideTrue,
+                                          UInt uiWidth, UInt uiHeight, ChannelType channelType,
+                                          UInt dirMode, TComPicYuv *const pcPic4DLFMI, UInt miSize,
+										  UInt currentSAIsSpiralPosX, UInt currentSAIsSpiralPosY,
+										  UInt totalNumberOfSAIs, UInt currentSAI, UInt uiAbsPartIdxInRaster,
+										  UInt uiPosX, UInt uiPosY, ComponentID compID )
+{
+
+	Int width=Int(uiWidth);
+	Int height=Int(uiHeight);
+	Int mi=Int(miSize);
+	Int w = NOT_VALID;
+	Int ww = NOT_VALID;
+	Int n = NOT_VALID;
+	Int nn = NOT_VALID;
+	Int nw = NOT_VALID;
+	Int ne = NOT_VALID;
+	Int nne = NOT_VALID;
+	UInt const ui4DLFMIStride = pcPic4DLFMI->getStride(compID);
+	Pel* const p4DLFMI = pcPic4DLFMI->getAddr( compID );
+	// first pixel location in the 4DLF MI buffer
+	UInt firstPixelPos = currentSAIsSpiralPosX + uiPosX * mi + (currentSAIsSpiralPosY + uiPosY * mi ) * ui4DLFMIStride;
+	// Create individual pixel predictor for each pixel
+	for (Int y=0; y<height; y++)
+	{
+		for (Int x=0; x<width; x++)
+		{
+			Int predictor = 0;
+			// firstPixelPosX = currentSAIsSpiralPosX + uiPosX * mi
+			// firstPixelPosY = currentSAIsSpiralPosY + uiPosY * mi
+			// currentPixelOffsetX = x*mi
+			// currentPixelOffsetY = y*mi
+			// -1 / -1 -> ULEFT pixel
+			// ULEFT pixel = (firstPixelPosX + currentPixelPosX - 1, firstPixelPosY + currentPixelPosY - 1)
+			if((Int)currentSAIsSpiralPosX + (Int)uiPosX * (Int)mi - 2 + (Int)x*(Int)mi > 0 && (Int)currentSAIsSpiralPosY + (Int)uiPosY * (Int)mi - 2 + (Int)y*(Int)mi > 0) // if ULeft pixel is inside frame
+			{
+				getCausalSupportFromSpiral_GAP( &w, &ww, &n, &nn, &nw, &ne, &nne, (Int)currentSAI, (Int)totalNumberOfSAIs, p4DLFMI, (Int)firstPixelPos + x*(Int)mi + (y*(Int)mi)*(Int)ui4DLFMIStride, (Int)ui4DLFMIStride);
+				if(currentSAI < 9)// LOCO-I
+				{
+					getCausalSupportFromSpiral_LOCO_I( &w, &n, &nw, (Int)currentSAI, (Int)totalNumberOfSAIs, p4DLFMI, (Int)firstPixelPos + x*(Int)mi + (y*(Int)mi)*(Int)ui4DLFMIStride, (Int)ui4DLFMIStride);
+					predictor = LOCO_I( w, n, nw );
+				}
+				else
+					predictor = GAP( w, ww, n, nn, nw, ne, nne );
+				if(w == NOT_VALID && ww == NOT_VALID && n == NOT_VALID && nn == NOT_VALID && nw == NOT_VALID && ne == NOT_VALID && nne == NOT_VALID)
+					predictor = 0;
+
+			}
+			else
+				predictor = 0;
+			pTrueDst[x + y*dstStrideTrue] = UInt(predictor);
+		}
+	}
+
+}
+#endif
+#if RM_4DLF_MI_BUFFER
+Void TComPrediction::getCausalSupportFromSpiral_LOCO_I( Int* a, Int* b, Int* c, Int current_SAI, Int total_number_of_SAIS, Pel* p4DLFMI, Int const current_pixel_pos, Int const stride )
+{
+	Int A=0, B=0, C=0;
+	Int dir_idx = 0;
+	char current_direction[] = "RDLU";
+	UInt x=0, y=0;
+
+	if(current_SAI == 0) // no predictor is calculated
+	{
+		A = NOT_VALID;
+		B = NOT_VALID;
+		C = NOT_VALID;
+	}
+	else if(current_SAI == 1) // predictor is A
+	{
+		A = p4DLFMI[current_pixel_pos - 1]; // LEFT
+		B = A;
+		C = A;
+	}
+	else{
+		// find current spiral direction
+		dir_idx = spiral(current_SAI, total_number_of_SAIS, &x, &y);
+		if(current_direction[dir_idx] == 'R')
+		{
+			A = p4DLFMI[current_pixel_pos - 1]; 			// LEFT
+			C = p4DLFMI[current_pixel_pos - 1 + stride]; 	// DOWN LEFT
+			B = p4DLFMI[current_pixel_pos + stride] ? p4DLFMI[current_pixel_pos + stride] : C; // DOWN (may not be available)
+		}
+		else if(current_direction[dir_idx] == 'D')
+		{
+			B = p4DLFMI[current_pixel_pos - stride]; 		// UP
+			C = p4DLFMI[current_pixel_pos - 1 - stride];	// UP LEFT
+			A = p4DLFMI[current_pixel_pos - 1] ? p4DLFMI[current_pixel_pos - 1] : C; // LEFT (may not be available)
+		}
+		else if(current_direction[dir_idx] == 'L')
+		{
+			A = p4DLFMI[current_pixel_pos + 1]; // RIGHT
+			C = p4DLFMI[current_pixel_pos + 1 - stride]; // UP RIGHT
+			B = p4DLFMI[current_pixel_pos - stride] ? p4DLFMI[current_pixel_pos - stride] : C; // UP (may not be available)
+		}
+		else
+		{
+			B = p4DLFMI[current_pixel_pos + stride]; // DOWN
+			C = p4DLFMI[current_pixel_pos + 1 + stride]; // RIGHT DOWN
+			A = p4DLFMI[current_pixel_pos + 1] ? p4DLFMI[current_pixel_pos + 1] : C; // RIGHT (may not be available)
+		}
+	}
+
+	*a = A;
+	*b = B;
+	*c = C;
+}
+
+Int TComPrediction::LOCO_I( Int a, Int b, Int c )
+{
+	if(c >= max(a,b))
+		return min(a,b);
+	else if(c <= min(a,b))
+		return max(a,b);
+	else
+		return a + b - c;
+}
+
+
+Void TComPrediction::getCausalSupportFromSpiral_GAP( Int* w, Int* ww, Int* n, Int* nn, Int* nw, Int* ne, Int *nne, Int current_SAI, Int total_number_of_SAIS, Pel* p4DLFMI, Int const current_pixel_pos, Int const stride )
+{
+	Int W=NOT_VALID, WW=NOT_VALID, N=NOT_VALID, NN=NOT_VALID, NW=NOT_VALID, NE=NOT_VALID, NNE=NOT_VALID;
+	Int dir_idx = 0;
+	char current_direction[] = "RDLU";
+	UInt x=0, y=0;
+
+	if(current_SAI < 9) // no predictor is calculated
+	{
+		W = NOT_VALID;
+		WW = NOT_VALID;
+		N = NOT_VALID;
+		NN = NOT_VALID;
+		NW = NOT_VALID;
+		NE = NOT_VALID;
+		NNE = NOT_VALID;
+	}
+	else{
+		// find current spiral direction
+		dir_idx = spiral(current_SAI, total_number_of_SAIS, &x, &y);
+		if(current_direction[dir_idx] == 'R')
+		{
+			W = p4DLFMI[current_pixel_pos + 1]; // RIGHT
+			WW = p4DLFMI[current_pixel_pos + 1]; // 2RIGHT
+			N = p4DLFMI[current_pixel_pos + stride]; // DOWN
+			NN = p4DLFMI[current_pixel_pos + 2*stride]; // 2DOWN
+			NW = p4DLFMI[current_pixel_pos + 1 + stride]; // DOWN RIGHT
+			NE = p4DLFMI[current_pixel_pos - 1 + stride]; // DOWN LEFT
+			NNE = p4DLFMI[current_pixel_pos - 1 + 2*stride]; // 2DOWN LEFT
+		}
+		else if(current_direction[dir_idx] == 'D')
+		{
+			W = p4DLFMI[current_pixel_pos + stride]; // DOWN
+			WW = p4DLFMI[current_pixel_pos + 2*stride]; // 2DOWN
+			N = p4DLFMI[current_pixel_pos - 1]; // LEFT
+			NN = p4DLFMI[current_pixel_pos - 2]; // 2LEFT
+			NW = p4DLFMI[current_pixel_pos - 1 + stride]; // DOWN LEFT
+			NE = p4DLFMI[current_pixel_pos - 1 - stride]; // UP LEFT
+			NNE = p4DLFMI[current_pixel_pos - 2 - stride]; // UP 2LEFT
+		}
+		else if(current_direction[dir_idx] == 'L')
+		{
+			W = p4DLFMI[current_pixel_pos - 1]; // LEFT
+			WW = p4DLFMI[current_pixel_pos - 2]; // 2LEFT
+			N = p4DLFMI[current_pixel_pos - stride]; // UP
+			NN = p4DLFMI[current_pixel_pos - 2*stride]; // 2UP
+			NW = p4DLFMI[current_pixel_pos - 1 - stride]; // UP LEFT
+			NE = p4DLFMI[current_pixel_pos + 1 - stride]; // UP RIGHT
+			NNE = p4DLFMI[current_pixel_pos + 1 - 2*stride]; // 2UP RIGHT
+		}
+		else
+		{
+			W = p4DLFMI[current_pixel_pos - stride]; // UP
+			WW = p4DLFMI[current_pixel_pos - 2*stride]; // 2UP
+			N = p4DLFMI[current_pixel_pos + 1]; // RIGHT
+			NN = p4DLFMI[current_pixel_pos + 2]; // 2RIGHT
+			NW = p4DLFMI[current_pixel_pos + 1 - stride]; // UP RIGHT
+			NE = p4DLFMI[current_pixel_pos + 1 + stride]; // DOWN RIGHT
+			NNE = p4DLFMI[current_pixel_pos + 2 + stride]; // DOWN 2RIGHT
+		}
+	}
+	// making sure all the pixels have an assigned value
+	if( !NNE )
+		NNE = NE;
+	if( !NN )
+	{
+		NN = N;
+		if( !N )
+		{
+			NN = NE;
+			N = NE;
+		}
+	}
+	if( !NW )
+	{
+		NW = N;
+	}
+	if( !WW )
+	{
+		WW = W;
+		if( !W )
+		{
+			WW = NW;
+			W = NW;
+		}
+	}
+	if(current_SAI >= 9)
+		if(W == NOT_VALID || WW == NOT_VALID || N == NOT_VALID || NN == NOT_VALID || NW == NOT_VALID ||	NE == NOT_VALID || NNE == NOT_VALID)
+			cout << "at least one pixel is not available" << endl;
+
+	*w = W;
+	*ww = WW;
+	*n = N;
+	*nn = NN;
+	*nw = NW;
+	*ne = NE;
+	*nne = NNE;
+}
+
+Int TComPrediction::GAP( Int w, Int ww, Int n, Int nn, Int nw, Int ne, Int nne )
+{
+	Int dx = abs(w - ww) + abs(n - nw) + abs(ne - n);
+	Int dy = abs(w - nw) + abs(n - nn) + abs(ne - nne);
+
+	if(dy - dx > 80)
+		return w;
+	else if(dy - dx < -80)
+		return n;
+	else
+	{
+		Double aux = (w + n)/2 + (ne - nw)/4;
+		if(dy - dx > 32)
+			return (Int)((aux + w)/2);
+		else if(dy - dx < -32)
+			return (Int)((aux + n)/2);
+		else if(dy - dx > 8)
+			return (Int)((3*aux + w)/4);
+		else if(dy - dx < -8)
+			return (Int)((3*aux + n)/4);
+		else
+			return (Int)(aux);
+	}
+}
+
+Int TComPrediction::spiral(UInt idx, UInt size, UInt* x, UInt* y)
+{
+	Int init = floor(size/2);
+	Int current_idx = 0;
+	char current_direction[] = "RDLU";
+	Int dir_idx = 0;
+	Int original_steps_to_update = 1;
+	Int original_steps_to_change_dir = 1;
+	Int steps_to_update = 2;
+	Int steps_to_change_dir = 1;
+	Int step = 0;
+	Int x_pos = init;
+	Int y_pos = init;
+	Int last_dir_idx = 0;
+	while(current_idx < idx)
+	{
+		last_dir_idx = dir_idx;
+		if(current_direction[dir_idx] == 'R') // RIGHT
+			x_pos++;
+		else if(current_direction[dir_idx] == 'D') // DOWN
+			y_pos++;
+		else if(current_direction[dir_idx] == 'L') // LEFT
+			x_pos--;
+		else // UP
+			y_pos--;
+		if(step == steps_to_change_dir-1)
+		{
+			step = 0;
+			steps_to_change_dir = original_steps_to_change_dir;
+			dir_idx++;
+			if(dir_idx > 3)
+				dir_idx = 0;
+		}
+		else
+			step++;
+		current_idx++;
+		steps_to_update--;
+		if(steps_to_update == 0)
+		{
+			original_steps_to_change_dir++;
+			steps_to_change_dir = original_steps_to_change_dir;
+			original_steps_to_update++;
+			steps_to_update = original_steps_to_update * 2; // 1, 2, 4, 6, 8, 10...
+		}
+	}
+
+	*x = x_pos;
+	*y = y_pos;
+
+	return last_dir_idx; // return last direction
+}
 #endif
 
 Void TComPrediction::predIntraAng( const ComponentID compID, UInt uiDirMode, Pel* piOrg /* Will be null for decoding */, UInt uiOrgStride, Pel* piPred, UInt uiStride, TComTU &rTu, const Bool bUseFilteredPredSamples, const Bool bUseLosslessDPCM )
@@ -604,6 +904,7 @@ Void TComPrediction::predIntraAng( const ComponentID compID, UInt uiDirMode, Pel
     	  UInt const currentSAIsSpiralPosX = pcPic->getCurrentSAIsSpiralPosX();
     	  UInt const currentSAIsSpiralPosY = pcPic->getCurrentSAIsSpiralPosY();
     	  UInt const totalNumberOfSAIs = pcPic->getTotalNumberOfSAIs();
+    	  UInt const currentSAI = pcPic->getCurrentSAI();
     	  UInt const pcCUAbsPartIdx = pcCU->getZorderIdxInCtu();
     	  UInt const uiAbsPartIdxInRaster = g_auiZscanToRaster[pcCUAbsPartIdx];
     	  UInt const uiPosX = (uiAbsPartIdxInRaster % 16) * 4 + (pcCU->getCtuRsAddr() % pcPic->getFrameWidthInCtus()) * 64;
@@ -614,7 +915,11 @@ Void TComPrediction::predIntraAng( const ComponentID compID, UInt uiDirMode, Pel
 #endif
 #if RM_4DLF_MI_INTRA_MODE_LOCO_I
     	  xPred4DLFMI_LOCO_I( channelsBitDepthForPrediction, ptrSrc+sw+1, sw, pDst, uiStride, iWidth, iHeight, channelType, uiDirMode,
-    	      			  	  	      pcPic4DLFMI, miSize, currentSAIsSpiralPosX, currentSAIsSpiralPosY, totalNumberOfSAIs, uiAbsPartIdxInRaster, uiPosX, uiPosY, compID );
+    	      			  	  	      pcPic4DLFMI, miSize, currentSAIsSpiralPosX, currentSAIsSpiralPosY, totalNumberOfSAIs, currentSAI, uiAbsPartIdxInRaster, uiPosX, uiPosY, compID );
+#endif
+#if RM_4DLF_MI_INTRA_MODE_GAP
+    	  xPred4DLFMI_GAP( channelsBitDepthForPrediction, ptrSrc+sw+1, sw, pDst, uiStride, iWidth, iHeight, channelType, uiDirMode,
+    	      	      			  	  	      pcPic4DLFMI, miSize, currentSAIsSpiralPosX, currentSAIsSpiralPosY, totalNumberOfSAIs, currentSAI, uiAbsPartIdxInRaster, uiPosX, uiPosY, compID );
 #endif
       }
 

@@ -51,7 +51,10 @@
 #define RM_DEBUG_VERBOSE								  0 ///< Prints debug information
 #define RM_4DLF_MI_BUFFER							      1 ///< Generates buffer of encoded pixels in a 4DLF_MI format
 #define RM_4DLF_MI_INTRA_MODE_DC_3x3					  0 ///< Pred Mode that averages the closest last 8 SAIs relative to the current pixel in the 4DLF_MI buffer
-#define RM_4DLF_MI_INTRA_MODE_LOCO_I					  1 ///< Pred Mode LOCO-I a median edge detector
+#define RM_4DLF_MI_INTRA_MODE_LOCO_I					  0 ///< Pred Mode LOCO-I a median edge detector
+#define RM_4DLF_MI_INTRA_MODE_GAP						  1 ///< Pred Mode GAP a gradient detector
+
+
 
 //! \ingroup TLibCommon
 //! \{

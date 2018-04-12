@@ -261,10 +261,10 @@ Void TAppDecTop::decode()
 
   xFlushOutput( pcListPic );
   // delete buffers
-  m_cTDecTop.deletePicBuffer();
+  //m_cTDecTop.deletePicBuffer();
 
   // destroy internal classes
-  xDestroyDecLib();
+  //xDestroyDecLib();
 }
 
 // ====================================================================================================================

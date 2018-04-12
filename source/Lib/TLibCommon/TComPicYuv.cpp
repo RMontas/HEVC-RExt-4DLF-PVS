@@ -76,7 +76,24 @@ TComPicYuv::~TComPicYuv()
   destroy();
 }
 
+/*#if RM_4DLF_MI_BUFFER
+Void TComPicYuv::init4DLFMIBuffer 	 ( const Int picWidth,                 ///< picture width
+                                       const Int picHeight,                ///< picture height
+									   const Int picStride)
+{
+	for(UInt comp=0; comp<getNumberValidComponents(); comp++)
+	{
+		for (UInt y = 0; y < picHeight; y++)
+		{
+			for (UInt x = 0; x < picWidth; x++)
+			{
+				m_apiPicBuf[comp][y*picStride + x] = NOT_VALID;
+			}
+		}
+	}
 
+}
+#endif*/
 
 Void TComPicYuv::createWithoutCUInfo ( const Int picWidth,                 ///< picture width
                                        const Int picHeight,                ///< picture height

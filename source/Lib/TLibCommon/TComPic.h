@@ -75,6 +75,7 @@ private:
   UInt					m_uiTotalNumberOfSAIs;
   UInt					m_uiCurrentSAIsSpiralPosX;
   UInt					m_uiCurrentSAIsSpiralPosY;
+  UInt 					m_uiCurrentSAI;
 #endif
   TComPicYuv*           m_pcPicYuvPred;           //  Prediction
   TComPicYuv*           m_pcPicYuvResi;           //  Residual
@@ -132,6 +133,8 @@ public:
   Void          setCurrentSAIsSpiralPosY( UInt posY ) { m_uiCurrentSAIsSpiralPosY = posY; }
   Bool 			writePlane(ostream& fd, Pel* src, Bool is16bit, UInt stride444, UInt width444, UInt height444, ComponentID compID, ChromaFormat srcFormat, ChromaFormat fileFormat, UInt fileBitDepth);
   Void 			spiral(UInt idx, UInt size, UInt* x, UInt* y);
+  Void          setCurrentSAI( UInt sai ) { m_uiCurrentSAI = sai; }
+  UInt   		getCurrentSAI()       		{ return  m_uiCurrentSAI; }
 #endif
   TComPicYuv*   getPicYuvPred()       { return  m_pcPicYuvPred; }
   TComPicYuv*   getPicYuvResi()       { return  m_pcPicYuvResi; }

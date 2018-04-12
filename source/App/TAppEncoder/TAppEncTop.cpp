@@ -513,6 +513,7 @@ Void TAppEncTop::encode()
 #if RM_4DLF_MI_BUFFER
   Int iMISize = sqrt(m_framesToBeEncoded); // DEBUG // TODO: Add as conf file input
   pcPic4DLFMI->create( m_iSourceWidth * iMISize, m_iSourceHeight * iMISize, m_chromaFormatIDC, m_uiMaxCUWidth, m_uiMaxCUHeight, m_uiMaxTotalCUDepth, true );
+ // pcPic4DLFMI->init4DLFMIBuffer( m_iSourceWidth * iMISize, m_iSourceHeight * iMISize, pcPic4DLFMI->getStride(COMPONENT_Y));
 #endif
 
   while ( !bEos )
@@ -570,13 +571,7 @@ Void TAppEncTop::encode()
   }
 
   m_cTEncTop.printSummary(m_isField);
-
-#if RM_4DLF_MI_BUFFER
-  pcPic4DLFMI->destroy();
-  delete pcPic4DLFMI;
-  pcPic4DLFMI = NULL;
-#endif
-
+#if !RM_4DLF_MI_BUFFER
   // delete original YUV buffer
   pcPicYuvOrg->destroy();
   delete pcPicYuvOrg;
@@ -589,8 +584,14 @@ Void TAppEncTop::encode()
   // delete buffers & classes
   xDeleteBuffer();
   xDestroyLib();
-
+#endif
   printRateSummary();
+
+//#if RM_4DLF_MI_BUFFER
+//  pcPic4DLFMI->destroy();
+ // delete pcPic4DLFMI;
+ // pcPic4DLFMI = NULL;
+//#endif
 
   return;
 }

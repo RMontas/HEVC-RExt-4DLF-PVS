@@ -678,6 +678,7 @@ Bool TDecTop::xDecodeSlice(InputNALUnit &nalu, Int &iSkipFrame, Int iPOCLastDisp
   m_pcPic->setPicYuv4DLFMI(pcPic4DLFMI); // set 4DLF_MI buffer
   m_pcPic->setMicroImageSize(iMISize); //number of frames (sqrt(number of frames)) - limited to 1, 9, 25, 49, 81, 121, 169, 225
   m_pcPic->setTotalNumberOfSAIs(iMISize * iMISize);
+  m_pcPic->setCurrentSAI(pcSlice->getPOC());
 #endif
 
   if (!pcSlice->getDependentSliceSegmentFlag())

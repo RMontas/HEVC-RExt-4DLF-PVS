@@ -102,6 +102,11 @@ public:
                                     const Bool bUseMargin=false, ///< if true, then a margin of uiMaxCUWidth+16 and uiMaxCUHeight+16 is created around the image.
                                     const UInt maxCUWidth=0,   ///< used for margin only
                                     const UInt maxCUHeight=0); ///< used for margin only
+#if RM_4DLF_MI_BUFFER
+  Void 		    init4DLFMIBuffer   ( Int picWidth,                 ///< picture width
+                                     Int picHeight,                ///< picture height
+  									 Int picStride);
+#endif
 
   Void          destroy           ();
 

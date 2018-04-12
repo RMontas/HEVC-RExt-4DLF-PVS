@@ -1179,6 +1179,7 @@ Void TEncGOP::compressGOP( Int iPOCLast, Int iNumPicRcvd, TComList<TComPic*>& rc
     pcPic->spiral(m_totalCoded, sqrt(m_pcCfg->getFramesToBeEncoded()), &posX, &posY);
     pcPic->setCurrentSAIsSpiralPosX(posX);
     pcPic->setCurrentSAIsSpiralPosY(posY);
+    pcPic->setCurrentSAI(m_totalCoded);
 #endif
 
     //Set Frame/Field coding
