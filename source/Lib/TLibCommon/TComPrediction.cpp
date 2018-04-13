@@ -554,8 +554,8 @@ Void TComPrediction::xPred4DLFMI_GAP(       Int bitDepth,
 			// firstPixelPosY = currentSAIsSpiralPosY + uiPosY * mi
 			// currentPixelOffsetX = x*mi
 			// currentPixelOffsetY = y*mi
-			// -1 / -1 -> ULEFT pixel
-			// ULEFT pixel = (firstPixelPosX + currentPixelPosX - 1, firstPixelPosY + currentPixelPosY - 1)
+			// -2 / -2 -> 2ULEFT pixel
+			// 2ULEFT pixel = (firstPixelPosX + currentPixelPosX - 2, firstPixelPosY + currentPixelPosY - 2)
 			if((Int)currentSAIsSpiralPosX + (Int)uiPosX * (Int)mi - 2 + (Int)x*(Int)mi > 0 && (Int)currentSAIsSpiralPosY + (Int)uiPosY * (Int)mi - 2 + (Int)y*(Int)mi > 0) // if ULeft pixel is inside frame
 			{
 				getCausalSupportFromSpiral_GAP( &w, &ww, &n, &nn, &nw, &ne, &nne, (Int)currentSAI, (Int)totalNumberOfSAIs, p4DLFMI, (Int)firstPixelPos + x*(Int)mi + (y*(Int)mi)*(Int)ui4DLFMIStride, (Int)ui4DLFMIStride);
@@ -567,6 +567,67 @@ Void TComPrediction::xPred4DLFMI_GAP(       Int bitDepth,
 				else
 					predictor = GAP( w, ww, n, nn, nw, ne, nne );
 				if(w == NOT_VALID && ww == NOT_VALID && n == NOT_VALID && nn == NOT_VALID && nw == NOT_VALID && ne == NOT_VALID && nne == NOT_VALID)
+					predictor = 0;
+
+			}
+			else
+				predictor = 0;
+			pTrueDst[x + y*dstStrideTrue] = UInt(predictor);
+		}
+	}
+
+}
+#endif
+#if RM_4DLF_MI_INTRA_MODE_AGSP
+Void TComPrediction::xPred4DLFMI_AGSP(       Int bitDepth,
+                                    const Pel* pSrc,     Int srcStride,
+                                          Pel* pTrueDst, Int dstStrideTrue,
+                                          UInt uiWidth, UInt uiHeight, ChannelType channelType,
+                                          UInt dirMode, TComPicYuv *const pcPic4DLFMI, UInt miSize,
+										  UInt currentSAIsSpiralPosX, UInt currentSAIsSpiralPosY,
+										  UInt totalNumberOfSAIs, UInt currentSAI, UInt uiAbsPartIdxInRaster,
+										  UInt uiPosX, UInt uiPosY, ComponentID compID )
+{
+
+	Int width=Int(uiWidth);
+	Int height=Int(uiHeight);
+	Int mi=Int(miSize);
+	Int w = NOT_VALID;
+	Int ww = NOT_VALID;
+	Int n = NOT_VALID;
+	Int nn = NOT_VALID;
+	Int nw = NOT_VALID;
+	Int ne = NOT_VALID;
+	Int nne = NOT_VALID;
+	Int nww = NOT_VALID;
+	Int nnw = NOT_VALID;
+	UInt const ui4DLFMIStride = pcPic4DLFMI->getStride(compID);
+	Pel* const p4DLFMI = pcPic4DLFMI->getAddr( compID );
+	// first pixel location in the 4DLF MI buffer
+	UInt firstPixelPos = currentSAIsSpiralPosX + uiPosX * mi + (currentSAIsSpiralPosY + uiPosY * mi ) * ui4DLFMIStride;
+	// Create individual pixel predictor for each pixel
+	for (Int y=0; y<height; y++)
+	{
+		for (Int x=0; x<width; x++)
+		{
+			Int predictor = 0;
+			// firstPixelPosX = currentSAIsSpiralPosX + uiPosX * mi
+			// firstPixelPosY = currentSAIsSpiralPosY + uiPosY * mi
+			// currentPixelOffsetX = x*mi
+			// currentPixelOffsetY = y*mi
+			// -2 / -2 -> 2ULEFT pixel
+			// 2ULEFT pixel = (firstPixelPosX + currentPixelPosX - 2, firstPixelPosY + currentPixelPosY - 2)
+			if((Int)currentSAIsSpiralPosX + (Int)uiPosX * (Int)mi - 2 + (Int)x*(Int)mi > 0 && (Int)currentSAIsSpiralPosY + (Int)uiPosY * (Int)mi - 2 + (Int)y*(Int)mi > 0) // if ULeft pixel is inside frame
+			{
+				getCausalSupportFromSpiral_AGSP( &w, &ww, &n, &nn, &nw, &ne, &nne, &nww, &nnw, (Int)currentSAI, (Int)totalNumberOfSAIs, p4DLFMI, (Int)firstPixelPos + x*(Int)mi + (y*(Int)mi)*(Int)ui4DLFMIStride, (Int)ui4DLFMIStride);
+				if(currentSAI < 9)// LOCO-I
+				{
+					getCausalSupportFromSpiral_LOCO_I( &w, &n, &nw, (Int)currentSAI, (Int)totalNumberOfSAIs, p4DLFMI, (Int)firstPixelPos + x*(Int)mi + (y*(Int)mi)*(Int)ui4DLFMIStride, (Int)ui4DLFMIStride);
+					predictor = LOCO_I( w, n, nw );
+				}
+				else
+					predictor = AGSP( w, ww, n, nn, nw, ne, nne, nww, nnw );
+				if(w == NOT_VALID && ww == NOT_VALID && n == NOT_VALID && nn == NOT_VALID && nw == NOT_VALID && ne == NOT_VALID && nne == NOT_VALID && nww == NOT_VALID && nnw == NOT_VALID )
 					predictor = 0;
 
 			}
@@ -767,6 +828,191 @@ Int TComPrediction::GAP( Int w, Int ww, Int n, Int nn, Int nw, Int ne, Int nne )
 	}
 }
 
+Void TComPrediction::getCausalSupportFromSpiral_AGSP( Int* w, Int* ww, Int* n, Int* nn, Int* nw, Int* ne, Int *nne, Int* nww, Int* nnw, Int current_SAI, Int total_number_of_SAIS, Pel* p4DLFMI, Int const current_pixel_pos, Int const stride )
+{
+	Int W=NOT_VALID, WW=NOT_VALID, N=NOT_VALID, NN=NOT_VALID, NW=NOT_VALID, NE=NOT_VALID, NNE=NOT_VALID, NWW=NOT_VALID, NNW=NOT_VALID;
+	Int dir_idx = 0;
+	char current_direction[] = "RDLU";
+	UInt x=0, y=0;
+
+	if(current_SAI < 9) // no predictor is calculated
+	{
+		W = NOT_VALID;
+		WW = NOT_VALID;
+		N = NOT_VALID;
+		NN = NOT_VALID;
+		NW = NOT_VALID;
+		NE = NOT_VALID;
+		NNE = NOT_VALID;
+		NWW = NOT_VALID;
+		NNW = NOT_VALID;
+	}
+	else{
+		// find current spiral direction
+		dir_idx = spiral(current_SAI, total_number_of_SAIS, &x, &y);
+		if(current_direction[dir_idx] == 'R')
+		{
+			W = p4DLFMI[current_pixel_pos + 1]; // RIGHT
+			WW = p4DLFMI[current_pixel_pos + 1]; // 2RIGHT
+			N = p4DLFMI[current_pixel_pos + stride]; // DOWN
+			NN = p4DLFMI[current_pixel_pos + 2*stride]; // 2DOWN
+			NW = p4DLFMI[current_pixel_pos + 1 + stride]; // DOWN RIGHT
+			NE = p4DLFMI[current_pixel_pos - 1 + stride]; // DOWN LEFT
+			NNE = p4DLFMI[current_pixel_pos - 1 + 2*stride]; // 2DOWN LEFT
+			NWW = p4DLFMI[current_pixel_pos + 2 + stride]; // DOWN 2RIGHT
+			NNW = p4DLFMI[current_pixel_pos + 1 + 2*stride];; // 2DOWN RIGHT
+		}
+		else if(current_direction[dir_idx] == 'D')
+		{
+			W = p4DLFMI[current_pixel_pos + stride]; // DOWN
+			WW = p4DLFMI[current_pixel_pos + 2*stride]; // 2DOWN
+			N = p4DLFMI[current_pixel_pos - 1]; // LEFT
+			NN = p4DLFMI[current_pixel_pos - 2]; // 2LEFT
+			NW = p4DLFMI[current_pixel_pos - 1 + stride]; // DOWN LEFT
+			NE = p4DLFMI[current_pixel_pos - 1 - stride]; // UP LEFT
+			NNE = p4DLFMI[current_pixel_pos - 2 - stride]; // UP 2LEFT
+			NWW = p4DLFMI[current_pixel_pos - 1 + 2*stride]; // 2DOWN LEFT
+			NNW = p4DLFMI[current_pixel_pos - 2 + stride]; // DOWN 2LEFT
+		}
+		else if(current_direction[dir_idx] == 'L')
+		{
+			W = p4DLFMI[current_pixel_pos - 1]; // LEFT
+			WW = p4DLFMI[current_pixel_pos - 2]; // 2LEFT
+			N = p4DLFMI[current_pixel_pos - stride]; // UP
+			NN = p4DLFMI[current_pixel_pos - 2*stride]; // 2UP
+			NW = p4DLFMI[current_pixel_pos - 1 - stride]; // UP LEFT
+			NE = p4DLFMI[current_pixel_pos + 1 - stride]; // UP RIGHT
+			NNE = p4DLFMI[current_pixel_pos + 1 - 2*stride]; // 2UP RIGHT
+			NWW = p4DLFMI[current_pixel_pos - 2 - stride]; // UP 2LEFT
+			NNW = p4DLFMI[current_pixel_pos - 1 - 2*stride];// 2UP LEFT
+		}
+		else
+		{
+			W = p4DLFMI[current_pixel_pos - stride]; // UP
+			WW = p4DLFMI[current_pixel_pos - 2*stride]; // 2UP
+			N = p4DLFMI[current_pixel_pos + 1]; // RIGHT
+			NN = p4DLFMI[current_pixel_pos + 2]; // 2RIGHT
+			NW = p4DLFMI[current_pixel_pos + 1 - stride]; // UP RIGHT
+			NE = p4DLFMI[current_pixel_pos + 1 + stride]; // DOWN RIGHT
+			NNE = p4DLFMI[current_pixel_pos + 2 + stride]; // DOWN 2RIGHT
+			NWW = p4DLFMI[current_pixel_pos + 1 - 2*stride]; // 2UP RIGHT
+			NNW = p4DLFMI[current_pixel_pos + 2 - stride];; // UP 2RIGHT
+		}
+	}
+	// making sure all the pixels have an assigned value
+	if( !NNE )
+		NNE = NE;
+	if( !NN )
+	{
+		NN = N;
+		if( !N )
+		{
+			NN = NE;
+			N = NE;
+		}
+	}
+	if( !NNW )
+	{
+		NNW = NW;
+		if( !NW )
+		{
+			NW = N;
+			NNW = N;
+		}
+	}
+	if( !NWW )
+	{
+		NWW = NW;
+		if( !NW )
+		{
+			NW = N;
+			NWW = N;
+		}
+	}
+	if( !WW )
+	{
+		WW = W;
+		if( !W )
+		{
+			WW = NW;
+			W = NW;
+		}
+	}
+	if(current_SAI >= 9)
+		if(W == NOT_VALID || WW == NOT_VALID || N == NOT_VALID || NN == NOT_VALID || NW == NOT_VALID ||	NE == NOT_VALID || NNE == NOT_VALID)
+			cout << "at least one pixel is not available" << endl;
+
+	*w = W;
+	*ww = WW;
+	*n = N;
+	*nn = NN;
+	*nw = NW;
+	*ne = NE;
+	*nne = NNE;
+	*nww = NWW;
+	*nnw = NNW;
+}
+
+Int TComPrediction::AGSP( Int w, Int ww, Int n, Int nn, Int nw, Int ne, Int nne, Int nww, Int nnw )
+{
+	Double dh = (2*abs(w - ww) + 2*abs(n - nw) + 2*abs(n - ne) + abs(nn - nnw) + abs(nn - nne) + abs(nw - nww))/10;
+	Double dv = (2*abs(w - nw) + 2*abs(n - nn) + abs(ne - nne) + abs(ww - nww) + abs(nw - nnw))/8;
+	Double dplus = (2*abs(w - n) + 2*abs(n - nne) + abs(ww - nw) + abs(nw - nn))/7;
+	Double dminus = (2*abs(w - nww) + 2*abs(n - nnw) + abs(ne - nn))/6;
+
+	Double Dmin1 = min(min(min(dh, dv), dplus), dminus);
+	Double Dmin2 = 0;
+	Int Dmin1dir = 0;
+	Int Dmin2dir = 0;
+	Int Cmin1 = 0;
+	Int Cmin2 = 0;
+
+	if(Dmin1 == dh)
+	{
+		Dmin1dir = 0;
+		Dmin2 = (Double)min(min(dv, dplus), dminus);
+		if(Dmin2 == dv) 		Dmin2dir = 1;
+		else if(Dmin2 == dplus) Dmin2dir = 2;
+		else 					Dmin2dir = 3;
+	}
+	else if(Dmin1 == dv)
+	{
+		Dmin1dir = 1;
+		Dmin2 = (Double)min(min(dh, dplus), dminus);
+		if(Dmin2 == dh) 		Dmin2dir = 0;
+		else if(Dmin2 == dplus) Dmin2dir = 2;
+		else 					Dmin2dir = 3;
+	}
+	else if(Dmin1 == dplus)
+	{
+		Dmin1dir = 2;
+		Dmin2 = (Double)min(min(dh, dv), dminus);
+		if(Dmin2 == dv) 		Dmin2dir = 0;
+		else if(Dmin2 == dplus) Dmin2dir = 1;
+		else 					Dmin2dir = 3;
+	}
+	else
+	{
+		Dmin1dir = 3;
+		Dmin2 = (Double)min(min(dh, dv), dplus);
+		if(Dmin2 == dh) 		Dmin2dir = 0;
+		else if(Dmin2 == dv) 	Dmin2dir = 1;
+		else 					Dmin2dir = 2;
+	}
+
+	if(Dmin1dir == 0) 		Cmin1 = w;
+	else if(Dmin1dir == 1) 	Cmin1 = n;
+	else if(Dmin1dir == 2) 	Cmin1 = ne;
+	else					Cmin1 = nw;
+
+	if(Dmin2dir == 0) 		Cmin2 = w;
+	else if(Dmin2dir == 1) 	Cmin2 = n;
+	else if(Dmin2dir == 2) 	Cmin2 = ne;
+	else					Cmin2 = nw;
+
+	return (Int)(Dmin1*(Double)Cmin2 + Dmin2*(Double)Cmin1)/(Dmin1 + Dmin2);
+}
+
 Int TComPrediction::spiral(UInt idx, UInt size, UInt* x, UInt* y)
 {
 	Int init = floor(size/2);
@@ -919,6 +1165,10 @@ Void TComPrediction::predIntraAng( const ComponentID compID, UInt uiDirMode, Pel
 #endif
 #if RM_4DLF_MI_INTRA_MODE_GAP
     	  xPred4DLFMI_GAP( channelsBitDepthForPrediction, ptrSrc+sw+1, sw, pDst, uiStride, iWidth, iHeight, channelType, uiDirMode,
+    	      	      			  	  	      pcPic4DLFMI, miSize, currentSAIsSpiralPosX, currentSAIsSpiralPosY, totalNumberOfSAIs, currentSAI, uiAbsPartIdxInRaster, uiPosX, uiPosY, compID );
+#endif
+#if RM_4DLF_MI_INTRA_MODE_AGSP
+    	  xPred4DLFMI_AGSP( channelsBitDepthForPrediction, ptrSrc+sw+1, sw, pDst, uiStride, iWidth, iHeight, channelType, uiDirMode,
     	      	      			  	  	      pcPic4DLFMI, miSize, currentSAIsSpiralPosX, currentSAIsSpiralPosY, totalNumberOfSAIs, currentSAI, uiAbsPartIdxInRaster, uiPosX, uiPosY, compID );
 #endif
       }

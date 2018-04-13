@@ -95,7 +95,12 @@ protected:
 #if RM_4DLF_MI_INTRA_MODE_GAP
   Void xPred4DLFMI_GAP       ( Int bitDepth, const Pel* pSrc, Int srcStride, Pel* pTrueDst, Int dstStrideTrue, UInt uiWidth, UInt uiHeight, ChannelType channelType, UInt dirMode, TComPicYuv *const pcPic4DLFMI, UInt miSize, UInt currentSAIsSpiralPosX, UInt currentSAIsSpiralPosY, UInt totalNumberOfSAIs, UInt currentSAI, UInt uiAbsPartIdxInRaster, UInt uiPosX, UInt uiPosY, ComponentID compID );
 #endif
+#if RM_4DLF_MI_INTRA_MODE_AGSP
+  Void xPred4DLFMI_AGSP       ( Int bitDepth, const Pel* pSrc, Int srcStride, Pel* pTrueDst, Int dstStrideTrue, UInt uiWidth, UInt uiHeight, ChannelType channelType, UInt dirMode, TComPicYuv *const pcPic4DLFMI, UInt miSize, UInt currentSAIsSpiralPosX, UInt currentSAIsSpiralPosY, UInt totalNumberOfSAIs, UInt currentSAI, UInt uiAbsPartIdxInRaster, UInt uiPosX, UInt uiPosY, ComponentID compID );
+#endif
 #if RM_4DLF_MI_BUFFER
+  Void getCausalSupportFromSpiral_AGSP( Int* w, Int* ww, Int* n, Int* nn, Int* nw, Int* ne, Int* nee, Int* nww, Int* nnw, Int current_SAI, Int total_number_of_SAIS, Pel* p4DLFMI, Int const current_pixel_pos, Int const stride );
+  Int AGSP( Int w, Int ww, Int n, Int nn, Int nw, Int ne, Int nee, Int nww, Int nnw );
   Void getCausalSupportFromSpiral_GAP( Int* w, Int* ww, Int* n, Int* nn, Int* nw, Int* ne, Int *nee, Int current_SAI, Int total_number_of_SAIS, Pel* p4DLFMI, Int const current_pixel_pos, Int const stride );
   Int GAP( Int w, Int ww, Int n, Int nn, Int nw, Int ne, Int nee );
   Void getCausalSupportFromSpiral_LOCO_I( Int* a, Int* b, Int* c, Int current_SAI, Int total_number_of_SAIS, Pel* p4DLFMI, Int const current_pixel_pos, Int const stride );
