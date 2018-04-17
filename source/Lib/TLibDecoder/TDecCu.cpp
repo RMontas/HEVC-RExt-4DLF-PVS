@@ -413,7 +413,7 @@ Void TDecCu::xDecompressCU( TComDataCU* pCtu, UInt uiAbsPartIdx,  UInt uiDepth )
 
   xCopyToPic( m_ppcCU[uiDepth], pcPic, uiAbsPartIdx, uiDepth );
 #if RM_4DLF_MI_BUFFER
-  xCopyToPic4DLFMI( pcPic, pCtu->getCtuRsAddr(), uiAbsPartIdx, uiDepth, uiDepth );
+  //xCopyToPic4DLFMI( pcPic, pCtu->getCtuRsAddr(), uiAbsPartIdx, uiDepth, uiDepth );
 #endif
 }
 
