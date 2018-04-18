@@ -639,6 +639,557 @@ Void TComPrediction::xPred4DLFMI_AGSP(       Int bitDepth,
 
 }
 #endif
+#if RM_4DLF_MI_INTRA_MODE_LSP
+Void TComPrediction::xPred4DLFMI_LSP(       Int bitDepth,
+                                    const Pel* pSrc,     Int srcStride,
+                                          Pel* pTrueDst, Int dstStrideTrue,
+                                          UInt uiWidth, UInt uiHeight, ChannelType channelType,
+                                          UInt dirMode, TComPicYuv *const pcPic4DLFMI, UInt miSize,
+										  UInt currentSAIsSpiralPosX, UInt currentSAIsSpiralPosY,
+										  UInt totalNumberOfSAIs, UInt currentSAI, UInt uiAbsPartIdxInRaster,
+										  UInt uiPosX, UInt uiPosY, ComponentID compID )
+{
+	Int width=Int(uiWidth);
+	Int height=Int(uiHeight);
+	Int mi=Int(miSize);
+	Int originMI = floor(mi/2);
+	Double *lspCoefs;
+	UInt const ui4DLFMIStride = pcPic4DLFMI->getStride(compID);
+	Pel* const p4DLFMI = pcPic4DLFMI->getAddr( compID );
+	// first pixel location in the 4DLF MI buffer
+	UInt firstPixelPos = currentSAIsSpiralPosX + uiPosX * mi + (currentSAIsSpiralPosY + uiPosY * mi ) * ui4DLFMIStride;
+	UInt originPixelMI = originMI + uiPosX * mi + (originMI + uiPosY * mi) * ui4DLFMIStride;
+	// Create individual pixel predictor for each pixel
+	for (Int y=0; y<height; y++)
+	{
+		for (Int x=0; x<width; x++)
+		{
+			Int predictor = 0;
+			// firstPixelPosX = currentSAIsSpiralPosX + uiPosX * mi
+			// firstPixelPosY = currentSAIsSpiralPosY + uiPosY * mi
+			// currentPixelOffsetX = x*mi
+			// currentPixelOffsetY = y*mi
+			// -2 / -2 -> 2ULEFT pixel
+			// 2ULEFT pixel = (firstPixelPosX + currentPixelPosX - 2, firstPixelPosY + currentPixelPosY - 2)
+			/*if((Int)currentSAIsSpiralPosX + (Int)uiPosX * (Int)mi - 2 + (Int)x*(Int)mi > 0 && (Int)currentSAIsSpiralPosY + (Int)uiPosY * (Int)mi - 2 + (Int)y*(Int)mi > 0) // if ULeft pixel is inside frame
+			{
+				if(currentSAI >= 9)
+				{
+					lspCoefs = trainSpiralLSP((Int)currentSAI, (Int)mi, p4DLFMI, (Int)originPixelMI, (Int)firstPixelPos + x*(Int)mi + (y*(Int)mi)*(Int)ui4DLFMIStride, (Int)ui4DLFMIStride);
+					predictor = LSP( lspCoefs, 9, p4DLFMI, (Int)currentSAI, (Int)mi, (Int)firstPixelPos + x*(Int)mi + (y*(Int)mi)*(Int)ui4DLFMIStride, (Int)ui4DLFMIStride);
+				}
+			}*/
+			if((Int)currentSAIsSpiralPosX + (Int)uiPosX * (Int)mi - 1 + (Int)x*(Int)mi > 0 && (Int)currentSAIsSpiralPosY + (Int)uiPosY * (Int)mi - 1 + (Int)y*(Int)mi > 0) // if ULeft pixel is inside frame
+			{
+
+			}
+			else
+				predictor = 0;
+			pTrueDst[x + y*dstStrideTrue] = UInt(predictor);
+		}
+	}
+}
+
+/*Double* TComPrediction::trainRasterLSP( Int current_SAI, Int miSize, Pel* p4DLFMI, Int const origin_pixel_pos, Int const current_pixel_pos, Int const stride )
+{
+	Int dir_idx = 0;
+	char current_direction[] = "RDLU";
+	UInt i=0, j=0;
+	double *y,*a,**C,**Ct;
+	Int predOrder = 3;
+	Int spiralOffset = floor(miSize/2); // relative spiral offset
+	Int pixelOffset = 0;
+
+	a=doublevector(predOrder);
+	y=doublevector(current_SAI);
+	C=doublematrix(current_SAI,predOrder);
+	Ct=doublematrix(predOrder,current_SAI);
+
+	// LSP training along all the available previous SAIs
+	for(Int idx = 0; idx < current_SAI; idx++)
+	{
+
+	}
+
+}*/
+
+Double* TComPrediction::trainSpiralLSP( Int current_SAI, Int miSize, Pel* p4DLFMI, Int const origin_pixel_pos, Int const current_pixel_pos, Int const stride )
+{
+	Int dir_idx = 0;
+	char current_direction[] = "RDLU";
+	UInt i=0, j=0;
+	double *y,*a,**C,**Ct;
+	Int predOrder = 9;
+	Int spiralOffset = floor(miSize/2); // relative spiral offset
+	Int pixelOffset = 0;
+
+	a=doublevector(predOrder);
+	y=doublevector(current_SAI);
+	C=doublematrix(current_SAI,predOrder);
+	Ct=doublematrix(predOrder,current_SAI);
+
+	// LSP training along all the available previous SAIs
+	for(Int idx = 0; idx < current_SAI; idx++)
+	{
+		dir_idx = spiral(idx, miSize, &i, &j);
+		i-= spiralOffset;
+		j-= spiralOffset;
+		pixelOffset = i + j*stride;
+		y[idx] = p4DLFMI[origin_pixel_pos + pixelOffset];
+		if(current_direction[dir_idx] == 'R')
+		{
+			C[idx][0] = p4DLFMI[origin_pixel_pos + pixelOffset + 1]; // RIGHT
+			C[idx][1] = p4DLFMI[origin_pixel_pos + pixelOffset + 1]; // 2RIGHT
+			C[idx][2] = p4DLFMI[origin_pixel_pos + pixelOffset + stride]; // DOWN
+			C[idx][3] = p4DLFMI[origin_pixel_pos + pixelOffset + 2*stride]; // 2DOWN
+			C[idx][4] = p4DLFMI[origin_pixel_pos + pixelOffset + 1 + stride]; // DOWN RIGHT
+			C[idx][5] = p4DLFMI[origin_pixel_pos + pixelOffset - 1 + stride]; // DOWN LEFT
+			C[idx][6] = p4DLFMI[origin_pixel_pos + pixelOffset - 1 + 2*stride]; // 2DOWN LEFT
+			C[idx][7] = p4DLFMI[origin_pixel_pos + pixelOffset + 2 + stride]; // DOWN 2RIGHT
+			C[idx][8] = p4DLFMI[origin_pixel_pos + pixelOffset + 1 + 2*stride];; // 2DOWN RIGHT
+		}
+		else if(current_direction[dir_idx] == 'D')
+		{
+			C[idx][0] = p4DLFMI[origin_pixel_pos + pixelOffset + stride]; // DOWN
+			C[idx][1] = p4DLFMI[origin_pixel_pos + pixelOffset + 2*stride]; // 2DOWN
+			C[idx][2] = p4DLFMI[origin_pixel_pos + pixelOffset - 1]; // LEFT
+			C[idx][3] = p4DLFMI[origin_pixel_pos + pixelOffset - 2]; // 2LEFT
+			C[idx][4] = p4DLFMI[origin_pixel_pos + pixelOffset - 1 + stride]; // DOWN LEFT
+			C[idx][5] = p4DLFMI[origin_pixel_pos + pixelOffset - 1 - stride]; // UP LEFT
+			C[idx][6] = p4DLFMI[origin_pixel_pos + pixelOffset - 2 - stride]; // UP 2LEFT
+			C[idx][7] = p4DLFMI[origin_pixel_pos + pixelOffset - 1 + 2*stride]; // 2DOWN LEFT
+			C[idx][8] = p4DLFMI[origin_pixel_pos + pixelOffset - 2 + stride]; // DOWN 2LEFT
+		}
+		else if(current_direction[dir_idx] == 'L')
+		{
+			C[idx][0] = p4DLFMI[origin_pixel_pos + pixelOffset - 1]; // LEFT
+			C[idx][1] = p4DLFMI[origin_pixel_pos + pixelOffset - 2]; // 2LEFT
+			C[idx][2] = p4DLFMI[origin_pixel_pos + pixelOffset - stride]; // UP
+			C[idx][3] = p4DLFMI[origin_pixel_pos + pixelOffset - 2*stride]; // 2UP
+			C[idx][4] = p4DLFMI[origin_pixel_pos + pixelOffset - 1 - stride]; // UP LEFT
+			C[idx][5] = p4DLFMI[origin_pixel_pos + pixelOffset + 1 - stride]; // UP RIGHT
+			C[idx][6] = p4DLFMI[origin_pixel_pos + pixelOffset + 1 - 2*stride]; // 2UP RIGHT
+			C[idx][7] = p4DLFMI[origin_pixel_pos + pixelOffset - 2 - stride]; // UP 2LEFT
+			C[idx][8] = p4DLFMI[origin_pixel_pos + pixelOffset - 1 - 2*stride];// 2UP LEFT
+		}
+		else
+		{
+			C[idx][0] = p4DLFMI[origin_pixel_pos + pixelOffset - stride]; // UP
+			C[idx][1] = p4DLFMI[origin_pixel_pos + pixelOffset - 2*stride]; // 2UP
+			C[idx][2] = p4DLFMI[origin_pixel_pos + pixelOffset + 1]; // RIGHT
+			C[idx][3] = p4DLFMI[origin_pixel_pos + pixelOffset + 2]; // 2RIGHT
+			C[idx][4] = p4DLFMI[origin_pixel_pos + pixelOffset + 1 - stride]; // UP RIGHT
+			C[idx][5] = p4DLFMI[origin_pixel_pos + pixelOffset + 1 + stride]; // DOWN RIGHT
+			C[idx][6] = p4DLFMI[origin_pixel_pos + pixelOffset + 2 + stride]; // DOWN 2RIGHT
+			C[idx][7] = p4DLFMI[origin_pixel_pos + pixelOffset + 1 - 2*stride]; // 2UP RIGHT
+			C[idx][8] = p4DLFMI[origin_pixel_pos + pixelOffset + 2 - stride];; // UP 2RIGHT
+		}
+		// making sure all the pixels have an assigned value
+		if( !C[idx][6] )
+			C[idx][6] = C[idx][5];
+		if( !C[idx][3] )
+		{
+			C[idx][3] = C[idx][2];
+			if( !C[idx][2] )
+			{
+				C[idx][3] = C[idx][5];
+				C[idx][2] = C[idx][5];
+			}
+		}
+		if( !C[idx][8] )
+		{
+			C[idx][8] = C[idx][4];
+			if( !C[idx][4] )
+			{
+				C[idx][4] = C[idx][2];
+				C[idx][8] = C[idx][2];
+			}
+		}
+		if( !C[idx][7] )
+		{
+			C[idx][7] = C[idx][4];
+			if( !C[idx][4] )
+			{
+				C[idx][4] = C[idx][2];
+				C[idx][7] = C[idx][2];
+			}
+		}
+		if( !C[idx][1] )
+		{
+			C[idx][1] = C[idx][0];
+			if( !C[idx][0] )
+			{
+				C[idx][1] = C[idx][4];
+				C[idx][0] = C[idx][4];
+			}
+		}
+	}
+	// transpose C
+	for(Int idx = 0; idx < current_SAI; idx++)
+	{
+		for(Int c=0; c<predOrder; c++)
+		{
+			Ct[c][idx] = C[idx][c];
+		}
+	}
+
+	leastSquares(Ct,y,a,predOrder,current_SAI);
+
+	free(y);
+	free_doublematrix(C, current_SAI, predOrder);
+	free_doublematrix(Ct,predOrder, current_SAI);
+
+	return a;
+
+}
+
+UInt TComPrediction::LSP( Double *lspCoefs, Int N, Pel* p4DLFMI, Int current_SAI, Int mi, Int current_pixel_pos, Int stride)
+{
+	Double predictor = 0;
+	UInt i, j;
+	Int dir_idx = 0;
+	char current_direction[] = "RDLU";
+
+	dir_idx = spiral(current_SAI, mi, &i, &j);
+	if(current_direction[dir_idx] == 'R')
+	{
+		predictor = lspCoefs[0] * (Double)p4DLFMI[current_pixel_pos + 1]; // RIGHT
+		predictor += lspCoefs[1] * (Double)p4DLFMI[current_pixel_pos + 1]; // 2RIGHT
+		predictor += lspCoefs[2] * (Double)p4DLFMI[current_pixel_pos + stride]; // DOWN
+		predictor += lspCoefs[3] * (Double)p4DLFMI[current_pixel_pos + 2*stride]; // 2DOWN
+		predictor += lspCoefs[4] * (Double)p4DLFMI[current_pixel_pos + 1 + stride]; // DOWN RIGHT
+		predictor += lspCoefs[5] * (Double)p4DLFMI[current_pixel_pos - 1 + stride]; // DOWN LEFT
+		predictor += lspCoefs[6] * (Double)p4DLFMI[current_pixel_pos - 1 + 2*stride]; // 2DOWN LEFT
+		predictor += lspCoefs[7] * (Double)p4DLFMI[current_pixel_pos + 2 + stride]; // DOWN 2RIGHT
+		predictor += lspCoefs[8] * (Double)p4DLFMI[current_pixel_pos + 1 + 2*stride];; // 2DOWN RIGHT
+	}
+	else if(current_direction[dir_idx] == 'D')
+	{
+		predictor = lspCoefs[0] * (Double)p4DLFMI[current_pixel_pos + stride]; // DOWN
+		predictor += lspCoefs[1] * (Double)p4DLFMI[current_pixel_pos + 2*stride]; // 2DOWN
+		predictor += lspCoefs[2] * (Double)p4DLFMI[current_pixel_pos - 1]; // LEFT
+		predictor += lspCoefs[3] * (Double)p4DLFMI[current_pixel_pos - 2]; // 2LEFT
+		predictor += lspCoefs[4] * (Double)p4DLFMI[current_pixel_pos - 1 + stride]; // DOWN LEFT
+		predictor += lspCoefs[5] * (Double)p4DLFMI[current_pixel_pos - 1 - stride]; // UP LEFT
+		predictor += lspCoefs[6] * (Double)p4DLFMI[current_pixel_pos - 2 - stride]; // UP 2LEFT
+		predictor += lspCoefs[7] * (Double)p4DLFMI[current_pixel_pos - 1 + 2*stride]; // 2DOWN LEFT
+		predictor += lspCoefs[8] * (Double)p4DLFMI[current_pixel_pos - 2 + stride]; // DOWN 2LEFT
+	}
+	else if(current_direction[dir_idx] == 'L')
+	{
+		predictor = lspCoefs[0] * (Double)p4DLFMI[current_pixel_pos - 1]; // LEFT
+		predictor += lspCoefs[1] * (Double)p4DLFMI[current_pixel_pos - 2]; // 2LEFT
+		predictor += lspCoefs[2] * (Double)p4DLFMI[current_pixel_pos - stride]; // UP
+		predictor += lspCoefs[3] * (Double)p4DLFMI[current_pixel_pos - 2*stride]; // 2UP
+		predictor += lspCoefs[4] * (Double)p4DLFMI[current_pixel_pos - 1 - stride]; // UP LEFT
+		predictor += lspCoefs[5] * (Double)p4DLFMI[current_pixel_pos + 1 - stride]; // UP RIGHT
+		predictor += lspCoefs[6] * (Double)p4DLFMI[current_pixel_pos + 1 - 2*stride]; // 2UP RIGHT
+		predictor += lspCoefs[7] * (Double)p4DLFMI[current_pixel_pos - 2 - stride]; // UP 2LEFT
+		predictor += lspCoefs[8] * (Double)p4DLFMI[current_pixel_pos - 1 - 2*stride];// 2UP LEFT
+	}
+	else
+	{
+		predictor = lspCoefs[0] * (Double)p4DLFMI[current_pixel_pos - stride]; // UP
+		predictor += lspCoefs[1] * (Double)p4DLFMI[current_pixel_pos - 2*stride]; // 2UP
+		predictor += lspCoefs[2] * (Double)p4DLFMI[current_pixel_pos + 1]; // RIGHT
+		predictor += lspCoefs[3] * (Double)p4DLFMI[current_pixel_pos + 2]; // 2RIGHT
+		predictor += lspCoefs[4] * (Double)p4DLFMI[current_pixel_pos + 1 - stride]; // UP RIGHT
+		predictor += lspCoefs[5] * (Double)p4DLFMI[current_pixel_pos + 1 + stride]; // DOWN RIGHT
+		predictor += lspCoefs[6] * (Double)p4DLFMI[current_pixel_pos + 2 + stride]; // DOWN 2RIGHT
+		predictor += lspCoefs[7] * (Double)p4DLFMI[current_pixel_pos + 1 - 2*stride]; // 2UP RIGHT
+		predictor += lspCoefs[8] * (Double)p4DLFMI[current_pixel_pos + 2 - stride];; // UP 2RIGHT
+	}
+
+	if(predictor < 0) predictor = 0;
+	else if(predictor > 255) predictor = 255;
+
+	free(lspCoefs);
+
+	return (UInt)predictor;
+}
+
+/*!
+ ********************************************************************************************
+ * \brief
+ *    Allocates memory for a vector of variable of type double
+ *
+ * \param n
+ *   vector size
+ *
+ * \return
+ *    a poiter to a double vector (double *)
+ *
+ ********************************************************************************************
+*/
+double * TComPrediction::doublevector(long n)
+{
+  double *m;
+
+  m=(double *)calloc(n, sizeof(double));
+  if (!m)
+  {
+	printf("doublevector() - allocation failure 1 \n");
+	exit(1);
+  }
+  return m;
+}
+
+/*!
+ ********************************************************************************************
+ * \brief
+ *    Allocates memory for a matrix of variables of type double
+ *
+ * \param nr
+ *    number of rows
+ * \param nc
+ *     number of columns
+ *
+ * \return
+ *    a poiter to a float matrix (double **)
+ *
+ ********************************************************************************************
+*/
+double ** TComPrediction::doublematrix(long nr, long nc)
+{
+  long i;
+  double **m;
+
+  m=(double **)malloc(nr*nc*sizeof(double *));
+  if (!m)
+  {
+	printf("doublematrix() - allocation failure 1 \n");
+	exit(1);
+  }
+  for(i=0;i<nr;i++)
+  {
+	m[i]=(double *)calloc(nc, sizeof(double));
+	if (!m[i])
+	{
+		printf("doublematrix() - allocation failure 2 \n");
+		exit(1);
+	}
+  }
+  return m;
+}
+
+/*!
+ ********************************************************************************************
+ * \brief
+ *    Deallocates memory for a matrix of variables of type double
+ *
+ * \param matrix
+ *   matrix to be deleted
+ * \param nr
+ *    number of rows
+ * \param nc
+ *    number of columns
+ *
+ * \return
+ *    none.
+ *
+ ********************************************************************************************
+*/
+void TComPrediction::free_doublematrix(double **matrix, int nr, int nc)
+{
+  int i;
+
+  for (i=0; i<nr; i++)
+	free(matrix[i]);
+  free(matrix);
+}
+
+/*
+Cx = y (1)
+
+(Cx - y)²= mean square error = 0 (2)
+(Cx)'Cx - (Cx)'y - y'Cx + y'y = 0
+
+substituting (Cx) for y, we have
+
+(Cx)'Cx - (y)'y - y'Cx + y'y = 0
+(Cx)'Cx = y'Cx
+
+dividing by x:
+
+(Cx)'C = y'C
+
+and transposing the equation:
+
+C'Cx = C'y
+"Ax=b", where A is a square matrix, x and b are vectors
+ ********************************************************************************************
+ */
+Void TComPrediction::leastSquares( Double **C, Double *y, Double *a, Int m, Int n )
+{
+	int i,j,k,*index,flag;
+	double **cov,d,*col;
+
+	index=(int *)malloc((m+1)*sizeof(int));
+	col=(double *)malloc((m+1)*sizeof(double));
+	cov=(double **)malloc((m+1)*sizeof(double));
+	for (i=0;i<m+1;i++)
+		cov[i]=(double *)malloc((m+1)*sizeof(double));
+	for(i=0;i<m;i++)
+		for(j=i;j<m;j++)
+		{
+			cov[i+1][j+1]=0;
+			for(k=0;k<n;k++)
+				cov[i+1][j+1]+=C[i][k]*C[j][k];
+		}
+	for(i=0;i<m;i++)
+		for(j=0;j<=i;j++)
+			cov[i+1][j+1]=cov[j+1][i+1];
+	for(i=0;i<m;i++)
+	{
+		col[i+1]=0;
+		for(j=0;j<n;j++)
+			col[i+1]+=C[i][j]*y[j];
+	}
+	flag=ludcmp(cov,m,index,&d);
+	if(flag==0)
+	{
+		lubksb(cov,m,index,col);
+		for(i=1;i<=m;i++)
+			a[i-1]=col[i];
+	}
+	else
+		for(i=1;i<=m;i++)
+			a[i-1]=1.0/m;
+
+	free(index);free(col);
+	for(i=0;i<m+1;i++)
+		free(cov[i]);
+	free(cov);
+}
+/*!
+ ********************************************************************************************
+ * \brief
+ *    LU decomposition : write a matrix as a product of two matrices, L (lower) and U (upper)
+ *    Crout's algorithm is the decomposition in place. The follwoing algorithm doesn't actually
+ *    decompose the matrix A in LU form; it rather decompose a rowwise permutation of the input
+ *    matrix. The permutation is recorded in the index output vector
+ *
+ *  \param input
+ *	double matrix a
+ *	size of matrix n (A[nxn])
+ *  \param output
+ *	double matrix a (decomposed matrix)
+ *	int vector index (permutation is recorded here)
+ *	d = +1 (even rows interchanged), -1 (odd rows interchanged)
+ *
+ ********************************************************************************************
+ */
+Int TComPrediction::ludcmp(Double **a, Int n, Int *indx, Double *d)
+{
+	int i,j,k;
+	int imax = 0;
+	double big,dum,sum,temp;
+	double *vv;
+
+	vv=(double *)malloc((n+1)*sizeof(double));
+	*d=1.0;
+	for(i=1;i<=n;i++)
+	{
+		big=0.0;
+		for(j=1;j<=n;j++)
+			if((temp=fabs(a[i][j]))>big)
+				big=temp;
+		if(big==0.0)
+		{
+			free(vv);
+			return(1);
+		}
+		vv[i]=1.0/big;
+	}
+	for(j=1;j<=n;j++)
+	{
+		for(i=1;i<j;i++)
+		{
+			sum=a[i][j];
+			for(k=1;k<i;k++)
+				sum-=a[i][k]*a[k][j];
+			a[i][j]=sum;
+		}
+		big=0.0;
+		for(i=j;i<=n;i++)
+		{
+			sum=a[i][j];
+			for(k=1;k<j;k++)
+				sum-=a[i][k]*a[k][j];
+			a[i][j]=sum;
+			if((dum=vv[i]*fabs(sum))>=big)
+			{
+				big=dum;
+				imax=i;
+			}
+		}
+		if(j!=imax)
+		{
+			for(k=1;k<=n;k++)
+			{
+				dum=a[imax][k];
+				a[imax][k]=a[j][k];
+				a[j][k]=dum;
+			}
+			*d=-(*d);
+			vv[imax]=vv[j];
+		}
+		indx[j]=imax;
+		if(a[j][j]==0.0)
+			a[j][j]=TINY;
+		if(j!=n)
+		{
+			dum=1.0/(a[j][j]);
+			for(i=j+1;i<=n;i++)
+				a[i][j]*=dum;
+		}
+	}
+	free(vv);
+	return(0);
+}
+/*!
+ ********************************************************************************************
+ *  \brief
+ *      The lubksb algorithm (for forward substitution and backward substitution) solves the
+ *      set of N linear equations Ax=b, where A is the output of the ludcmp algorithm.
+ *
+ * \param input:
+ *	double matrix a (output from ludcmp, it is not altered by the algorithm)
+ *	size n of matrix (A[nxn])
+ *	int vector indx (permutations)
+ *	double vector b
+ *   \param output:
+ *	double vector b (includes the solution of the matrix
+ ********************************************************************************************
+ */
+Void TComPrediction::lubksb(Double **a, Int n, Int *indx, Double b[])
+{
+	int i,ii=0,ip,j;
+	double sum;
+
+	for(i=1;i<=n;i++)
+	{
+		ip=indx[i];
+		sum=b[ip];
+		b[ip]=b[i];
+		if(ii)
+			for(j=ii;j<=i-1;j++)
+				sum-=a[i][j]*b[j];
+		else if
+		(sum) ii=i;
+		b[i]=sum;
+	}
+	for(i=n;i>=1;i--)
+	{
+		sum=b[i];
+		for(j=i+1;j<=n;j++)
+			sum-=a[i][j]*b[j];
+		b[i]=sum/a[i][i];
+	}
+}
+
+#endif
+
 #if RM_4DLF_MI_BUFFER
 Void TComPrediction::getCausalSupportFromSpiral_LOCO_I( Int* a, Int* b, Int* c, Int current_SAI, Int total_number_of_SAIS, Pel* p4DLFMI, Int const current_pixel_pos, Int const stride )
 {
@@ -1157,7 +1708,7 @@ Void TComPrediction::predIntraAng( const ComponentID compID, UInt uiDirMode, Pel
     	  UInt const uiPosY = (uiAbsPartIdxInRaster / 16) * 4 + (pcCU->getCtuRsAddr() / pcPic->getFrameWidthInCtus()) * 64;
 #if RM_4DLF_MI_INTRA_MODE_DC_3x3
     	  xPred4DLFMI_DC_3x3( channelsBitDepthForPrediction, ptrSrc+sw+1, sw, pDst, uiStride, iWidth, iHeight, channelType, uiDirMode,
-    			  	  	      pcPic4DLFMI, miSize, currentSAIsSpiralPosX, currentSAIsSpiralPosY, totalNumberOfSAIs, uiAbsPartIdxInRaster, uiPosX, uiPosY, compID );
+    			  	  	      	  	  pcPic4DLFMI, miSize, currentSAIsSpiralPosX, currentSAIsSpiralPosY, totalNumberOfSAIs, uiAbsPartIdxInRaster, uiPosX, uiPosY, compID );
 #endif
 #if RM_4DLF_MI_INTRA_MODE_LOCO_I
     	  xPred4DLFMI_LOCO_I( channelsBitDepthForPrediction, ptrSrc+sw+1, sw, pDst, uiStride, iWidth, iHeight, channelType, uiDirMode,
@@ -1165,15 +1716,17 @@ Void TComPrediction::predIntraAng( const ComponentID compID, UInt uiDirMode, Pel
 #endif
 #if RM_4DLF_MI_INTRA_MODE_GAP
     	  xPred4DLFMI_GAP( channelsBitDepthForPrediction, ptrSrc+sw+1, sw, pDst, uiStride, iWidth, iHeight, channelType, uiDirMode,
-    	      	      			  	  	      pcPic4DLFMI, miSize, currentSAIsSpiralPosX, currentSAIsSpiralPosY, totalNumberOfSAIs, currentSAI, uiAbsPartIdxInRaster, uiPosX, uiPosY, compID );
+    	      	      			  	  pcPic4DLFMI, miSize, currentSAIsSpiralPosX, currentSAIsSpiralPosY, totalNumberOfSAIs, currentSAI, uiAbsPartIdxInRaster, uiPosX, uiPosY, compID );
 #endif
 #if RM_4DLF_MI_INTRA_MODE_AGSP
     	  xPred4DLFMI_AGSP( channelsBitDepthForPrediction, ptrSrc+sw+1, sw, pDst, uiStride, iWidth, iHeight, channelType, uiDirMode,
-    	      	      			  	  	      pcPic4DLFMI, miSize, currentSAIsSpiralPosX, currentSAIsSpiralPosY, totalNumberOfSAIs, currentSAI, uiAbsPartIdxInRaster, uiPosX, uiPosY, compID );
+    	      	      			  	  pcPic4DLFMI, miSize, currentSAIsSpiralPosX, currentSAIsSpiralPosY, totalNumberOfSAIs, currentSAI, uiAbsPartIdxInRaster, uiPosX, uiPosY, compID );
+#endif
+#if RM_4DLF_MI_INTRA_MODE_LSP
+    	  xPred4DLFMI_LSP( channelsBitDepthForPrediction, ptrSrc+sw+1, sw, pDst, uiStride, iWidth, iHeight, channelType, uiDirMode,
+    			  	  	  	  	  	  pcPic4DLFMI, miSize, currentSAIsSpiralPosX, currentSAIsSpiralPosY, totalNumberOfSAIs, currentSAI, uiAbsPartIdxInRaster, uiPosX, uiPosY, compID );
 #endif
       }
-
-
       if( uiDirMode == DC_IDX )
       {
         xDCPredFiltering( ptrSrc+sw+1, sw, pDst, uiStride, iWidth, iHeight, channelType );
