@@ -675,13 +675,17 @@ Void TComPrediction::xPred4DLFMI_LSP(       Int bitDepth,
 			{
 				if(currentSAI >= 9)
 				{
-					lspCoefs = trainSpiralLSP((Int)currentSAI, (Int)mi, p4DLFMI, (Int)originPixelMI, (Int)firstPixelPos + x*(Int)mi + (y*(Int)mi)*(Int)ui4DLFMIStride, (Int)ui4DLFMIStride);
+					lspCoefs = trainSpiralLSP((Int)currentSAI, (Int)mi, p4DLFMI, (Int)originPixelMI + x*(Int)mi + (y*(Int)mi)*(Int)ui4DLFMIStride, (Int)firstPixelPos + x*(Int)mi + (y*(Int)mi)*(Int)ui4DLFMIStride, (Int)ui4DLFMIStride);
 					predictor = LSP( lspCoefs, 9, p4DLFMI, (Int)currentSAI, (Int)mi, (Int)firstPixelPos + x*(Int)mi + (y*(Int)mi)*(Int)ui4DLFMIStride, (Int)ui4DLFMIStride);
 				}
 			}*/
 			if((Int)currentSAIsSpiralPosX + (Int)uiPosX * (Int)mi - 1 + (Int)x*(Int)mi > 0 && (Int)currentSAIsSpiralPosY + (Int)uiPosY * (Int)mi - 1 + (Int)y*(Int)mi > 0) // if ULeft pixel is inside frame
 			{
-
+				if(currentSAI)
+				{
+					lspCoefs = trainRasterLSP((Int)currentSAI, (Int)mi, p4DLFMI, (Int)originPixelMI + x*(Int)mi + (y*(Int)mi)*(Int)ui4DLFMIStride, (Int)firstPixelPos + x*(Int)mi + (y*(Int)mi)*(Int)ui4DLFMIStride, (Int)ui4DLFMIStride);
+					predictor = LSP3( lspCoefs, 3, p4DLFMI, (Int)currentSAI, (Int)mi, (Int)firstPixelPos + x*(Int)mi + (y*(Int)mi)*(Int)ui4DLFMIStride, (Int)ui4DLFMIStride);
+				}
 			}
 			else
 				predictor = 0;
@@ -690,34 +694,105 @@ Void TComPrediction::xPred4DLFMI_LSP(       Int bitDepth,
 	}
 }
 
-/*Double* TComPrediction::trainRasterLSP( Int current_SAI, Int miSize, Pel* p4DLFMI, Int const origin_pixel_pos, Int const current_pixel_pos, Int const stride )
+Double* TComPrediction::trainRasterLSP( Int current_SAI, Int miSize, Pel* p4DLFMI, Int const origin_pixel_pos, Int const current_pixel_pos, Int const stride )
 {
 	Int dir_idx = 0;
 	char current_direction[] = "RDLU";
 	UInt i=0, j=0;
-	double *y,*a,**C,**Ct;
+	Int I=0, J=0;
+	double *y, *yValid,*a,**C,**CValid, **CValidt;
 	Int predOrder = 3;
 	Int spiralOffset = floor(miSize/2); // relative spiral offset
 	Int pixelOffset = 0;
+	Int supportPixelPosOffset[predOrder];
+	Int validIdx = 0;
 
 	a=doublevector(predOrder);
 	y=doublevector(current_SAI);
 	C=doublematrix(current_SAI,predOrder);
-	Ct=doublematrix(predOrder,current_SAI);
+
+	dir_idx = spiral(current_SAI, miSize, &i, &j);
+	if(current_direction[dir_idx] == 'R')
+	{
+		supportPixelPosOffset[0] = -1; 				// LEFT
+		supportPixelPosOffset[1] = stride; 			// DOWN
+		supportPixelPosOffset[2] = -1 + stride; 	// DOWN LEFT
+	}
+	else if(current_direction[dir_idx] == 'D')
+	{
+		supportPixelPosOffset[0] = -1; 				// LEFT
+		supportPixelPosOffset[1] = -stride; 		// UP
+		supportPixelPosOffset[2] = -1 - stride; 	// UP LEFT
+	}
+	else if(current_direction[dir_idx] == 'L')
+	{
+		supportPixelPosOffset[0] = 1; 				// RIGHT
+		supportPixelPosOffset[1] = -stride; 		// UP
+		supportPixelPosOffset[2] = 1 - stride; 		// UP RIGHT
+	}
+	else
+	{
+		supportPixelPosOffset[0] = 1; 				// RIGHT
+		supportPixelPosOffset[1] = stride; 			// DOWN
+		supportPixelPosOffset[2] = 1 + stride; 		// DOWN RIGHT
+	}
 
 	// LSP training along all the available previous SAIs
 	for(Int idx = 0; idx < current_SAI; idx++)
 	{
-
+		dir_idx = spiral(idx, miSize, &i, &j);
+		I = (Int)i - spiralOffset;
+		J = (Int)j - spiralOffset;
+		pixelOffset = I + J*stride;
+		// if one of the support pixels is not available do not add it to the list
+		if(p4DLFMI[origin_pixel_pos + pixelOffset + supportPixelPosOffset[0]] == 0 ||
+		   p4DLFMI[origin_pixel_pos + pixelOffset + supportPixelPosOffset[1]] == 0 ||
+		   p4DLFMI[origin_pixel_pos + pixelOffset + supportPixelPosOffset[2]] == 0)
+			continue;
+		C[validIdx][0] 	= p4DLFMI[origin_pixel_pos + pixelOffset + supportPixelPosOffset[0]];
+		C[validIdx][1] 	= p4DLFMI[origin_pixel_pos + pixelOffset + supportPixelPosOffset[1]];
+		C[validIdx][2] 	= p4DLFMI[origin_pixel_pos + pixelOffset + supportPixelPosOffset[2]];
+		y[validIdx] 	= p4DLFMI[origin_pixel_pos + pixelOffset];
+		validIdx++;
 	}
 
-}*/
+	if(validIdx)
+	{
+		//CValid=doublematrix(validTrain,predOrder);
+		CValidt=doublematrix(predOrder,validIdx);
+		yValid=doublevector(validIdx);
+		for(Int idx = 0; idx < validIdx; idx++)
+		{
+			CValidt[0][idx] = C[idx][0];
+			CValidt[1][idx] = C[idx][1];
+			CValidt[2][idx] = C[idx][2];
+			yValid[idx] = y[idx];
+		}
+
+		leastSquares(CValidt,yValid,a,predOrder,validIdx);
+		free(yValid);
+		free_doublematrix(CValidt,predOrder, validIdx);
+	}
+	else
+	{
+		a[0] = 0;
+		a[1] = 0;
+		a[2] = 0;
+	}
+	free(y);
+	free_doublematrix(C, current_SAI, predOrder);
+	//if(validIdx > 2)
+	//	cout << current_SAI << "\t\t" << validIdx << "\t\t" << a[0] << "\t\t" << a[1] << "\t\t" << a[2] << endl;
+
+	return a;
+}
 
 Double* TComPrediction::trainSpiralLSP( Int current_SAI, Int miSize, Pel* p4DLFMI, Int const origin_pixel_pos, Int const current_pixel_pos, Int const stride )
 {
 	Int dir_idx = 0;
 	char current_direction[] = "RDLU";
 	UInt i=0, j=0;
+	Int I=0, J=0;
 	double *y,*a,**C,**Ct;
 	Int predOrder = 9;
 	Int spiralOffset = floor(miSize/2); // relative spiral offset
@@ -732,9 +807,9 @@ Double* TComPrediction::trainSpiralLSP( Int current_SAI, Int miSize, Pel* p4DLFM
 	for(Int idx = 0; idx < current_SAI; idx++)
 	{
 		dir_idx = spiral(idx, miSize, &i, &j);
-		i-= spiralOffset;
-		j-= spiralOffset;
-		pixelOffset = i + j*stride;
+		I = (Int)i - spiralOffset;
+		J = (Int)j - spiralOffset;
+		pixelOffset = I + J*stride;
 		y[idx] = p4DLFMI[origin_pixel_pos + pixelOffset];
 		if(current_direction[dir_idx] == 'R')
 		{
@@ -901,7 +976,48 @@ UInt TComPrediction::LSP( Double *lspCoefs, Int N, Pel* p4DLFMI, Int current_SAI
 	}
 
 	if(predictor < 0) predictor = 0;
-	else if(predictor > 255) predictor = 255;
+	else if(predictor > 1023) predictor = 1023;
+
+	free(lspCoefs);
+
+	return (UInt)predictor;
+}
+
+UInt TComPrediction::LSP3( Double *lspCoefs, Int M, Pel* p4DLFMI, Int current_SAI, Int mi, Int current_pixel_pos, Int stride)
+{
+	Double predictor = 0;
+	UInt i, j;
+	Int dir_idx = 0;
+	char current_direction[] = "RDLU";
+
+	dir_idx = spiral(current_SAI, mi, &i, &j);
+	if(current_direction[dir_idx] == 'R')
+	{
+		predictor = lspCoefs[0] * (Double)p4DLFMI[current_pixel_pos - 1]; // LEFT
+		predictor += lspCoefs[1] * (Double)p4DLFMI[current_pixel_pos + stride]; // DOWN
+		predictor += lspCoefs[2] * (Double)p4DLFMI[current_pixel_pos -1 + stride]; // DOWN LEFT
+	}
+	else if(current_direction[dir_idx] == 'D')
+	{
+		predictor = lspCoefs[0] * (Double)p4DLFMI[current_pixel_pos -1]; // LEFT
+		predictor += lspCoefs[1] * (Double)p4DLFMI[current_pixel_pos -stride]; // UP
+		predictor += lspCoefs[2] * (Double)p4DLFMI[current_pixel_pos - 1 -stride]; // UP LEFT
+	}
+	else if(current_direction[dir_idx] == 'L')
+	{
+		predictor = lspCoefs[0] * (Double)p4DLFMI[current_pixel_pos + 1]; // RIGHT
+		predictor += lspCoefs[1] * (Double)p4DLFMI[current_pixel_pos - stride]; // UP
+		predictor += lspCoefs[2] * (Double)p4DLFMI[current_pixel_pos + 1 - stride]; // UP RIGHT
+	}
+	else
+	{
+		predictor = lspCoefs[0] * (Double)p4DLFMI[current_pixel_pos +1]; // RIGHT
+		predictor += lspCoefs[1] * (Double)p4DLFMI[current_pixel_pos +stride]; // DOWN
+		predictor += lspCoefs[2] * (Double)p4DLFMI[current_pixel_pos +1 +stride]; // DOWN RIGHT
+	}
+
+	if(predictor < 0) predictor = 0;
+	else if(predictor > 1023) predictor = 1023;
 
 	free(lspCoefs);
 
