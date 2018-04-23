@@ -101,10 +101,11 @@ protected:
 #if RM_4DLF_MI_INTRA_MODE_LSP
   Void xPred4DLFMI_LSP       ( Int bitDepth, const Pel* pSrc, Int srcStride, Pel* pTrueDst, Int dstStrideTrue, UInt uiWidth, UInt uiHeight, ChannelType channelType, UInt dirMode, TComPicYuv *const pcPic4DLFMI, UInt miSize, UInt currentSAIsSpiralPosX, UInt currentSAIsSpiralPosY, UInt totalNumberOfSAIs, UInt currentSAI, UInt uiAbsPartIdxInRaster, UInt uiPosX, UInt uiPosY, ComponentID compID );
   Double* trainSpiralLSP( Int current_SAI, Int total_number_of_SAIS, Pel* p4DLFMI, Int const origin_pixel_pos, Int const current_pixel_pos, Int const stride );
-  Double* trainRasterLSP( Int current_SAI, Int miSize, Pel* p4DLFMI, Int const origin_pixel_pos, Int const current_pixel_pos, Int const stride );
+  Double* trainRasterLSP( Int* causalSupportX, Int* causalSupportY, Int current_SAI, Int miSize, Pel* p4DLFMI, Int const origin_pixel_pos, Int const current_pixel_pos, Int const stride );
   Void leastSquares( Double **C, Double *y, Double *a, Int m, Int n );
   UInt LSP( Double *lspCoefs, Int M, Pel* p4DLFMI, Int current_SAI, Int total_number_of_SAIS, Int current_pixel_pos, Int stride);
   UInt LSP3( Double *lspCoefs, Int M, Pel* p4DLFMI, Int current_SAI, Int total_number_of_SAIS, Int current_pixel_pos, Int stride);;
+  UInt LSPM( Int* causalSupportX, Int* causalSupportY, Double *lspCoefs, Int M, Pel* p4DLFMI, Int current_SAI, Int mi, Int current_pixel_pos, Int stride);
 #define TINY 1.0e-20
   Int ludcmp(Double **a, Int n, Int *indx, Double *d);
   Void lubksb(Double **a, Int n, Int *indx, Double b[]);
@@ -120,6 +121,7 @@ protected:
   Void getCausalSupportFromSpiral_LOCO_I( Int* a, Int* b, Int* c, Int current_SAI, Int total_number_of_SAIS, Pel* p4DLFMI, Int const current_pixel_pos, Int const stride );
   Int  LOCO_I					( Int a, Int b, Int c );
   Int spiral					(UInt idx, UInt size, UInt* x, UInt* y);
+  Int getCausalSupportAdaptive( Int M, Int* causalSupportX, Int* causalSupportY, Pel* p4DLFMI, Int origin_pixel_pos_MI, Int current_pixel_pos, Int mi, Int stride );
 #endif
   Void xPredIntraPlanar         ( const Pel* pSrc, Int srcStride, Pel* rpDst, Int dstStride, UInt width, UInt height );
 
