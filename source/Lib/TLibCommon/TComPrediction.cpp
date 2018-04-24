@@ -662,7 +662,7 @@ Void TComPrediction::xPred4DLFMI_LSP(       Int bitDepth,
 
 	Int causalSupportX[RM_4DLF_MI_INTRA_MODE_LSP_PRED_ORDER];
 	Int causalSupportY[RM_4DLF_MI_INTRA_MODE_LSP_PRED_ORDER];
-	Int availablePixels = getCausalSupportAdaptive( RM_4DLF_MI_INTRA_MODE_LSP_PRED_ORDER, causalSupportX, causalSupportY, p4DLFMI, (Int)originPixelMI, (Int)firstPixelPos, (Int)mi, (Int)ui4DLFMIStride );
+	Int availablePixels = getCausalSupportAdaptive( RM_4DLF_MI_INTRA_MODE_LSP_PRED_ORDER, causalSupportX, causalSupportY, (Int)currentSAI, (Int)originPixelMI, (Int)firstPixelPos, (Int)mi, (Int)ui4DLFMIStride );
 	Int pixelMargin = (RM_4DLF_MI_INTRA_MODE_LSP_PRED_ORDER + 1) / 2;
 	//Int currentPixelPosY = ((Int)firstPixelPos / (Int)ui4DLFMIStride) - ((Int)originPixelMI / (Int)ui4DLFMIStride);
 	//Int currentPixelPosX = ((Int)firstPixelPos % (Int)ui4DLFMIStride) - ((Int)originPixelMI % (Int)ui4DLFMIStride);
@@ -1317,7 +1317,7 @@ Void TComPrediction::lubksb(Double **a, Int n, Int *indx, Double b[])
 #endif
 
 #if RM_4DLF_MI_BUFFER
-Int TComPrediction::getCausalSupportAdaptive( Int M, Int* causalSupportX, Int* causalSupportY, Pel* p4DLFMI, Int origin_pixel_pos_MI, Int current_pixel_pos, Int mi, Int stride )
+Int TComPrediction::getCausalSupportAdaptive( Int M, Int* causalSupportX, Int* causalSupportY, Int currentSAI, Int origin_pixel_pos_MI, Int current_pixel_pos, Int mi, Int stride )
 {
 
 	Int numPixelsMI = mi*mi;
@@ -1329,20 +1329,26 @@ Int TComPrediction::getCausalSupportAdaptive( Int M, Int* causalSupportX, Int* c
 	Int minValuePosY = 0, minValuePosX = 0;
 	Int numValidPos = 0;
 	Bool atLeastOneValidPos = false;
+	UInt i=0,j=0, dir_idx;
 
 	// init distance
 	for(Int i=0; i<numPixelsMI; i++)
 		l1Distance[i] = NOT_VALID;
 
 	// limit support to inside the MI
-	for(Int y=-spiralBorderOffset; y<=spiralBorderOffset; y++)
-		for(Int x=-spiralBorderOffset; x<=spiralBorderOffset; x++)
-			if(p4DLFMI[origin_pixel_pos_MI + x + y*stride])
-			{
-				l1Distance[(spiralBorderOffset+y)*mi + spiralBorderOffset+x] = abs(currentPixelPosX - x) + abs(currentPixelPosY - y);
-				//if(l1Distance[(spiralBorderOffset+y)*mi + spiralBorderOffset+x] == 0)
-				//	cout << "WRONG DISTANCE" << endl;
-			}
+	//for(Int y=-spiralBorderOffset; y<=spiralBorderOffset; y++)
+		//for(Int x=-spiralBorderOffset; x<=spiralBorderOffset; x++)
+		//{
+	for(Int idx=0; idx<currentSAI; idx++)
+	{
+		dir_idx = spiral(idx, mi, &i, &j);
+		l1Distance[j*mi + i] = abs(currentPixelPosX - ((Int)i - spiralBorderOffset)) + abs(currentPixelPosY - ((Int)j - spiralBorderOffset));
+			//if(l1Distance[(spiralBorderOffset+y)*mi + spiralBorderOffset+x] == 0)
+			//	cout << "WRONG DISTANCE" << endl;
+
+	}
+		//}
+		//}
 
 	// search min distance
 	for(Int m=0; m<M; m++)
@@ -1400,7 +1406,7 @@ Void TComPrediction::getCausalSupportFromSpiral_LOCO_I( Int* a, Int* b, Int* c, 
 	}
 	else{
 		// find current spiral direction
-		dir_idx = spiral(current_SAI, total_number_of_SAIS, &x, &y);
+		dir_idx = spiral(current_SAI, sqrt(total_number_of_SAIS), &x, &y);
 		if(current_direction[dir_idx] == 'R')
 		{
 			A = p4DLFMI[current_pixel_pos - 1]; 			// LEFT
@@ -1462,7 +1468,7 @@ Void TComPrediction::getCausalSupportFromSpiral_GAP( Int* w, Int* ww, Int* n, In
 	}
 	else{
 		// find current spiral direction
-		dir_idx = spiral(current_SAI, total_number_of_SAIS, &x, &y);
+		dir_idx = spiral(current_SAI, sqrt(total_number_of_SAIS), &x, &y);
 		if(current_direction[dir_idx] == 'R')
 		{
 			W = p4DLFMI[current_pixel_pos + 1]; // RIGHT
@@ -1588,7 +1594,7 @@ Void TComPrediction::getCausalSupportFromSpiral_AGSP( Int* w, Int* ww, Int* n, I
 	}
 	else{
 		// find current spiral direction
-		dir_idx = spiral(current_SAI, total_number_of_SAIS, &x, &y);
+		dir_idx = spiral(current_SAI, sqrt(total_number_of_SAIS), &x, &y);
 		if(current_direction[dir_idx] == 'R')
 		{
 			W = p4DLFMI[current_pixel_pos + 1]; // RIGHT

@@ -121,7 +121,7 @@ protected:
   Void getCausalSupportFromSpiral_LOCO_I( Int* a, Int* b, Int* c, Int current_SAI, Int total_number_of_SAIS, Pel* p4DLFMI, Int const current_pixel_pos, Int const stride );
   Int  LOCO_I					( Int a, Int b, Int c );
   Int spiral					(UInt idx, UInt size, UInt* x, UInt* y);
-  Int getCausalSupportAdaptive( Int M, Int* causalSupportX, Int* causalSupportY, Pel* p4DLFMI, Int origin_pixel_pos_MI, Int current_pixel_pos, Int mi, Int stride );
+  Int getCausalSupportAdaptive( Int M, Int* causalSupportX, Int* causalSupportY, Int currentSAI, Int origin_pixel_pos_MI, Int current_pixel_pos, Int mi, Int stride );
 #endif
   Void xPredIntraPlanar         ( const Pel* pSrc, Int srcStride, Pel* rpDst, Int dstStride, UInt width, UInt height );
 
