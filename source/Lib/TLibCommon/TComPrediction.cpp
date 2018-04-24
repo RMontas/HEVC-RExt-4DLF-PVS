@@ -656,6 +656,8 @@ Void TComPrediction::xPred4DLFMI_LSP(       Int bitDepth,
 	Double *lspCoefs;
 	UInt const ui4DLFMIStride = pcPic4DLFMI->getStride(compID);
 	Pel* const p4DLFMI = pcPic4DLFMI->getAddr( compID );
+	Int H = pcPic4DLFMI->getHeight(compID);
+	Int W = pcPic4DLFMI->getWidth(compID);
 	// first pixel location in the 4DLF MI buffer
 	UInt firstPixelPos = currentSAIsSpiralPosX + uiPosX * mi + (currentSAIsSpiralPosY + uiPosY * mi ) * ui4DLFMIStride;
 	UInt originPixelMI = originMI + uiPosX * mi + (originMI + uiPosY * mi) * ui4DLFMIStride;
@@ -701,7 +703,7 @@ Void TComPrediction::xPred4DLFMI_LSP(       Int bitDepth,
 			{
 				if(currentSAI > availablePixels)
 				{
-					lspCoefs = trainRasterLSP(causalSupportX, causalSupportY, (Int)currentSAI, (Int)mi, p4DLFMI, (Int)originPixelMI + x*(Int)mi + (y*(Int)mi)*(Int)ui4DLFMIStride, (Int)firstPixelPos + x*(Int)mi + (y*(Int)mi)*(Int)ui4DLFMIStride, (Int)ui4DLFMIStride);
+					lspCoefs = trainRasterLSP(causalSupportX, causalSupportY, (Int)currentSAI, (Int)mi, p4DLFMI, (Int)originPixelMI + x*(Int)mi + (y*(Int)mi)*(Int)ui4DLFMIStride, (Int)firstPixelPos + x*(Int)mi + (y*(Int)mi)*(Int)ui4DLFMIStride, (Int)ui4DLFMIStride, W, H);
 					//predictor = LSP3( lspCoefs, 3, p4DLFMI, (Int)currentSAI, (Int)mi, (Int)firstPixelPos + x*(Int)mi + (y*(Int)mi)*(Int)ui4DLFMIStride, (Int)ui4DLFMIStride);
 					predictor = LSPM( causalSupportX, causalSupportY, lspCoefs, RM_4DLF_MI_INTRA_MODE_LSP_PRED_ORDER, p4DLFMI, (Int)currentSAI, (Int)mi, (Int)firstPixelPos + x*(Int)mi + (y*(Int)mi)*(Int)ui4DLFMIStride, (Int)ui4DLFMIStride);
 				}
@@ -713,7 +715,7 @@ Void TComPrediction::xPred4DLFMI_LSP(       Int bitDepth,
 	}
 }
 
-Double* TComPrediction::trainRasterLSP( Int* causalSupportX, Int* causalSupportY, Int current_SAI, Int miSize, Pel* p4DLFMI, Int const origin_pixel_pos, Int const current_pixel_pos, Int const stride )
+Double* TComPrediction::trainRasterLSP( Int* causalSupportX, Int* causalSupportY, Int current_SAI, Int miSize, Pel* p4DLFMI, Int const origin_pixel_pos, Int const current_pixel_pos, Int const stride, Int W, Int H)
 {
 	Int dir_idx = 0;
 	//char current_direction[] = "RDLU";
@@ -726,32 +728,48 @@ Double* TComPrediction::trainRasterLSP( Int* causalSupportX, Int* causalSupportY
 	//Int supportPixelPosOffset[predOrder];
 	Int validIdx = 0;
 	Bool supportIncomplete = false;
+	Int miOffset[5];
 
 	a=doublevector(predOrder);
 	y=doublevector(current_SAI);
 	C=doublematrix(current_SAI,predOrder);
 
-	// LSP training along ALL the available previous SAIs
-	for(Int idx = 0; idx < current_SAI; idx++)
+#if RM_4DLF_MI_INTRA_MODE_LSP_EXTEND_TRAINING_AREA
+	miOffset[0] = 0; 				// Current
+	miOffset[1] = -miSize;			// LEFT
+	miOffset[2] = -stride*miSize;	// UP
+	miOffset[3] = miSize;			// RIGHT
+	miOffset[4] = stride*miSize;	// DOWN
+#endif
+	for(Int mi = 0; mi<=RM_4DLF_MI_INTRA_MODE_LSP_EXTEND_TRAINING_AREA; mi++)
 	{
-		supportIncomplete = false;
-		dir_idx = spiral(idx, miSize, &i, &j);
-		I = (Int)i - spiralOffset;
-		J = (Int)j - spiralOffset;
-		pixelOffset = I + J*stride;
-		for(Int m=0; m<RM_4DLF_MI_INTRA_MODE_LSP_PRED_ORDER; m++)
+		// if MI is available
+		if(current_pixel_pos + miOffset[mi] >= 0 &&
+		   current_pixel_pos + miOffset[mi] < stride*H)
 		{
-			C[validIdx][m] 	= p4DLFMI[origin_pixel_pos + pixelOffset + causalSupportX[m] + causalSupportY[m]*stride];
-			if(!C[validIdx][m])
+			// LSP training along ALL the available previous SAIs
+			for(Int idx = 0; idx < current_SAI; idx++)
 			{
-				supportIncomplete = true;
-				break;
+				supportIncomplete = false;
+				dir_idx = spiral(idx, miSize, &i, &j);
+				I = (Int)i - spiralOffset;
+				J = (Int)j - spiralOffset;
+				pixelOffset = I + J*stride;
+				for(Int m=0; m<RM_4DLF_MI_INTRA_MODE_LSP_PRED_ORDER; m++)
+				{
+					C[validIdx][m] 	= p4DLFMI[origin_pixel_pos + miOffset[mi] + pixelOffset + causalSupportX[m] + causalSupportY[m]*stride];
+					if(!C[validIdx][m])
+					{
+						supportIncomplete = true;
+						break;
+					}
+				}
+				if(supportIncomplete)
+					continue;
+				y[validIdx] = p4DLFMI[origin_pixel_pos + miOffset[mi] + pixelOffset];
+				validIdx++;
 			}
 		}
-		if(supportIncomplete)
-			continue;
-		y[validIdx] = p4DLFMI[origin_pixel_pos + pixelOffset];
-		validIdx++;
 	}
 
 	if(validIdx)
