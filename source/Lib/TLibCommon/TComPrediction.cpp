@@ -731,11 +731,11 @@ Double* TComPrediction::trainRasterLSP( Int* causalSupportX, Int* causalSupportY
 	Int miOffset[5];
 
 	a=doublevector(predOrder);
-	y=doublevector(current_SAI);
-	C=doublematrix(current_SAI,predOrder);
+	y=doublevector(current_SAI*(RM_4DLF_MI_INTRA_MODE_LSP_EXTEND_TRAINING_AREA+1));
+	C=doublematrix(current_SAI*(RM_4DLF_MI_INTRA_MODE_LSP_EXTEND_TRAINING_AREA+1),predOrder);
 
-#if RM_4DLF_MI_INTRA_MODE_LSP_EXTEND_TRAINING_AREA
 	miOffset[0] = 0; 				// Current
+#if RM_4DLF_MI_INTRA_MODE_LSP_EXTEND_TRAINING_AREA
 	miOffset[1] = -miSize;			// LEFT
 	miOffset[2] = -stride*miSize;	// UP
 	miOffset[3] = miSize;			// RIGHT
@@ -793,7 +793,7 @@ Double* TComPrediction::trainRasterLSP( Int* causalSupportX, Int* causalSupportY
 			a[m] = 1/(Double)RM_4DLF_MI_INTRA_MODE_LSP_PRED_ORDER;
 	}
 	free(y);
-	free_doublematrix(C, current_SAI, predOrder);
+	free_doublematrix(C, current_SAI*(RM_4DLF_MI_INTRA_MODE_LSP_EXTEND_TRAINING_AREA+1), predOrder);
 	//if(validIdx > 2)
 	//	cout << current_SAI << "\t\t" << validIdx << "\t\t" << a[0] << "\t\t" << a[1] << "\t\t" << a[2] << endl;
 
