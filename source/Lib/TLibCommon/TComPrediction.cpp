@@ -728,7 +728,7 @@ Double* TComPrediction::trainRasterLSP( Int* causalSupportX, Int* causalSupportY
 	//Int supportPixelPosOffset[predOrder];
 	Int validIdx = 0;
 	Bool supportIncomplete = false;
-	Int miOffset[5];
+	Int miOffset[RM_4DLF_MI_INTRA_MODE_LSP_EXTEND_TRAINING_AREA+1];
 
 	a=doublevector(predOrder);
 	y=doublevector(current_SAI*(RM_4DLF_MI_INTRA_MODE_LSP_EXTEND_TRAINING_AREA+1));
@@ -740,6 +740,10 @@ Double* TComPrediction::trainRasterLSP( Int* causalSupportX, Int* causalSupportY
 	miOffset[2] = -stride*miSize;	// UP
 	miOffset[3] = miSize;			// RIGHT
 	miOffset[4] = stride*miSize;	// DOWN
+	miOffset[5] = -miSize -stride*miSize; // UL
+	miOffset[6] = miSize -stride*miSize;// UR
+	miOffset[7] = miSize +stride*miSize;// DR
+	miOffset[8] = -miSize +stride*miSize;// DL
 #endif
 	for(Int mi = 0; mi<=RM_4DLF_MI_INTRA_MODE_LSP_EXTEND_TRAINING_AREA; mi++)
 	{

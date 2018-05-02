@@ -57,8 +57,8 @@
 #define RM_4DLF_MI_INTRA_MODE_AGSP						  0 ///< Pred Mode AGSP an accurate gradient detector
 
 #define RM_4DLF_MI_INTRA_MODE_LSP						  1 ///< Pred Mode LSP
-#define RM_4DLF_MI_INTRA_MODE_LSP_PRED_ORDER			  3 // < Pred Order for LSP
-#define RM_4DLF_MI_INTRA_MODE_LSP_EXTEND_TRAINING_AREA	  4 // < Extends LSP training area to L, U, R and D MIs (1 to 4)
+#define RM_4DLF_MI_INTRA_MODE_LSP_PRED_ORDER			  7 // < Pred Order for LSP
+#define RM_4DLF_MI_INTRA_MODE_LSP_EXTEND_TRAINING_AREA	  8 // < Extends LSP training area to L, U, R and D MIs (1 to 4)
 
 //! \ingroup TLibCommon
 //! \{
