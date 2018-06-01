@@ -705,7 +705,7 @@ Void TComPrediction::xPred4DLFMI_LSP(       Int bitDepth,
 				{
 					lspCoefs = trainRasterLSP(causalSupportX, causalSupportY, (Int)currentSAI, (Int)mi, p4DLFMI, (Int)originPixelMI + x*(Int)mi + (y*(Int)mi)*(Int)ui4DLFMIStride, (Int)firstPixelPos + x*(Int)mi + (y*(Int)mi)*(Int)ui4DLFMIStride, (Int)ui4DLFMIStride, W, H);
 					//predictor = LSP3( lspCoefs, 3, p4DLFMI, (Int)currentSAI, (Int)mi, (Int)firstPixelPos + x*(Int)mi + (y*(Int)mi)*(Int)ui4DLFMIStride, (Int)ui4DLFMIStride);
-					predictor = LSPM( causalSupportX, causalSupportY, lspCoefs, RM_4DLF_MI_INTRA_MODE_LSP_PRED_ORDER, p4DLFMI, (Int)currentSAI, (Int)mi, (Int)firstPixelPos + x*(Int)mi + (y*(Int)mi)*(Int)ui4DLFMIStride, (Int)ui4DLFMIStride);
+					predictor = LSPM( causalSupportX, causalSupportY, lspCoefs, RM_4DLF_MI_INTRA_MODE_LSP_PRED_ORDER, p4DLFMI, (Int)currentSAI, (Int)mi, (Int)firstPixelPos + x*(Int)mi + (y*(Int)mi)*(Int)ui4DLFMIStride, (Int)ui4DLFMIStride, bitDepth);
 				}
 			}
 			else
@@ -728,7 +728,7 @@ Double* TComPrediction::trainRasterLSP( Int* causalSupportX, Int* causalSupportY
 	//Int supportPixelPosOffset[predOrder];
 	Int validIdx = 0;
 	Bool supportIncomplete = false;
-	Int miOffset[RM_4DLF_MI_INTRA_MODE_LSP_EXTEND_TRAINING_AREA+1];
+	Int miOffset[9];
 
 	a=doublevector(predOrder);
 	y=doublevector(current_SAI*(RM_4DLF_MI_INTRA_MODE_LSP_EXTEND_TRAINING_AREA+1));
@@ -1041,15 +1041,16 @@ UInt TComPrediction::LSP3( Double *lspCoefs, Int M, Pel* p4DLFMI, Int current_SA
 	return (UInt)predictor;
 }
 
-UInt TComPrediction::LSPM( Int* causalSupportX, Int* causalSupportY, Double *lspCoefs, Int M, Pel* p4DLFMI, Int current_SAI, Int mi, Int current_pixel_pos, Int stride)
+UInt TComPrediction::LSPM( Int* causalSupportX, Int* causalSupportY, Double *lspCoefs, Int M, Pel* p4DLFMI, Int current_SAI, Int mi, Int current_pixel_pos, Int stride, Int bit_depth)
 {
 	Double predictor = 0;
+	Int max_value = (1<<bit_depth) - 1;
 
 	for(Int m=0; m<M; m++)
 		predictor += lspCoefs[m] * (Double)p4DLFMI[current_pixel_pos + causalSupportX[m] + causalSupportY[m]*stride];
 
 	if(predictor < 0) predictor = 0;
-	else if(predictor > 1023) predictor = 1023;
+	else if(predictor > max_value) predictor = max_value;
 
 	free(lspCoefs);
 
