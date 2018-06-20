@@ -661,18 +661,16 @@ Void TComPrediction::xPred4DLFMI_LSP(       Int bitDepth,
 	// first pixel location in the 4DLF MI buffer
 	UInt firstPixelPos = currentSAIsSpiralPosX + uiPosX * mi + (currentSAIsSpiralPosY + uiPosY * mi ) * ui4DLFMIStride;
 	UInt originPixelMI = originMI + uiPosX * mi + (originMI + uiPosY * mi) * ui4DLFMIStride;
-
-	Int causalSupportX[RM_4DLF_MI_INTRA_MODE_LSP_PRED_ORDER];
-	Int causalSupportY[RM_4DLF_MI_INTRA_MODE_LSP_PRED_ORDER];
-	Int availablePixels = getCausalSupportAdaptive( RM_4DLF_MI_INTRA_MODE_LSP_PRED_ORDER, causalSupportX, causalSupportY, (Int)currentSAI, (Int)originPixelMI, (Int)firstPixelPos, (Int)mi, (Int)ui4DLFMIStride );
+	Int predOrder = RM_4DLF_MI_INTRA_MODE_LSP_PRED_ORDER;
+	Int predOrderExt = RM_4DLF_MI_INTRA_MODE_LSP_EXTEND_SUPPORT * RM_4DLF_MI_INTRA_MODE_LSP_EXTEND_SUPPORT_PRED_ORDER;
+	Int causalSupportX[predOrder + predOrderExt];
+	Int causalSupportY[predOrder + predOrderExt];
+	Int availablePixels = getCausalSupportAdaptive( predOrder, predOrderExt, causalSupportX, causalSupportY, (Int)currentSAI, (Int)originPixelMI, (Int)firstPixelPos, (Int)mi, (Int)ui4DLFMIStride );
 	Int pixelMargin = (RM_4DLF_MI_INTRA_MODE_LSP_PRED_ORDER + 1) / 2;
-	//Int currentPixelPosY = ((Int)firstPixelPos / (Int)ui4DLFMIStride) - ((Int)originPixelMI / (Int)ui4DLFMIStride);
-	//Int currentPixelPosX = ((Int)firstPixelPos % (Int)ui4DLFMIStride) - ((Int)originPixelMI % (Int)ui4DLFMIStride);
 
-	/*cout << "currentPixelPosX=" << currentPixelPosX << " currentPixelPosY=" << currentPixelPosY << " ";
-	if(availablePixels)
+/*	if(availablePixels)
 	{
-		for(Int a=0; a<availablePixels; a++)
+		for(Int a=0; a<predOrder + predOrderExt; a++)
 		{
 			cout << "X=" << causalSupportX[a] << " Y=" << causalSupportY[a] << " ";
 		}
@@ -685,27 +683,12 @@ Void TComPrediction::xPred4DLFMI_LSP(       Int bitDepth,
 		for (Int x=0; x<width; x++)
 		{
 			Int predictor = 0;
-			// firstPixelPosX = currentSAIsSpiralPosX + uiPosX * mi
-			// firstPixelPosY = currentSAIsSpiralPosY + uiPosY * mi
-			// currentPixelOffsetX = x*mi
-			// currentPixelOffsetY = y*mi
-			// -2 / -2 -> 2ULEFT pixel
-			// 2ULEFT pixel = (firstPixelPosX + currentPixelPosX - 2, firstPixelPosY + currentPixelPosY - 2)
-			/*if((Int)currentSAIsSpiralPosX + (Int)uiPosX * (Int)mi - 2 + (Int)x*(Int)mi > 0 && (Int)currentSAIsSpiralPosY + (Int)uiPosY * (Int)mi - 2 + (Int)y*(Int)mi > 0) // if ULeft pixel is inside frame
-			{
-				if(currentSAI >= 9)
-				{
-					lspCoefs = trainSpiralLSP((Int)currentSAI, (Int)mi, p4DLFMI, (Int)originPixelMI + x*(Int)mi + (y*(Int)mi)*(Int)ui4DLFMIStride, (Int)firstPixelPos + x*(Int)mi + (y*(Int)mi)*(Int)ui4DLFMIStride, (Int)ui4DLFMIStride);
-					predictor = LSP( lspCoefs, 9, p4DLFMI, (Int)currentSAI, (Int)mi, (Int)firstPixelPos + x*(Int)mi + (y*(Int)mi)*(Int)ui4DLFMIStride, (Int)ui4DLFMIStride);
-				}
-			}*/
 			if((Int)currentSAIsSpiralPosX + (Int)uiPosX * (Int)mi - pixelMargin + (Int)x*(Int)mi > 0 && (Int)currentSAIsSpiralPosY + (Int)uiPosY * (Int)mi - pixelMargin + (Int)y*(Int)mi > 0) // if ULeft pixel is inside frame
 			{
 				if(currentSAI > availablePixels)
 				{
 					lspCoefs = trainRasterLSP(causalSupportX, causalSupportY, (Int)currentSAI, (Int)mi, p4DLFMI, (Int)originPixelMI + x*(Int)mi + (y*(Int)mi)*(Int)ui4DLFMIStride, (Int)firstPixelPos + x*(Int)mi + (y*(Int)mi)*(Int)ui4DLFMIStride, (Int)ui4DLFMIStride, W, H);
-					//predictor = LSP3( lspCoefs, 3, p4DLFMI, (Int)currentSAI, (Int)mi, (Int)firstPixelPos + x*(Int)mi + (y*(Int)mi)*(Int)ui4DLFMIStride, (Int)ui4DLFMIStride);
-					predictor = LSPM( causalSupportX, causalSupportY, lspCoefs, RM_4DLF_MI_INTRA_MODE_LSP_PRED_ORDER, p4DLFMI, (Int)currentSAI, (Int)mi, (Int)firstPixelPos + x*(Int)mi + (y*(Int)mi)*(Int)ui4DLFMIStride, (Int)ui4DLFMIStride, bitDepth);
+					predictor = LSPM( causalSupportX, causalSupportY, lspCoefs, predOrder + predOrderExt, p4DLFMI, (Int)currentSAI, (Int)mi, (Int)firstPixelPos + x*(Int)mi + (y*(Int)mi)*(Int)ui4DLFMIStride, (Int)ui4DLFMIStride, bitDepth);
 				}
 			}
 			else
@@ -723,6 +706,7 @@ Double* TComPrediction::trainRasterLSP( Int* causalSupportX, Int* causalSupportY
 	Int I=0, J=0;
 	double *y, *yValid,*a,**C, **CValidt;
 	Int predOrder = RM_4DLF_MI_INTRA_MODE_LSP_PRED_ORDER;
+	Int predOrderExt = RM_4DLF_MI_INTRA_MODE_LSP_EXTEND_SUPPORT_PRED_ORDER * RM_4DLF_MI_INTRA_MODE_LSP_EXTEND_SUPPORT;
 	Int spiralOffset = floor(miSize/2); // relative spiral offset
 	Int pixelOffset = 0;
 	//Int supportPixelPosOffset[predOrder];
@@ -730,9 +714,9 @@ Double* TComPrediction::trainRasterLSP( Int* causalSupportX, Int* causalSupportY
 	Bool supportIncomplete = false;
 	Int miOffset[9];
 
-	a=doublevector(predOrder);
+	a=doublevector(predOrder + predOrderExt);
 	y=doublevector(current_SAI*(RM_4DLF_MI_INTRA_MODE_LSP_EXTEND_TRAINING_AREA+1));
-	C=doublematrix(current_SAI*(RM_4DLF_MI_INTRA_MODE_LSP_EXTEND_TRAINING_AREA+1),predOrder);
+	C=doublematrix(current_SAI*(RM_4DLF_MI_INTRA_MODE_LSP_EXTEND_TRAINING_AREA+1),predOrder + predOrderExt);
 
 	miOffset[0] = 0; 				// Current
 #if RM_4DLF_MI_INTRA_MODE_LSP_EXTEND_TRAINING_AREA
@@ -745,6 +729,7 @@ Double* TComPrediction::trainRasterLSP( Int* causalSupportX, Int* causalSupportY
 	miOffset[7] = miSize +stride*miSize;// DR
 	miOffset[8] = -miSize +stride*miSize;// DL
 #endif
+
 	for(Int mi = 0; mi<=RM_4DLF_MI_INTRA_MODE_LSP_EXTEND_TRAINING_AREA; mi++)
 	{
 		// if MI is available
@@ -759,7 +744,7 @@ Double* TComPrediction::trainRasterLSP( Int* causalSupportX, Int* causalSupportY
 				I = (Int)i - spiralOffset;
 				J = (Int)j - spiralOffset;
 				pixelOffset = I + J*stride;
-				for(Int m=0; m<RM_4DLF_MI_INTRA_MODE_LSP_PRED_ORDER; m++)
+				for(Int m=0; m<predOrder + predOrderExt; m++)
 				{
 					C[validIdx][m] 	= p4DLFMI[origin_pixel_pos + miOffset[mi] + pixelOffset + causalSupportX[m] + causalSupportY[m]*stride];
 					if(!C[validIdx][m])
@@ -778,26 +763,40 @@ Double* TComPrediction::trainRasterLSP( Int* causalSupportX, Int* causalSupportY
 
 	if(validIdx)
 	{
-		CValidt=doublematrix(predOrder,validIdx);
+		CValidt=doublematrix(predOrder + predOrderExt,validIdx);
 		yValid=doublevector(validIdx);
 		for(Int idx = 0; idx < validIdx; idx++)
 		{
-			for(Int m=0; m<RM_4DLF_MI_INTRA_MODE_LSP_PRED_ORDER; m++)
+			for(Int m=0; m<predOrder + predOrderExt; m++)
 				CValidt[m][idx] = C[idx][m];
 			yValid[idx] = y[idx];
 		}
 
-		leastSquares(CValidt,yValid,a,predOrder,validIdx);
+		/*for(Int idx = 0; idx < validIdx; idx++)
+		{
+			for(Int m=0; m<predOrder + predOrderExt; m++)
+			{
+				cout << CValidt[m][idx] << "\t";
+			}
+			cout << endl;
+		}
+
+		for(Int idx = 0; idx < validIdx; idx++)
+		{
+			cout << yValid[idx] << endl;
+		}*/
+
+		leastSquares(CValidt,yValid,a,predOrder + predOrderExt,validIdx);
 		free(yValid);
-		free_doublematrix(CValidt,predOrder, validIdx);
+		free_doublematrix(CValidt,predOrder + predOrderExt, validIdx);
 	}
 	else
 	{
-		for(Int m=0; m<RM_4DLF_MI_INTRA_MODE_LSP_PRED_ORDER; m++)
-			a[m] = 1/(Double)RM_4DLF_MI_INTRA_MODE_LSP_PRED_ORDER;
+		for(Int m=0; m<predOrder + predOrderExt; m++)
+			a[m] = 1/(Double)(predOrder + predOrderExt);
 	}
 	free(y);
-	free_doublematrix(C, current_SAI*(RM_4DLF_MI_INTRA_MODE_LSP_EXTEND_TRAINING_AREA+1), predOrder);
+	free_doublematrix(C, current_SAI*(RM_4DLF_MI_INTRA_MODE_LSP_EXTEND_TRAINING_AREA+1), predOrder + predOrderExt);
 	//if(validIdx > 2)
 	//	cout << current_SAI << "\t\t" << validIdx << "\t\t" << a[0] << "\t\t" << a[1] << "\t\t" << a[2] << endl;
 
@@ -1340,9 +1339,8 @@ Void TComPrediction::lubksb(Double **a, Int n, Int *indx, Double b[])
 #endif
 
 #if RM_4DLF_MI_BUFFER
-Int TComPrediction::getCausalSupportAdaptive( Int M, Int* causalSupportX, Int* causalSupportY, Int currentSAI, Int origin_pixel_pos_MI, Int current_pixel_pos, Int mi, Int stride )
+Int TComPrediction::getCausalSupportAdaptive( Int M, Int MExt, Int* causalSupportX, Int* causalSupportY, Int currentSAI, Int origin_pixel_pos_MI, Int current_pixel_pos, Int mi, Int stride )
 {
-
 	Int numPixelsMI = mi*mi;
 	Int l1Distance[numPixelsMI];
 	Int spiralBorderOffset = floor(mi/2);
@@ -1353,6 +1351,18 @@ Int TComPrediction::getCausalSupportAdaptive( Int M, Int* causalSupportX, Int* c
 	Int numValidPos = 0;
 	Bool atLeastOneValidPos = false;
 	UInt i=0,j=0, dir_idx;
+	Int miOffsetX[8], miOffsetY[8];
+
+#if RM_4DLF_MI_INTRA_MODE_LSP_EXTEND_SUPPORT
+	miOffsetX[0] = -mi;	miOffsetY[0] = 0;	// LEFT
+	miOffsetX[1] = 0;	miOffsetY[1] = -mi;	// UP
+	miOffsetX[2] = mi;	miOffsetY[2] = 0;	// RIGHT
+	miOffsetX[3] = 0;	miOffsetY[3] = mi;	// DOWN
+	miOffsetX[4] = -mi; miOffsetY[4] = -mi; // UL
+	miOffsetX[5] = mi; 	miOffsetY[5] = -mi;	// UR
+	miOffsetX[6] = mi; 	miOffsetY[6] = mi;	// DR
+	miOffsetX[7] = -mi, miOffsetY[7] = mi;	// DL
+#endif
 
 	// init distance
 	for(Int i=0; i<numPixelsMI; i++)
@@ -1397,13 +1407,20 @@ Int TComPrediction::getCausalSupportAdaptive( Int M, Int* causalSupportX, Int* c
 			l1Distance[(spiralBorderOffset+minValuePosY+currentPixelPosY)*mi + spiralBorderOffset+minValuePosX+currentPixelPosX] = NOT_VALID;
 			causalSupportX[m] = minValuePosX;
 			causalSupportY[m] = minValuePosY;
+			if(numValidPos < RM_4DLF_MI_INTRA_MODE_LSP_EXTEND_SUPPORT_PRED_ORDER) // extend support to other MIs
+			{
+				for(Int miExt=0; miExt<RM_4DLF_MI_INTRA_MODE_LSP_EXTEND_SUPPORT; miExt++)
+				{ // M -> jump to beg of extended list of support pixels // m -> individual MI idx // miExt -> ext MI position index
+					causalSupportX[M+m+miExt*RM_4DLF_MI_INTRA_MODE_LSP_EXTEND_SUPPORT_PRED_ORDER] = minValuePosX + miOffsetX[miExt];
+					causalSupportY[M+m+miExt*RM_4DLF_MI_INTRA_MODE_LSP_EXTEND_SUPPORT_PRED_ORDER] = minValuePosY + miOffsetY[miExt];
+					//cout << M+m+miExt*RM_4DLF_MI_INTRA_MODE_LSP_EXTEND_SUPPORT_PRED_ORDER << endl;
+				}
+			}
 			numValidPos++;
 		}
 		else
 			break;
 	}
-
-
 
 	return numValidPos; // number of available pixels for the support
 }
