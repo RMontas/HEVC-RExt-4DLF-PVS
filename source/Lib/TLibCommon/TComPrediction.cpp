@@ -668,14 +668,16 @@ Void TComPrediction::xPred4DLFMI_LSP(       Int bitDepth,
 	Int availablePixels = getCausalSupportAdaptive( predOrder, predOrderExt, causalSupportX, causalSupportY, (Int)currentSAI, (Int)originPixelMI, (Int)firstPixelPos, (Int)mi, (Int)ui4DLFMIStride );
 	Int pixelMargin = (RM_4DLF_MI_INTRA_MODE_LSP_PRED_ORDER + 1) / 2;
 
-/*	if(availablePixels)
+#if RM_4DLF_MI_INTRA_MODE_LSP_EXTEND_SUPPORT_SEARCH // save original values
+	Int causalSupportXOrg[predOrder + predOrderExt];
+	Int causalSupportYOrg[predOrder + predOrderExt];
+	for(Int m=0; m<predOrder + predOrderExt; m++)
 	{
-		for(Int a=0; a<predOrder + predOrderExt; a++)
-		{
-			cout << "X=" << causalSupportX[a] << " Y=" << causalSupportY[a] << " ";
-		}
-		cout << endl;
-	}*/
+		causalSupportXOrg[m] = causalSupportX[m];
+		causalSupportYOrg[m] = causalSupportY[m];
+	}
+#endif
+
 
 	// Create individual pixel predictor for each pixel
 	for (Int y=0; y<height; y++)
@@ -687,8 +689,19 @@ Void TComPrediction::xPred4DLFMI_LSP(       Int bitDepth,
 			{
 				if(currentSAI > availablePixels)
 				{
+
+#if RM_4DLF_MI_INTRA_MODE_LSP_EXTEND_SUPPORT_SEARCH
+					for(Int m=0; m<predOrder + predOrderExt; m++) // restore the support to the default for each pixel
+					{
+						causalSupportX[m] = causalSupportXOrg[m];
+						causalSupportY[m] = causalSupportYOrg[m];
+					}
+					if(currentSAI > RM_4DLF_MI_INTRA_MODE_LSP_EXTEND_SUPPORT_SEARCH_TEMPLATE_SIZE)
+						extendedSupportSearch(p4DLFMI, predOrder, predOrderExt, causalSupportX, causalSupportY, (Int)currentSAI, (Int)originPixelMI, (Int)firstPixelPos, (Int)mi, (Int)ui4DLFMIStride );
+#endif
 					lspCoefs = trainRasterLSP(causalSupportX, causalSupportY, (Int)currentSAI, (Int)mi, p4DLFMI, (Int)originPixelMI + x*(Int)mi + (y*(Int)mi)*(Int)ui4DLFMIStride, (Int)firstPixelPos + x*(Int)mi + (y*(Int)mi)*(Int)ui4DLFMIStride, (Int)ui4DLFMIStride, W, H);
 					predictor = LSPM( causalSupportX, causalSupportY, lspCoefs, predOrder + predOrderExt, p4DLFMI, (Int)currentSAI, (Int)mi, (Int)firstPixelPos + x*(Int)mi + (y*(Int)mi)*(Int)ui4DLFMIStride, (Int)ui4DLFMIStride, bitDepth);
+
 				}
 			}
 			else
@@ -1424,6 +1437,70 @@ Int TComPrediction::getCausalSupportAdaptive( Int M, Int MExt, Int* causalSuppor
 
 	return numValidPos; // number of available pixels for the support
 }
+#if RM_4DLF_MI_INTRA_MODE_LSP_EXTEND_SUPPORT_SEARCH
+Void TComPrediction::extendedSupportSearch( Pel* p4DLFMI, Int M, Int MExt, Int* causalSupportX, Int* causalSupportY, Int currentSAI, Int origin_pixel_pos_MI, Int current_pixel_pos, Int mi, Int stride )
+{
+	Int templateSize = RM_4DLF_MI_INTRA_MODE_LSP_EXTEND_SUPPORT_SEARCH_TEMPLATE_SIZE;
+	Int templateSupportX[templateSize];
+	Int templateSupportY[templateSize];
+	getCausalSupportAdaptive( templateSize, 0, templateSupportX, templateSupportY, currentSAI, origin_pixel_pos_MI, current_pixel_pos, mi, stride );
+
+	Int miOffsetX[8], miOffsetY[8];
+	Int maxDisp = RM_4DLF_MI_INTRA_MODE_LSP_EXTEND_SUPPORT_SEARCH_WINDOW;
+	Int extendedSupportMIs = RM_4DLF_MI_INTRA_MODE_LSP_EXTEND_SUPPORT;
+	Int extendedSupportPredOrder = RM_4DLF_MI_INTRA_MODE_LSP_EXTEND_SUPPORT_PRED_ORDER;
+	Int bestSSD = MAX_INT, currentSSD = MAX_INT;
+	Int bestDisparityX = 0, bestDisparityY = 0;
+	Int currentPixelDif, currentPixelExtended, currentPixelRef;
+
+	miOffsetX[0] = -mi;	miOffsetY[0] = 0;	// LEFT
+	miOffsetX[1] = 0;	miOffsetY[1] = -mi;	// UP
+	miOffsetX[2] = mi;	miOffsetY[2] = 0;	// RIGHT
+	miOffsetX[3] = 0;	miOffsetY[3] = mi;	// DOWN
+	miOffsetX[4] = -mi; miOffsetY[4] = -mi; // UL
+	miOffsetX[5] = mi; 	miOffsetY[5] = -mi;	// UR
+	miOffsetX[6] = mi; 	miOffsetY[6] = mi;	// DR
+	miOffsetX[7] = -mi, miOffsetY[7] = mi;	// DL
+
+	for(Int m=0; m<extendedSupportMIs; m++)
+	{
+		for(Int j=-maxDisp; j<=maxDisp; j++)
+		{
+			for(Int i=-maxDisp; i<=maxDisp; i++)
+			{
+				currentSSD = 0;
+				for(Int p=0; p<templateSize; p++)
+				{
+					currentPixelExtended = p4DLFMI[current_pixel_pos + templateSupportX[p] + miOffsetX[m] + i + (templateSupportY[p] + miOffsetY[m] + j)*stride];
+					currentPixelRef = p4DLFMI[current_pixel_pos + templateSupportX[p] + (templateSupportY[p])*stride];
+					if(currentPixelExtended)
+					{
+						currentPixelDif = (currentPixelRef - currentPixelExtended);
+						currentSSD += currentPixelDif * currentPixelDif;
+					}
+					else
+					{
+						currentSSD = MAX_INT;
+						break;
+					}
+				}
+				if(currentSSD < bestSSD)
+				{
+					bestSSD = currentSSD;
+					bestDisparityX = i;
+					bestDisparityY = j;
+				}
+			}
+		}
+		for(Int n=0; n<extendedSupportPredOrder; n++)
+		{
+			causalSupportX[M + m*extendedSupportMIs + n] += bestDisparityX;
+			causalSupportY[M + m*extendedSupportMIs + n] += bestDisparityY;
+		}
+	}
+
+}
+#endif
 
 Void TComPrediction::getCausalSupportFromSpiral_LOCO_I( Int* a, Int* b, Int* c, Int current_SAI, Int total_number_of_SAIS, Pel* p4DLFMI, Int const current_pixel_pos, Int const stride )
 {

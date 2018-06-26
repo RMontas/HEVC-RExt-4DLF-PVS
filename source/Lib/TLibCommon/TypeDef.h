@@ -54,14 +54,16 @@
 #define RM_4DLF_MI_INTRA_MODE_DC_3x3					  		0 ///< Pred Mode that averages the closest last 8 SAIs relative to the current pixel in the 4DLF_MI buffer
 #define RM_4DLF_MI_INTRA_MODE_LOCO_I					  		0 ///< Pred Mode LOCO-I a median edge detector
 #define RM_4DLF_MI_INTRA_MODE_GAP						  		0 ///< Pred Mode GAP a gradient detector
-#define RM_4DLF_MI_INTRA_MODE_AGSP						  		0 ///< Pred Mode AGSP an accurate gradient detector
+#define RM_4DLF_MI_INTRA_MODE_AGSP						  		1 ///< Pred Mode AGSP an accurate gradient detector
 
-#define RM_4DLF_MI_INTRA_MODE_LSP						  		1 ///< Pred Mode LSP
-#define RM_4DLF_MI_INTRA_MODE_LSP_PRED_ORDER			  		3 // < Pred Order for LSP
+#define RM_4DLF_MI_INTRA_MODE_LSP						  		0 ///< Pred Mode LSP
+#define RM_4DLF_MI_INTRA_MODE_LSP_PRED_ORDER			  		7 // < Pred Order for LSP
 #define RM_4DLF_MI_INTRA_MODE_LSP_EXTEND_TRAINING_AREA	  		4 // < Extends LSP training area to L, U, R and D... MIs (1 to 8)
 #define RM_4DLF_MI_INTRA_MODE_LSP_EXTEND_SUPPORT	  	  		2 // < Extends LSP support area to L, U, R and D... MIs (1 to 8)
-#define RM_4DLF_MI_INTRA_MODE_LSP_EXTEND_SUPPORT_PRED_ORDER	  	2 // < Extended LSP support pred order
-
+#define RM_4DLF_MI_INTRA_MODE_LSP_EXTEND_SUPPORT_PRED_ORDER	  	7 // < Extended LSP support pred order
+#define RM_4DLF_MI_INTRA_MODE_LSP_EXTEND_SUPPORT_SEARCH			0 // < Extended LSP support search tool
+#define RM_4DLF_MI_INTRA_MODE_LSP_EXTEND_SUPPORT_SEARCH_WINDOW	0 // < Extended LSP support search tool window
+#define RM_4DLF_MI_INTRA_MODE_LSP_EXTEND_SUPPORT_SEARCH_TEMPLATE_SIZE	0 // < Extended LSP support search tool template size
 
 //! \ingroup TLibCommon
 //! \{
