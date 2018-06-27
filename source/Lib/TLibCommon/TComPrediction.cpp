@@ -667,7 +667,9 @@ Void TComPrediction::xPred4DLFMI_LSP(       Int bitDepth,
 	Int causalSupportY[predOrder + predOrderExt];
 	Int availablePixels = getCausalSupportAdaptive( predOrder, predOrderExt, causalSupportX, causalSupportY, (Int)currentSAI, (Int)originPixelMI, (Int)firstPixelPos, (Int)mi, (Int)ui4DLFMIStride );
 	Int pixelMargin = (RM_4DLF_MI_INTRA_MODE_LSP_PRED_ORDER + 1) / 2;
-
+#if RM_4DLF_MI_INTRA_MODE_LSP_EXTEND_SUPPORT
+	pixelMargin += mi;
+#endif
 #if RM_4DLF_MI_INTRA_MODE_LSP_EXTEND_SUPPORT_SEARCH // save original values
 	Int causalSupportXOrg[predOrder + predOrderExt];
 	Int causalSupportYOrg[predOrder + predOrderExt];
@@ -689,7 +691,6 @@ Void TComPrediction::xPred4DLFMI_LSP(       Int bitDepth,
 			{
 				if(currentSAI > availablePixels)
 				{
-
 #if RM_4DLF_MI_INTRA_MODE_LSP_EXTEND_SUPPORT_SEARCH
 					for(Int m=0; m<predOrder + predOrderExt; m++) // restore the support to the default for each pixel
 					{
@@ -701,7 +702,6 @@ Void TComPrediction::xPred4DLFMI_LSP(       Int bitDepth,
 #endif
 					lspCoefs = trainRasterLSP(causalSupportX, causalSupportY, (Int)currentSAI, (Int)mi, p4DLFMI, (Int)originPixelMI + x*(Int)mi + (y*(Int)mi)*(Int)ui4DLFMIStride, (Int)firstPixelPos + x*(Int)mi + (y*(Int)mi)*(Int)ui4DLFMIStride, (Int)ui4DLFMIStride, W, H);
 					predictor = LSPM( causalSupportX, causalSupportY, lspCoefs, predOrder + predOrderExt, p4DLFMI, (Int)currentSAI, (Int)mi, (Int)firstPixelPos + x*(Int)mi + (y*(Int)mi)*(Int)ui4DLFMIStride, (Int)ui4DLFMIStride, bitDepth);
-
 				}
 			}
 			else
@@ -1715,7 +1715,7 @@ Void TComPrediction::getCausalSupportFromSpiral_AGSP( Int* w, Int* ww, Int* n, I
 		if(current_direction[dir_idx] == 'R')
 		{
 			W = p4DLFMI[current_pixel_pos + 1]; // RIGHT
-			WW = p4DLFMI[current_pixel_pos + 1]; // 2RIGHT
+			WW = p4DLFMI[current_pixel_pos + 2]; // 2RIGHT
 			N = p4DLFMI[current_pixel_pos + stride]; // DOWN
 			NN = p4DLFMI[current_pixel_pos + 2*stride]; // 2DOWN
 			NW = p4DLFMI[current_pixel_pos + 1 + stride]; // DOWN RIGHT
@@ -1817,10 +1817,10 @@ Void TComPrediction::getCausalSupportFromSpiral_AGSP( Int* w, Int* ww, Int* n, I
 
 Int TComPrediction::AGSP( Int w, Int ww, Int n, Int nn, Int nw, Int ne, Int nne, Int nww, Int nnw )
 {
-	Double dh = (2*abs(w - ww) + 2*abs(n - nw) + 2*abs(n - ne) + abs(nn - nnw) + abs(nn - nne) + abs(nw - nww))/10;
-	Double dv = (2*abs(w - nw) + 2*abs(n - nn) + abs(ne - nne) + abs(ww - nww) + abs(nw - nnw))/8;
-	Double dplus = (2*abs(w - n) + 2*abs(n - nne) + abs(ww - nw) + abs(nw - nn))/7;
-	Double dminus = (2*abs(w - nww) + 2*abs(n - nnw) + abs(ne - nn))/6;
+	Double dh = (2*abs(w - ww) + 2*abs(n - nw) + 2*abs(n - ne) + abs(nn - nnw) + abs(nn - nne) + abs(nw - nww)) / 9 + 1;
+	Double dv = (2*abs(w - nw) + 2*abs(n - nn) + abs(ne - nne) + abs(ww - nww) + abs(nw - nnw)) / 7 + 1;
+	Double dplus = (2*abs(w - n) + 2*abs(n - nne) + abs(ww - nw) + abs(nw - nn)) / 6 + 1;
+	Double dminus = (2*abs(w - nww) + 2*abs(n - nnw) + abs(ne - nn)) / 5 + 1;
 
 	Double Dmin1 = min(min(min(dh, dv), dplus), dminus);
 	Double Dmin2 = 0;
