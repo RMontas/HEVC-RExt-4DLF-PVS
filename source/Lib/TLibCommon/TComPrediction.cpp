@@ -405,6 +405,7 @@ Void TComPrediction::xPred4DLFMI_DC_3x3(       Int bitDepth,
 	Pel* const p4DLFMI = pcPic4DLFMI->getAddr( compID );
 	// first pixel location in the 4DLF MI buffer
 	UInt firstPixelPos = currentSAIsSpiralPosX + uiPosX * mi + (currentSAIsSpiralPosY + uiPosY * mi ) * ui4DLFMIStride;
+	Int window = 2;
 	// Create individual pixel predictor for each pixel
 	for (Int y=0; y<height; y++)
 	{
@@ -412,9 +413,9 @@ Void TComPrediction::xPred4DLFMI_DC_3x3(       Int bitDepth,
 		{
 			UInt predictor = 0;
 			UInt availablePixels = 0;
-			for (Int j=-1; j<=1; j++)
+			for (Int j=-window; j<=window; j++)
 			{
-				for (Int i=-1; i<=1; i++)
+				for (Int i=-window; i<=window; i++)
 				{
 					if((Int)currentSAIsSpiralPosX + (Int)uiPosX * mi + x*mi + i >= 0 && (Int)currentSAIsSpiralPosY + (Int)uiPosY * mi + y*mi + j >= 0) // if valid (inside frame)
 					{
