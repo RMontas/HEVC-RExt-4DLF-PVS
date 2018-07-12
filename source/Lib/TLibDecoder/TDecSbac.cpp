@@ -646,6 +646,9 @@ Void TDecSbac::parseIntraDirLumaAng  ( TComDataCU* pcCU, UInt absPartIdx, UInt d
   {
     depth++;
   }
+#if RM_DECODER_VERBOSE
+  cout << depth << "\t" <<  partNum;
+#endif
 #if RExt__DECODER_DEBUG_BIT_STATISTICS
   const TComCodingStatisticsClassType ctype(STATS__CABAC_BITS__INTRA_DIR_ANG, g_aucConvertToBit[pcCU->getSlice()->getSPS()->getMaxCUWidth()>>depth]+2, CHANNEL_TYPE_LUMA);
 #endif
@@ -667,6 +670,9 @@ Void TDecSbac::parseIntraDirLumaAng  ( TComDataCU* pcCU, UInt absPartIdx, UInt d
         symbol++;
       }
       intraPredMode = preds[symbol];
+#if RM_DECODER_VERBOSE
+  cout << "\t" << j << "\t" << intraPredMode;
+#endif
     }
     else
     {
@@ -690,9 +696,15 @@ Void TDecSbac::parseIntraDirLumaAng  ( TComDataCU* pcCU, UInt absPartIdx, UInt d
       {
         intraPredMode += ( intraPredMode >= preds[i] );
       }
+#if RM_DECODER_VERBOSE
+  cout << "\t" << j << "\t" << intraPredMode;
+#endif
     }
     pcCU->setIntraDirSubParts(CHANNEL_TYPE_LUMA, (UChar)intraPredMode, absPartIdx+partOffset*j, depth );
   }
+#if RM_DECODER_VERBOSE
+  cout << endl;
+#endif
 }
 
 
