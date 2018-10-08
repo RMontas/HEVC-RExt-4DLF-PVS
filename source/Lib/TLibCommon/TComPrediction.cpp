@@ -788,6 +788,101 @@ Void TComPrediction::xPred4DLFMI_LSP7(       Int bitDepth,
 	}
 }
 
+Void TComPrediction::xPred4DLFMI_LSP9(       Int bitDepth,
+                                    const Pel* pSrc,     Int srcStride,
+                                          Pel* pTrueDst, Int dstStrideTrue,
+                                          UInt uiWidth, UInt uiHeight, ChannelType channelType,
+                                          UInt dirMode, TComPicYuv *const pcPic4DLFMI, UInt miSize,
+										  UInt currentSAIsSpiralPosX, UInt currentSAIsSpiralPosY,
+										  UInt totalNumberOfSAIs, UInt currentSAI, UInt uiAbsPartIdxInRaster,
+										  UInt uiPosX, UInt uiPosY, ComponentID compID )
+{
+	Int width=Int(uiWidth);
+	Int height=Int(uiHeight);
+	Int mi=Int(miSize);
+	Int originMI = floor(mi/2);
+	Double *lspCoefs;
+	UInt const ui4DLFMIStride = pcPic4DLFMI->getStride(compID);
+	Pel* const p4DLFMI = pcPic4DLFMI->getAddr( compID );
+	Int H = pcPic4DLFMI->getHeight(compID);
+	Int W = pcPic4DLFMI->getWidth(compID);
+	// first pixel location in the 4DLF MI buffer
+	UInt firstPixelPos = currentSAIsSpiralPosX + uiPosX * mi + (currentSAIsSpiralPosY + uiPosY * mi ) * ui4DLFMIStride;
+	UInt originPixelMI = originMI + uiPosX * mi + (originMI + uiPosY * mi) * ui4DLFMIStride;
+	Int predOrder = 9;
+	Int causalSupportX[predOrder];
+	Int causalSupportY[predOrder];
+	Int availablePixels = getCausalSupportAdaptive( predOrder, 0, causalSupportX, causalSupportY, (Int)currentSAI, (Int)originPixelMI, (Int)firstPixelPos, (Int)mi, (Int)ui4DLFMIStride );
+	Int pixelMargin = (predOrder + 1) / 2 + mi; // +mi ext training area
+
+	// Create individual pixel predictor for each pixel
+	for (Int y=0; y<height; y++)
+	{
+		for (Int x=0; x<width; x++)
+		{
+			Int predictor = 0;
+			if((Int)currentSAIsSpiralPosX + (Int)uiPosX * (Int)mi - pixelMargin + (Int)x*(Int)mi > 0 && (Int)currentSAIsSpiralPosY + (Int)uiPosY * (Int)mi - pixelMargin + (Int)y*(Int)mi > 0) // if ULeft pixel is inside frame
+			{
+				if(currentSAI > availablePixels)
+				{
+					lspCoefs = trainRasterLSP(causalSupportX, causalSupportY, (Int)currentSAI, (Int)mi, p4DLFMI, (Int)originPixelMI + x*(Int)mi + (y*(Int)mi)*(Int)ui4DLFMIStride, (Int)firstPixelPos + x*(Int)mi + (y*(Int)mi)*(Int)ui4DLFMIStride, (Int)ui4DLFMIStride, W, H, predOrder, 0);
+					predictor = LSPM( causalSupportX, causalSupportY, lspCoefs, predOrder, p4DLFMI, (Int)currentSAI, (Int)mi, (Int)firstPixelPos + x*(Int)mi + (y*(Int)mi)*(Int)ui4DLFMIStride, (Int)ui4DLFMIStride, bitDepth);
+				}
+			}
+			else
+				predictor = 0;
+			pTrueDst[x + y*dstStrideTrue] = UInt(predictor);
+		}
+	}
+}
+
+Void TComPrediction::xPred4DLFMI_LSPM(       Int bitDepth,
+                                    const Pel* pSrc,     Int srcStride,
+                                          Pel* pTrueDst, Int dstStrideTrue,
+                                          UInt uiWidth, UInt uiHeight, ChannelType channelType,
+                                          UInt dirMode, TComPicYuv *const pcPic4DLFMI, UInt miSize,
+										  UInt currentSAIsSpiralPosX, UInt currentSAIsSpiralPosY,
+										  UInt totalNumberOfSAIs, UInt currentSAI, UInt uiAbsPartIdxInRaster,
+										  UInt uiPosX, UInt uiPosY, ComponentID compID, Int predOrder )
+{
+	Int width=Int(uiWidth);
+	Int height=Int(uiHeight);
+	Int mi=Int(miSize);
+	Int originMI = floor(mi/2);
+	Double *lspCoefs;
+	UInt const ui4DLFMIStride = pcPic4DLFMI->getStride(compID);
+	Pel* const p4DLFMI = pcPic4DLFMI->getAddr( compID );
+	Int H = pcPic4DLFMI->getHeight(compID);
+	Int W = pcPic4DLFMI->getWidth(compID);
+	// first pixel location in the 4DLF MI buffer
+	UInt firstPixelPos = currentSAIsSpiralPosX + uiPosX * mi + (currentSAIsSpiralPosY + uiPosY * mi ) * ui4DLFMIStride;
+	UInt originPixelMI = originMI + uiPosX * mi + (originMI + uiPosY * mi) * ui4DLFMIStride;
+	Int causalSupportX[predOrder];
+	Int causalSupportY[predOrder];
+	Int availablePixels = getCausalSupportAdaptive( predOrder, 0, causalSupportX, causalSupportY, (Int)currentSAI, (Int)originPixelMI, (Int)firstPixelPos, (Int)mi, (Int)ui4DLFMIStride );
+	Int pixelMargin = (predOrder + 1) / 2 + mi; // +mi ext training area
+
+	// Create individual pixel predictor for each pixel
+	for (Int y=0; y<height; y++)
+	{
+		for (Int x=0; x<width; x++)
+		{
+			Int predictor = 0;
+			if((Int)currentSAIsSpiralPosX + (Int)uiPosX * (Int)mi - pixelMargin + (Int)x*(Int)mi > 0 && (Int)currentSAIsSpiralPosY + (Int)uiPosY * (Int)mi - pixelMargin + (Int)y*(Int)mi > 0) // if ULeft pixel is inside frame
+			{
+				if(currentSAI > availablePixels)
+				{
+					lspCoefs = trainRasterLSP(causalSupportX, causalSupportY, (Int)currentSAI, (Int)mi, p4DLFMI, (Int)originPixelMI + x*(Int)mi + (y*(Int)mi)*(Int)ui4DLFMIStride, (Int)firstPixelPos + x*(Int)mi + (y*(Int)mi)*(Int)ui4DLFMIStride, (Int)ui4DLFMIStride, W, H, predOrder, 0);
+					predictor = LSPM( causalSupportX, causalSupportY, lspCoefs, predOrder, p4DLFMI, (Int)currentSAI, (Int)mi, (Int)firstPixelPos + x*(Int)mi + (y*(Int)mi)*(Int)ui4DLFMIStride, (Int)ui4DLFMIStride, bitDepth);
+				}
+			}
+			else
+				predictor = 0;
+			pTrueDst[x + y*dstStrideTrue] = UInt(predictor);
+		}
+	}
+}
+
 Void TComPrediction::xPred4DLFMI_LSP(       Int bitDepth,
                                     const Pel* pSrc,     Int srcStride,
                                           Pel* pTrueDst, Int dstStrideTrue,
@@ -2200,6 +2295,7 @@ Void TComPrediction::predIntraAng( const ComponentID compID, UInt uiDirMode, Pel
       UInt const uiAbsPartIdxInRaster = g_auiZscanToRaster[pcCUAbsPartIdx];
       UInt const uiPosX = (uiAbsPartIdxInRaster % 16) * 4 + (pcCU->getCtuRsAddr() % pcPic->getFrameWidthInCtus()) * 64;
       UInt const uiPosY = (uiAbsPartIdxInRaster / 16) * 4 + (pcCU->getCtuRsAddr() / pcPic->getFrameWidthInCtus()) * 64;
+#if RM_4DLF_MI_BUFFER_MULTI_MODE == 1
       if( uiDirMode == 3 ) // less probable modes - 3, 7, 11, 15, 19, 23, 27, 31
     	  xPred4DLFMI_DC_3x3( channelsBitDepthForPrediction, ptrSrc+sw+1, sw, pDst, uiStride, iWidth, iHeight, channelType, uiDirMode,
     	      			  	  pcPic4DLFMI, miSize, currentSAIsSpiralPosX, currentSAIsSpiralPosY, totalNumberOfSAIs, currentSAI, uiAbsPartIdxInRaster, uiPosX, uiPosY, compID );
@@ -2221,7 +2317,18 @@ Void TComPrediction::predIntraAng( const ComponentID compID, UInt uiDirMode, Pel
       else if( uiDirMode == 27 )
     	  xPred4DLFMI_LSP7( channelsBitDepthForPrediction, ptrSrc+sw+1, sw, pDst, uiStride, iWidth, iHeight, channelType, uiDirMode,
     	      			  	  pcPic4DLFMI, miSize, currentSAIsSpiralPosX, currentSAIsSpiralPosY, totalNumberOfSAIs, currentSAI, uiAbsPartIdxInRaster, uiPosX, uiPosY, compID );
-
+      else if( uiDirMode == 31 )
+          xPred4DLFMI_LSP9( channelsBitDepthForPrediction, ptrSrc+sw+1, sw, pDst, uiStride, iWidth, iHeight, channelType, uiDirMode,
+          	      			  pcPic4DLFMI, miSize, currentSAIsSpiralPosX, currentSAIsSpiralPosY, totalNumberOfSAIs, currentSAI, uiAbsPartIdxInRaster, uiPosX, uiPosY, compID );
+#endif
+#if RM_4DLF_MI_BUFFER_MULTI_MODE == 2
+      if( !((uiDirMode + 1) % 4) && uiDirMode <= 31 ) // less probable modes - 3, 7, 11, 15, 19, 23, 27, 31
+      {
+    	  Int predOrder = (Int)(0.25 * (Double)uiDirMode + 1.25);
+    	  xPred4DLFMI_LSPM( channelsBitDepthForPrediction, ptrSrc+sw+1, sw, pDst, uiStride, iWidth, iHeight, channelType, uiDirMode,
+    	      	      		pcPic4DLFMI, miSize, currentSAIsSpiralPosX, currentSAIsSpiralPosY, totalNumberOfSAIs, currentSAI, uiAbsPartIdxInRaster, uiPosX, uiPosY, compID, predOrder );
+      }
+#endif
 #endif
 #endif
       if( uiDirMode == DC_IDX )

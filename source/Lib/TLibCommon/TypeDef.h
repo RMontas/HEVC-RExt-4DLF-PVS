@@ -52,7 +52,9 @@
 #define RM_DEBUG_VERBOSE								  		0 ///< Prints debug information
 #define RM_4DLF_MI_BUFFER							      		1 ///< Generates buffer of encoded pixels in a 4DLF_MI format
 
-#define RM_4DLF_MI_BUFFER_MULTI_MODE							1
+#define RM_4DLF_MI_BUFFER_MULTI_MODE							1 ///< 0 Indiv modes
+																  ///< 1 DC, LOCO, GAP, AGSP, LSP3, LSP5, LSP7, LSP9 modes
+																  ///< 2 LSP2-9 modes
 
 #define RM_4DLF_MI_INTRA_MODE_DC_3x3					  		1 ///< Pred Mode that averages the closest last 8 SAIs relative to the current pixel in the 4DLF_MI buffer
 #define RM_4DLF_MI_INTRA_MODE_LOCO_I					  		1 ///< Pred Mode LOCO-I a median edge detector
@@ -68,6 +70,33 @@
 #define RM_4DLF_MI_INTRA_MODE_LSP_EXTEND_SUPPORT_SEARCH			0 // < Extended LSP support search tool
 #define RM_4DLF_MI_INTRA_MODE_LSP_EXTEND_SUPPORT_SEARCH_WINDOW	0 // < Extended LSP support search tool window
 #define RM_4DLF_MI_INTRA_MODE_LSP_EXTEND_SUPPORT_SEARCH_TEMPLATE_SIZE	0 // < Extended LSP support search tool template size
+
+//////////////// EXAMPLE CONFIG BEST RESULTS SO FAR WITH MULTIMODE ////////////////
+/*
+#define RM_DECODER_VERBOSE									  	1 ///< Writes decoder verbose
+#define RM_DEBUG_FILES									  		0 ///< Writes output files for debug purposes
+#define RM_DEBUG_VERBOSE								  		0 ///< Prints debug information
+#define RM_4DLF_MI_BUFFER							      		1 ///< Generates buffer of encoded pixels in a 4DLF_MI format
+
+#define RM_4DLF_MI_BUFFER_MULTI_MODE							1 ///< 0 Indiv modes
+																  ///< 1 DC, LOCO, GAP, AGSP, LSP3, LSP5, LSP7, LSP9 modes
+																  ///< 2 LSP2-9 modes
+
+#define RM_4DLF_MI_INTRA_MODE_DC_3x3					  		1 ///< Pred Mode that averages the closest last 8 SAIs relative to the current pixel in the 4DLF_MI buffer
+#define RM_4DLF_MI_INTRA_MODE_LOCO_I					  		1 ///< Pred Mode LOCO-I a median edge detector
+#define RM_4DLF_MI_INTRA_MODE_GAP						  		1 ///< Pred Mode GAP a gradient detector
+#define RM_4DLF_MI_INTRA_MODE_AGSP						  		1 ///< Pred Mode AGSP an accurate gradient detector
+
+#define RM_4DLF_MI_INTRA_MODE_LSP						  		1 ///< Pred Mode LSP
+#define RM_4DLF_MI_INTRA_MODE_LSP_PRED_ORDER			  		3 // < Pred Order for LSP
+#define RM_4DLF_MI_INTRA_MODE_LSP_EXTEND_TRAINING_AREA	  		4 // < Extends LSP training area to L, U, R and D... MIs (1 to 8)
+// these tools do not produce very good results
+#define RM_4DLF_MI_INTRA_MODE_LSP_EXTEND_SUPPORT	  	  		0 // < Extends LSP support area to L, U, R and D... MIs (1 to 8)
+#define RM_4DLF_MI_INTRA_MODE_LSP_EXTEND_SUPPORT_PRED_ORDER	  	0 // < Extended LSP support pred order
+#define RM_4DLF_MI_INTRA_MODE_LSP_EXTEND_SUPPORT_SEARCH			0 // < Extended LSP support search tool
+#define RM_4DLF_MI_INTRA_MODE_LSP_EXTEND_SUPPORT_SEARCH_WINDOW	0 // < Extended LSP support search tool window
+#define RM_4DLF_MI_INTRA_MODE_LSP_EXTEND_SUPPORT_SEARCH_TEMPLATE_SIZE	0 // < Extended LSP support search tool template size
+*/
 
 //! \ingroup TLibCommon
 //! \{
