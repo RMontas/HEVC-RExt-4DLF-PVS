@@ -114,7 +114,7 @@ for l = 1:num_Layers
 end 
 fileID_L34 = fopen('LF_Buff_L34.yuv', 'w' );
 fileID_L56 = fopen('LF_Buff_L56.yuv', 'w' );
-frameNum = 0;
+frameNum = 1;
 for l = 1:num_Layers
     for j = 1:miSize
         for i = 1:miSize 
@@ -124,9 +124,9 @@ for l = 1:num_Layers
                 U = fread(f, [W_PVS H_PVS], 'uint16');
                 V = fread(f, [W_PVS H_PVS], 'uint16');
                 Y = Y'; U = U'; V = V';
-                PVS(frameNum + 1, :, :, 1) = uint16(Y(1:H_PVS,1:W_PVS));
-                PVS(frameNum + 1, :, :, 2) = uint16(U(1:H_PVS,1:W_PVS));
-                PVS(frameNum + 1, :, :, 3) = uint16(V(1:H_PVS,1:W_PVS));
+                PVS(frameNum, :, :, 1) = uint16(Y(1:H_PVS,1:W_PVS));
+                PVS(frameNum, :, :, 2) = uint16(U(1:H_PVS,1:W_PVS));
+                PVS(frameNum, :, :, 3) = uint16(V(1:H_PVS,1:W_PVS));
                 % gen LFs for the different layers
                 LF(ypos,xpos,:,:,1) = uint16(Y(1:H_PVS_wo_padding,1:W_PVS_wo_padding));
                 LF(ypos,xpos,:,:,2) = uint16(U(1:H_PVS_wo_padding,1:W_PVS_wo_padding));
@@ -210,6 +210,7 @@ for l = 1:num_Layers
                                     %imshow(compensatedSAI,[])
                                 end
                             end
+                            fwrite(fileID_L34, permute(LF_Buff_L34, [2 1 3]), 'uint16');
                         end
                     end
                     
@@ -254,11 +255,10 @@ for l = 1:num_Layers
                                     %imshow(compensatedSAI,[])
                                 end
                             end
+                            fwrite(fileID_L56, permute(LF_Buff_L56, [2 1 3]), 'uint16');
                         end
                     end
                 end
-                fwrite(fileID_L34, permute(LF_Buff_L34, [2 1 3]), 'uint16');
-                fwrite(fileID_L56, permute(LF_Buff_L56, [2 1 3]), 'uint16');
                 SAIUsage(ypos,xpos) = frameNum;
                 frameNum = frameNum + 1
                 %close all

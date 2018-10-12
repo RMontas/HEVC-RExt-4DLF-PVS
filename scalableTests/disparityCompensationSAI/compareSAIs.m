@@ -109,62 +109,55 @@ for l = 1:num_Layers
     end
 end
                 
-frameNum = 0;
+frameNum = 1;
 for l = 1:num_Layers
     for j = 1:miSize
         for i = 1:miSize 
             [ypos, xpos] = find(cc_spiral == (j-1)*miSize + i);
             if layerMask(ypos,xpos) == l
-                if l == 1 || l == 2
-                    YBuff34 = fread(fBuff34, [miSizeL34 * W_PVS_wo_padding miSizeL34 * H_PVS_wo_padding], 'uint16');
-                    UBuff34 = fread(fBuff34, [miSizeL34 * W_PVS_wo_padding miSizeL34 * H_PVS_wo_padding], 'uint16');
-                    VBuff34 = fread(fBuff34, [miSizeL34 * W_PVS_wo_padding miSizeL34 * H_PVS_wo_padding], 'uint16');
-                    YBuff56 = fread(fBuff56, [miSizeL56 * W_PVS_wo_padding miSizeL56 * H_PVS_wo_padding], 'uint16');
-                    UBuff56 = fread(fBuff56, [miSizeL56 * W_PVS_wo_padding miSizeL56 * H_PVS_wo_padding], 'uint16');
-                    VBuff56 = fread(fBuff56, [miSizeL56 * W_PVS_wo_padding miSizeL56 * H_PVS_wo_padding], 'uint16');
-                end
                 if l >= 3
                     if l == 3 || l == 4 % 3x3 LF to 7x7 LF
-                        YBuff34 = fread(fBuff34, [miSizeL34 * W_PVS_wo_padding miSizeL34 * H_PVS_wo_padding], 'uint16');
-                        UBuff34 = fread(fBuff34, [miSizeL34 * W_PVS_wo_padding miSizeL34 * H_PVS_wo_padding], 'uint16');
-                        VBuff34 = fread(fBuff34, [miSizeL34 * W_PVS_wo_padding miSizeL34 * H_PVS_wo_padding], 'uint16');
-                        YBuff34 = YBuff34'; UBuff34 = UBuff34'; VBuff34 = VBuff34';
-                        YBuff56 = fread(fBuff56, [miSizeL56 * W_PVS_wo_padding miSizeL56 * H_PVS_wo_padding], 'uint16');
-                        UBuff56 = fread(fBuff56, [miSizeL56 * W_PVS_wo_padding miSizeL56 * H_PVS_wo_padding], 'uint16');
-                        VBuff56 = fread(fBuff56, [miSizeL56 * W_PVS_wo_padding miSizeL56 * H_PVS_wo_padding], 'uint16');
-                        for iSAI = 10:45
-                            [yposNonCausal, xposNonCausal] = find(scl_spiral == iSAI);
-                            for y = 1:H_PVS_wo_padding
-                                for x = 1:W_PVS_wo_padding
-                                    PVS_REC(y,x,1) = YBuff34((yposNonCausal+1)/2 + (y-1)*miSizeL34, (xposNonCausal+1)/2 + (x-1)*miSizeL34);
-                                    PVS_REC(y,x,2) = UBuff34((yposNonCausal+1)/2 + (y-1)*miSizeL34, (xposNonCausal+1)/2 + (x-1)*miSizeL34);
-                                    PVS_REC(y,x,3) = VBuff34((yposNonCausal+1)/2 + (y-1)*miSizeL34, (xposNonCausal+1)/2 + (x-1)*miSizeL34);
+                        if frameNum == 10
+                            YBuff34 = fread(fBuff34, [miSizeL34 * W_PVS_wo_padding miSizeL34 * H_PVS_wo_padding], 'uint16');
+                            UBuff34 = fread(fBuff34, [miSizeL34 * W_PVS_wo_padding miSizeL34 * H_PVS_wo_padding], 'uint16');
+                            VBuff34 = fread(fBuff34, [miSizeL34 * W_PVS_wo_padding miSizeL34 * H_PVS_wo_padding], 'uint16');
+                            YBuff34 = YBuff34'; UBuff34 = UBuff34'; VBuff34 = VBuff34';
+                            for iSAI = 10:45
+                                [yposNonCausal, xposNonCausal] = find(scl_spiral == iSAI);
+                                for y = 1:H_PVS_wo_padding
+                                    for x = 1:W_PVS_wo_padding
+                                        PVS_REC(y,x,1) = YBuff34((yposNonCausal+1)/2 + (y-1)*miSizeL34, (xposNonCausal+1)/2 + (x-1)*miSizeL34);
+                                        PVS_REC(y,x,2) = UBuff34((yposNonCausal+1)/2 + (y-1)*miSizeL34, (xposNonCausal+1)/2 + (x-1)*miSizeL34);
+                                        PVS_REC(y,x,3) = VBuff34((yposNonCausal+1)/2 + (y-1)*miSizeL34, (xposNonCausal+1)/2 + (x-1)*miSizeL34);
+                                    end
                                 end
+                                ds = (squeeze(PVS(iSAI,:,:,1)) - squeeze(PVS_REC(:,:,1))).^2;
+                                MSE_Y = mean(ds(:));
+                                PSNR_Y = 10*log10(MAX/MSE_Y);
+                                fprintf(fResults,'%f\t%f\t%f\n',frameNum,iSAI,PSNR_Y);
                             end
-                            ds = (squeeze(PVS(iSAI,:,:,1)) - squeeze(PVS_REC(:,:,1))).^2;
-                            MSE_Y = mean(ds(:));
-                            PSNR_Y = 10*log10(MAX/MSE_Y);
-                            fprintf(fResults,'%f\t%f\t%f\n',frameNum+1,iSAI,PSNR_Y);
                         end
                     end
                     if l == 5 || l == 6 % 7x7 LF to 13x13 LF
-                        YBuff56 = fread(fBuff56, [miSizeL56 * W_PVS_wo_padding miSizeL56 * H_PVS_wo_padding], 'uint16');
-                        UBuff56 = fread(fBuff56, [miSizeL56 * W_PVS_wo_padding miSizeL56 * H_PVS_wo_padding], 'uint16');
-                        VBuff56 = fread(fBuff56, [miSizeL56 * W_PVS_wo_padding miSizeL56 * H_PVS_wo_padding], 'uint16');
-                        YBuff56 = YBuff56'; UBuff56 = UBuff56'; VBuff56 = VBuff56';
-                        for iSAI = 46:169
-                            [yposNonCausal, xposNonCausal] = find(scl_spiral == iSAI);
-                            for y = 1:H_PVS_wo_padding
-                                for x = 1:W_PVS_wo_padding
-                                    PVS_REC(y,x,1) = YBuff56(yposNonCausal + (y-1)*miSizeL56, xposNonCausal + (x-1)*miSizeL56);
-                                    PVS_REC(y,x,2) = UBuff56(yposNonCausal + (y-1)*miSizeL56, xposNonCausal + (x-1)*miSizeL56);
-                                    PVS_REC(y,x,3) = VBuff56(yposNonCausal + (y-1)*miSizeL56, xposNonCausal + (x-1)*miSizeL56);
+                        if frameNum == 46
+                            YBuff56 = fread(fBuff56, [miSizeL56 * W_PVS_wo_padding miSizeL56 * H_PVS_wo_padding], 'uint16');
+                            UBuff56 = fread(fBuff56, [miSizeL56 * W_PVS_wo_padding miSizeL56 * H_PVS_wo_padding], 'uint16');
+                            VBuff56 = fread(fBuff56, [miSizeL56 * W_PVS_wo_padding miSizeL56 * H_PVS_wo_padding], 'uint16');
+                            YBuff56 = YBuff56'; UBuff56 = UBuff56'; VBuff56 = VBuff56';
+                            for iSAI = 46:169
+                                [yposNonCausal, xposNonCausal] = find(scl_spiral == iSAI);
+                                for y = 1:H_PVS_wo_padding
+                                    for x = 1:W_PVS_wo_padding
+                                        PVS_REC(y,x,1) = YBuff56(yposNonCausal + (y-1)*miSizeL56, xposNonCausal + (x-1)*miSizeL56);
+                                        PVS_REC(y,x,2) = UBuff56(yposNonCausal + (y-1)*miSizeL56, xposNonCausal + (x-1)*miSizeL56);
+                                        PVS_REC(y,x,3) = VBuff56(yposNonCausal + (y-1)*miSizeL56, xposNonCausal + (x-1)*miSizeL56);
+                                    end
                                 end
+                                ds = (squeeze(PVS(iSAI,:,:,1)) - squeeze(PVS_REC(:,:,1))).^2;
+                                MSE_Y = mean(ds(:));
+                                PSNR_Y = 10*log10(MAX/MSE_Y);
+                                fprintf(fResults,'%f\t%f\t%f\n',frameNum,iSAI,PSNR_Y);
                             end
-                            ds = (squeeze(PVS(iSAI,:,:,1)) - squeeze(PVS_REC(:,:,1))).^2;
-                            MSE_Y = mean(ds(:));
-                            PSNR_Y = 10*log10(MAX/MSE_Y);
-                            fprintf(fResults,'%f\t%f\t%f\n',frameNum+1,iSAI,PSNR_Y);
                         end
                     end
                 end
