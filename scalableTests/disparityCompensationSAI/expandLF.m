@@ -3,6 +3,8 @@ close all
 LF_Image_PVS_SCL = '/home/rmonteiro/PhD/Sequences/EPFL/4DLF_PVS_Scalable/I01_Bikes__Decoded_13x13_YUV444_10bpp.yuv';
 %LF_Image_PVS_SCL = '/home/rmonteiro/PhD/Scripts/HEVC_tests/HEVC_EPFL_4DLF_PVS_SCL_B_YUV444_10/4DLF_13x13_PVS_SCL_I01_YUV444_10/32/rec.yuv';
 
+blockSize = 4;
+
 num_Layers = 6;
 layerMask =  [ 6 6 4 6 3 6 4 6 3 6 4 6 6 ;
                6 5 6 5 6 5 6 5 6 5 6 5 6 ;
@@ -169,84 +171,88 @@ for l = 1:num_Layers
                 if l >= 3
                     if l == 3 || l == 4 % 3x3 LF to 7x7 LF
                         expandToLF7((ypos+1)/2,(xpos+1)/2) = 8;
-                        for iSAI = 10:45 
-                            [yposNonCausal, xposNonCausal] = find(scl_spiral == iSAI);
-                            if expandToLF7((yposNonCausal+1)/2,(xposNonCausal+1)/2) > 0 && expandToLF7((yposNonCausal+1)/2,(xposNonCausal+1)/2) < 8
-                                if expandToLF7((yposNonCausal+1)/2,(xposNonCausal+1)/2) == 1 % horizontal
-                                    referenceSAI0 = scl_spiral(yposNonCausal, xposNonCausal -2); % L
-                                    referenceSAI1 = scl_spiral(yposNonCausal, xposNonCausal +2);  % R
-                                    dispCompensationSearchWindow = [-winDispComp(2) -winDispComp(1); winDispComp(2) 0];
-                                end
-                                if expandToLF7((yposNonCausal+1)/2,(xposNonCausal+1)/2) == 2 % vertical
-                                    referenceSAI0 = scl_spiral(yposNonCausal -2, xposNonCausal); % U
-                                    referenceSAI1 = scl_spiral(yposNonCausal +2, xposNonCausal);  % D
-                                    dispCompensationSearchWindow = [-winDispComp(1) -winDispComp(2); 0 winDispComp(2)];
-                                end
-                                if expandToLF7((yposNonCausal+1)/2,(xposNonCausal+1)/2) == 3 % diagonal L \
-                                    referenceSAI0 = scl_spiral(yposNonCausal -2, xposNonCausal -2); % UL
-                                    referenceSAI1 = scl_spiral(yposNonCausal +2, xposNonCausal +2);   % DR
-                                    dispCompensationSearchWindow = [-winDispComp(1) -winDispComp(1); 0 0];
-                                end
-                                if expandToLF7((yposNonCausal+1)/2,(xposNonCausal+1)/2) == 4 % diagonal R /
-                                    referenceSAI0 = scl_spiral(yposNonCausal -2, xposNonCausal +2); % UR
-                                    referenceSAI1 = scl_spiral(yposNonCausal +2, xposNonCausal -2);   % DL
-                                    dispCompensationSearchWindow = [-winDispComp(1) 0; 0 winDispComp(1)];
-                                end
-                                [ dx dy ] = disparityCompensationSAI_BM( squeeze(PVS(referenceSAI0+1,:,:,1)), squeeze(PVS(referenceSAI1+1,:,:,1)), dispCompensationSearchWindow, 8);
-                                compensatedSAIY = compensateDisparitySAI( squeeze(PVS(referenceSAI0+1,:,:,1)), round(dx/2), round(dy/2) );
-                                compensatedSAIU = compensateDisparitySAI( squeeze(PVS(referenceSAI0+1,:,:,2)), round(dx/2), round(dy/2) );
-                                compensatedSAIV = compensateDisparitySAI( squeeze(PVS(referenceSAI0+1,:,:,3)), round(dx/2), round(dy/2) );
-                                for y = 1:H_PVS_wo_padding
-                                    for x = 1:W_PVS_wo_padding
-                                        LF_Buff_L34((yposNonCausal+1)/2 + (y-1)*miSizeL34, (xposNonCausal+1)/2 + (x-1)*miSizeL34, 1) = uint16(compensatedSAIY(y,x));
-                                        LF_Buff_L34((yposNonCausal+1)/2 + (y-1)*miSizeL34, (xposNonCausal+1)/2 + (x-1)*miSizeL34, 2) = uint16(compensatedSAIU(y,x));
-                                        LF_Buff_L34((yposNonCausal+1)/2 + (y-1)*miSizeL34, (xposNonCausal+1)/2 + (x-1)*miSizeL34, 3) = uint16(compensatedSAIV(y,x));
+                        if frameNum == 10
+                            for iSAI = 10:45
+                                [yposNonCausal, xposNonCausal] = find(scl_spiral == iSAI);
+                                if expandToLF7((yposNonCausal+1)/2,(xposNonCausal+1)/2) > 0 && expandToLF7((yposNonCausal+1)/2,(xposNonCausal+1)/2) < 8
+                                    if expandToLF7((yposNonCausal+1)/2,(xposNonCausal+1)/2) == 1 % horizontal
+                                        referenceSAI0 = scl_spiral(yposNonCausal, xposNonCausal -2); % L
+                                        referenceSAI1 = scl_spiral(yposNonCausal, xposNonCausal +2);  % R
+                                        dispCompensationSearchWindow = [-winDispComp(2) -winDispComp(1); winDispComp(2) 0];
                                     end
+                                    if expandToLF7((yposNonCausal+1)/2,(xposNonCausal+1)/2) == 2 % vertical
+                                        referenceSAI0 = scl_spiral(yposNonCausal -2, xposNonCausal); % U
+                                        referenceSAI1 = scl_spiral(yposNonCausal +2, xposNonCausal);  % D
+                                        dispCompensationSearchWindow = [-winDispComp(1) -winDispComp(2); 0 winDispComp(2)];
+                                    end
+                                    if expandToLF7((yposNonCausal+1)/2,(xposNonCausal+1)/2) == 3 % diagonal L \
+                                        referenceSAI0 = scl_spiral(yposNonCausal -2, xposNonCausal -2); % UL
+                                        referenceSAI1 = scl_spiral(yposNonCausal +2, xposNonCausal +2);   % DR
+                                        dispCompensationSearchWindow = [-winDispComp(1) -winDispComp(1); 0 0];
+                                    end
+                                    if expandToLF7((yposNonCausal+1)/2,(xposNonCausal+1)/2) == 4 % diagonal R /
+                                        referenceSAI0 = scl_spiral(yposNonCausal -2, xposNonCausal +2); % UR
+                                        referenceSAI1 = scl_spiral(yposNonCausal +2, xposNonCausal -2);   % DL
+                                        dispCompensationSearchWindow = [-winDispComp(1) 0; 0 winDispComp(1)];
+                                    end
+                                    [ dx dy ] = disparityCompensationSAI_BM( squeeze(PVS(referenceSAI0+1,:,:,1)), squeeze(PVS(referenceSAI1+1,:,:,1)), dispCompensationSearchWindow, blockSize);
+                                    compensatedSAIY = compensateDisparitySAI( squeeze(PVS(referenceSAI0+1,:,:,1)), round(dx/2), round(dy/2) );
+                                    compensatedSAIU = compensateDisparitySAI( squeeze(PVS(referenceSAI0+1,:,:,2)), round(dx/2), round(dy/2) );
+                                    compensatedSAIV = compensateDisparitySAI( squeeze(PVS(referenceSAI0+1,:,:,3)), round(dx/2), round(dy/2) );
+                                    for y = 1:H_PVS_wo_padding
+                                        for x = 1:W_PVS_wo_padding
+                                            LF_Buff_L34((yposNonCausal+1)/2 + (y-1)*miSizeL34, (xposNonCausal+1)/2 + (x-1)*miSizeL34, 1) = uint16(compensatedSAIY(y,x));
+                                            LF_Buff_L34((yposNonCausal+1)/2 + (y-1)*miSizeL34, (xposNonCausal+1)/2 + (x-1)*miSizeL34, 2) = uint16(compensatedSAIU(y,x));
+                                            LF_Buff_L34((yposNonCausal+1)/2 + (y-1)*miSizeL34, (xposNonCausal+1)/2 + (x-1)*miSizeL34, 3) = uint16(compensatedSAIV(y,x));
+                                        end
+                                    end
+                                    %imshow(LF_Buff_L34(1000:1500,1000:1500,1),[]);
+                                    %imshow(compensatedSAI,[])
                                 end
-                                %imshow(LF_Buff_L34(1000:1500,1000:1500,1),[]);
-                                %imshow(compensatedSAI,[])
                             end
                         end
                     end
-                     
+                    
                     if l == 5 || l == 6 % 7x7 LF to 13x13 LF
                         expandToLF13(ypos,xpos) = 8;
-                        for iSAI = 46:169 
-                            [yposNonCausal, xposNonCausal] = find(scl_spiral == iSAI);
-                            if expandToLF13(yposNonCausal,xposNonCausal) > 0 && expandToLF13(yposNonCausal,xposNonCausal) < 8
-                                if expandToLF13(yposNonCausal,xposNonCausal) == 1 % horizontal
-                                    referenceSAI0 = scl_spiral(yposNonCausal, xposNonCausal -1); % L
-                                    referenceSAI1 = scl_spiral(yposNonCausal, xposNonCausal +1);  % R
-                                    dispCompensationSearchWindow = [-winDispComp(2) -winDispComp(1); winDispComp(2) 0];
-                                end
-                                if expandToLF13(yposNonCausal,xposNonCausal) == 2 % vertical
-                                    referenceSAI0 = scl_spiral(yposNonCausal -1, xposNonCausal); % U
-                                    referenceSAI1 = scl_spiral(yposNonCausal +1, xposNonCausal);  % D
-                                    dispCompensationSearchWindow = [-winDispComp(1) -winDispComp(2); 0 winDispComp(2)];
-                                end
-                                if expandToLF13(yposNonCausal,xposNonCausal) == 3 % diagonal L \
-                                    referenceSAI0 = scl_spiral(yposNonCausal -1, xposNonCausal -1); % UL
-                                    referenceSAI1 = scl_spiral(yposNonCausal +1, xposNonCausal +1);   % DR
-                                    dispCompensationSearchWindow = [-winDispComp(1) -winDispComp(1); 0 0];
-                                end
-                                if expandToLF13(yposNonCausal,xposNonCausal) == 4 % diagonal R /
-                                    referenceSAI0 = scl_spiral(yposNonCausal -1, xposNonCausal +1); % UR
-                                    referenceSAI1 = scl_spiral(yposNonCausal +1, xposNonCausal -1);   % DL
-                                    dispCompensationSearchWindow = [-winDispComp(1) 0; 0 winDispComp(1)];
-                                end
-                                [ dx dy ] = disparityCompensationSAI_BM( squeeze(PVS(referenceSAI0+1,:,:,1)), squeeze(PVS(referenceSAI1+1,:,:,1)), dispCompensationSearchWindow, 8);
-                                compensatedSAIY = compensateDisparitySAI( squeeze(PVS(referenceSAI0+1,:,:,1)), round(dx/2), round(dy/2) );
-                                compensatedSAIU = compensateDisparitySAI( squeeze(PVS(referenceSAI0+1,:,:,2)), round(dx/2), round(dy/2) );
-                                compensatedSAIV = compensateDisparitySAI( squeeze(PVS(referenceSAI0+1,:,:,3)), round(dx/2), round(dy/2) );
-                                for y = 1:H_PVS_wo_padding
-                                    for x = 1:W_PVS_wo_padding
-                                        LF_Buff_L56(yposNonCausal + (y-1)*miSizeL56, xposNonCausal + (x-1)*miSizeL56, 1) = uint16(compensatedSAIY(y,x));
-                                        LF_Buff_L56(yposNonCausal + (y-1)*miSizeL56, xposNonCausal + (x-1)*miSizeL56, 2) = uint16(compensatedSAIU(y,x));
-                                        LF_Buff_L56(yposNonCausal + (y-1)*miSizeL56, xposNonCausal + (x-1)*miSizeL56, 3) = uint16(compensatedSAIV(y,x));
+                        if frameNum == 46
+                            for iSAI = 46:169
+                                [yposNonCausal, xposNonCausal] = find(scl_spiral == iSAI);
+                                if expandToLF13(yposNonCausal,xposNonCausal) > 0 && expandToLF13(yposNonCausal,xposNonCausal) < 8
+                                    if expandToLF13(yposNonCausal,xposNonCausal) == 1 % horizontal
+                                        referenceSAI0 = scl_spiral(yposNonCausal, xposNonCausal -1); % L
+                                        referenceSAI1 = scl_spiral(yposNonCausal, xposNonCausal +1);  % R
+                                        dispCompensationSearchWindow = [-winDispComp(2) -winDispComp(1); winDispComp(2) 0];
                                     end
+                                    if expandToLF13(yposNonCausal,xposNonCausal) == 2 % vertical
+                                        referenceSAI0 = scl_spiral(yposNonCausal -1, xposNonCausal); % U
+                                        referenceSAI1 = scl_spiral(yposNonCausal +1, xposNonCausal);  % D
+                                        dispCompensationSearchWindow = [-winDispComp(1) -winDispComp(2); 0 winDispComp(2)];
+                                    end
+                                    if expandToLF13(yposNonCausal,xposNonCausal) == 3 % diagonal L \
+                                        referenceSAI0 = scl_spiral(yposNonCausal -1, xposNonCausal -1); % UL
+                                        referenceSAI1 = scl_spiral(yposNonCausal +1, xposNonCausal +1);   % DR
+                                        dispCompensationSearchWindow = [-winDispComp(1) -winDispComp(1); 0 0];
+                                    end
+                                    if expandToLF13(yposNonCausal,xposNonCausal) == 4 % diagonal R /
+                                        referenceSAI0 = scl_spiral(yposNonCausal -1, xposNonCausal +1); % UR
+                                        referenceSAI1 = scl_spiral(yposNonCausal +1, xposNonCausal -1);   % DL
+                                        dispCompensationSearchWindow = [-winDispComp(1) 0; 0 winDispComp(1)];
+                                    end
+                                    [ dx dy ] = disparityCompensationSAI_BM( squeeze(PVS(referenceSAI0+1,:,:,1)), squeeze(PVS(referenceSAI1+1,:,:,1)), dispCompensationSearchWindow, blockSize);
+                                    compensatedSAIY = compensateDisparitySAI( squeeze(PVS(referenceSAI0+1,:,:,1)), round(dx/2), round(dy/2) );
+                                    compensatedSAIU = compensateDisparitySAI( squeeze(PVS(referenceSAI0+1,:,:,2)), round(dx/2), round(dy/2) );
+                                    compensatedSAIV = compensateDisparitySAI( squeeze(PVS(referenceSAI0+1,:,:,3)), round(dx/2), round(dy/2) );
+                                    for y = 1:H_PVS_wo_padding
+                                        for x = 1:W_PVS_wo_padding
+                                            LF_Buff_L56(yposNonCausal + (y-1)*miSizeL56, xposNonCausal + (x-1)*miSizeL56, 1) = uint16(compensatedSAIY(y,x));
+                                            LF_Buff_L56(yposNonCausal + (y-1)*miSizeL56, xposNonCausal + (x-1)*miSizeL56, 2) = uint16(compensatedSAIU(y,x));
+                                            LF_Buff_L56(yposNonCausal + (y-1)*miSizeL56, xposNonCausal + (x-1)*miSizeL56, 3) = uint16(compensatedSAIV(y,x));
+                                        end
+                                    end
+                                    %imshow(LF_Buff_L34(1000:1500,1000:1500,1),[]);
+                                    %imshow(compensatedSAI,[])
                                 end
-                                %imshow(LF_Buff_L34(1000:1500,1000:1500,1),[]);
-                                %imshow(compensatedSAI,[])
                             end
                         end
                     end
