@@ -148,6 +148,7 @@ public:
   Void        	setPicYuv4DLFSAI( TComPicYuv* pcPicYuv ) { m_pcPic4DLFSAI = pcPicYuv; }
 #endif
 #if RM_SCALABLE
+  Void 			spiralScalable(UInt idx, UInt size, UInt* x, UInt* y);
   TComPicYuv*   getPicYuv4DLFMISCL3()       				{ return  m_pcPic4DLFMISCL3; }
   Void        	setPicYuv4DLFMISCL3( TComPicYuv* pcPicYuv ) { m_pcPic4DLFMISCL3 = pcPicYuv; }
   TComPicYuv*   getPicYuv4DLFMISCL7()       				{ return  m_pcPic4DLFMISCL7; }

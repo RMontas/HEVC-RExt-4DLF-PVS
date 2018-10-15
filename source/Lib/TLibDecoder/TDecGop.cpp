@@ -133,9 +133,12 @@ Void TDecGop::decompressSlice(TComInputBitstream* pcBitstream, TComPic* pcPic
     ppcSubstreams[ui] = pcBitstream->extractSubstream(ui+1 < uiNumSubstreams ? (pcSlice->getSubstreamSize(ui)<<3) : pcBitstream->getNumBitsLeft());
   }
 
-#if RM_4DLF_MI_BUFFER // TODO: adapt to scalable
+#if RM_4DLF_MI_BUFFER
   UInt posX = 0, posY = 0;
   pcPic->spiral(pcPic->getPOC(), pcPic->getMicroImageSize(), &posX, &posY);
+#if RM_SCALABLE
+    pcPic->spiralScalable(pcPic->getPOC(), pcPic->getMicroImageSize(), &posX, &posY);
+#endif
   pcPic->setCurrentSAIsSpiralPosX(posX);
   pcPic->setCurrentSAIsSpiralPosY(posY);
 #endif

@@ -213,6 +213,89 @@ Void TComPic::spiral(UInt idx, UInt size, UInt* x, UInt* y)
 	*y = y_pos;
 }
 
+Void TComPic::spiralScalable(UInt idx, UInt size, UInt* x, UInt* y)
+{
+
+	Int layerMask[size][size] = { {6, 6, 4, 6, 3, 6, 4, 6, 3, 6, 4, 6, 6},
+								  {6, 5, 6, 5, 6, 5, 6, 5, 6, 5, 6, 5, 6},
+							      {4, 6, 2, 6, 4, 6, 2, 6, 4, 6, 2, 6, 4},
+								  {6, 5, 6, 5, 6, 5, 6, 5, 6, 5, 6, 5, 6},
+								  {3, 6, 4, 6, 3, 6, 4, 6, 3, 6, 4, 6, 3},
+								  {6, 5, 6, 5, 6, 5, 6, 5, 6, 5, 6, 5, 6},
+								  {4, 6, 2, 6, 4, 6, 1, 6, 4, 6, 2, 6, 4},
+								  {6, 5, 6, 5, 6, 5, 6, 5, 6, 5, 6, 5, 6},
+								  {3, 6, 4, 6, 3, 6, 4, 6, 3, 6, 4, 6, 3},
+								  {6, 5, 6, 5, 6, 5, 6, 5, 6, 5, 6, 5, 6},
+								  {4, 6, 2, 6, 4, 6, 2, 6, 4, 6, 2, 6, 4},
+								  {6, 5, 6, 5, 6, 5, 6, 5, 6, 5, 6, 5, 6},
+								  {6, 6, 4, 6, 3, 6, 4, 6, 3, 6, 4, 6, 6} };
+	Int init = floor(size/2);
+	Int current_idx = 0;
+	char current_direction[] = "RDLU";
+	Int dir_idx = 0;
+	Int original_steps_to_update = 1;
+	Int original_steps_to_change_dir = 1;
+	Int steps_to_update = 2;
+	Int steps_to_change_dir = 1;
+	Int step = 0;
+	Int x_pos = init;
+	Int y_pos = init;
+
+	while(current_idx < idx)
+	{
+		for(Int l = 2; l <= 6; l++)
+		{
+			original_steps_to_update = 1;
+			original_steps_to_change_dir = 1;
+			steps_to_update = 2;
+			steps_to_change_dir = 1;
+			dir_idx = 0;
+			step = 0;
+			x_pos = init;
+			y_pos = init;
+			while(x_pos >= 0 && x_pos < size && y_pos >= 0 && y_pos < size)
+			{
+				if(current_direction[dir_idx] == 'R') // RIGHT
+					x_pos++;
+				else if(current_direction[dir_idx] == 'D') // DOWN
+					y_pos++;
+				else if(current_direction[dir_idx] == 'L') // LEFT
+					x_pos--;
+				else // UP
+					y_pos--;
+				if(step == steps_to_change_dir-1)
+				{
+					step = 0;
+					steps_to_change_dir = original_steps_to_change_dir;
+					dir_idx++;
+					if(dir_idx > 3)
+						dir_idx = 0;
+				}
+				else
+					step++;
+				if(layerMask[y_pos][x_pos] == l)
+				{
+					current_idx++;
+					if(current_idx == idx)
+						break;
+				}
+				steps_to_update--;
+				if(steps_to_update == 0)
+				{
+					original_steps_to_change_dir++;
+					steps_to_change_dir = original_steps_to_change_dir;
+					original_steps_to_update++;
+					steps_to_update = original_steps_to_update * 2; // 1, 2, 4, 6, 8, 10...
+				}
+			}
+			if(current_idx == idx)
+				break;
+		}
+	}
+
+	*x = x_pos;
+	*y = y_pos;
+}
 #if RM_DEBUG_FILES
 Bool TComPic::writePlane(std::ostream& fd, Pel* src, Bool is16bit,
                        UInt stride444,

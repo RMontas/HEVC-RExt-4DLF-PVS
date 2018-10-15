@@ -223,7 +223,7 @@ Void TDecTop::executeLoopFilters(Int& poc, TComList<TComPic*>*& rpcListPic)
 #if RM_4DLF_MI_BUFFER
   TComPicYuv *pcPic4DLFMI = pcPic->getPicYuv4DLFMI();
 #if RM_4DLF_SAI_BUFFER
-  TComPicYuv* pcPic4DLFSAI; // TODO: adapt to scalable
+  TComPicYuv* pcPic4DLFSAI;
 #endif
 #if RM_SCALABLE
   TComPicYuv* pcPic4DLFMISCL3;
@@ -244,6 +244,9 @@ Void TDecTop::executeLoopFilters(Int& poc, TComList<TComPic*>*& rpcListPic)
   // TODO: get MISize from config file or
   UInt iMISize = pcPic->getMicroImageSize(), initX, initY;
   pcPic->spiral(pcPic->getPOC(), iMISize, &initX, &initY); //number of frames (sqrt(number of frames)) - limited to 1, 9, 25, 49, 81, 121, 169, 225
+#if RM_SCALABLE
+    pcPic->spiralScalable(pcPic->getPOC(), pcPic->getMicroImageSize(), &initX, &initY);
+#endif
   // COMPONENT_Y
   Y += initY * pcPic4DLFMI->getStride(COMPONENT_Y);
   for(Int j = 0; j < pcPic4DLFMI->getHeight(COMPONENT_Y); j+=iMISize)
@@ -274,6 +277,161 @@ Void TDecTop::executeLoopFilters(Int& poc, TComList<TComPic*>*& rpcListPic)
 	  }
 	  CR += iMISize * pcPic4DLFMI->getStride(COMPONENT_Cr);
   }
+#if RM_4DLF_SAI_BUFFER
+  // 4DLF-SAI BUFFER
+  // COMPONENT_Y
+  	Y = pcPic4DLFSAI->getAddr(COMPONENT_Y);
+    CB = pcPic4DLFSAI->getAddr(COMPONENT_Cb);
+    CR = pcPic4DLFSAI->getAddr(COMPONENT_Cr);
+    Y += initY * pcPic->getPicYuvRec()->getStride(COMPONENT_Y);
+    for(Int j = 0; j < pcPic->getPicYuvRec()->getHeight(COMPONENT_Y); j++)
+    {
+  	  for(Int i = 0; i < pcPic->getPicYuvRec()->getWidth(COMPONENT_Y); i++)
+  	  {
+  		  Y[i + initX * pcPic->getPicYuvRec()->getWidth(COMPONENT_Y)] = pcPic->getPicYuvRec()->getAddr(COMPONENT_Y)[(j)*pcPic->getPicYuvRec()->getStride(COMPONENT_Y) + i];
+  	  }
+  	  Y += pcPic4DLFSAI->getStride(COMPONENT_Y);
+    }
+    // COMPONENT_CB
+    Y += initY * pcPic->getPicYuvRec()->getStride(COMPONENT_Cb);
+    for(Int j = 0; j < pcPic->getPicYuvRec()->getHeight(COMPONENT_Cb); j++)
+    {
+  	  for(Int i = 0; i < pcPic->getPicYuvRec()->getWidth(COMPONENT_Cb); i++)
+  	  {
+  		  Y[i + initX * pcPic->getPicYuvRec()->getWidth(COMPONENT_Cb)] = pcPic->getPicYuvRec()->getAddr(COMPONENT_Cb)[(j)*pcPic->getPicYuvRec()->getStride(COMPONENT_Cb) + i];
+  	  }
+  	  Y += pcPic4DLFSAI->getStride(COMPONENT_Cb);
+    }
+    // COMPONENT_CR
+    Y += initY * pcPic->getPicYuvRec()->getStride(COMPONENT_Cr);
+    for(Int j = 0; j < pcPic->getPicYuvRec()->getHeight(COMPONENT_Cr); j++)
+    {
+  	  for(Int i = 0; i < pcPic->getPicYuvRec()->getWidth(COMPONENT_Cr); i++)
+  	  {
+  		  Y[i + initX * pcPic->getPicYuvRec()->getWidth(COMPONENT_Cr)] = pcPic->getPicYuvRec()->getAddr(COMPONENT_Cr)[(j)*pcPic->getPicYuvRec()->getStride(COMPONENT_Cr) + i];
+  	  }
+  	  Y += pcPic4DLFSAI->getStride(COMPONENT_Cr);
+    }
+#endif
+#if RM_SCALABLE
+  UInt initYScl, initXScl;
+  if(pcPic->getPOC() < 9) // LAYER 1 & 2
+  {
+	  // SCALABLE 4DLF-MI BUFFER 3x3
+	  // COMPONENT_Y
+	  initYScl = floor(initY / 4);
+	  initXScl = floor(initX / 4);
+	  Y = pcPic4DLFMISCL3->getAddr(COMPONENT_Y);
+	  CB = pcPic4DLFMISCL3->getAddr(COMPONENT_Cb);
+	  CR = pcPic4DLFMISCL3->getAddr(COMPONENT_Cr);
+	  iMISize = 3;
+	  Y += initYScl * pcPic4DLFMISCL3->getStride(COMPONENT_Y);
+	  for(Int j = 0; j < pcPic4DLFMISCL3->getHeight(COMPONENT_Y); j+=iMISize)
+	  {
+		  for(Int i = 0; i < pcPic4DLFMISCL3->getWidth(COMPONENT_Y); i+=iMISize)
+		  {
+			  Y[i + initXScl] = pcPic->getPicYuvRec()->getAddr(COMPONENT_Y)[(j/iMISize)*pcPic->getPicYuvRec()->getStride(COMPONENT_Y) + i/iMISize];
+		  }
+		  Y += iMISize * pcPic4DLFMISCL3->getStride(COMPONENT_Y);
+	  }
+	  // COMPONENT_CB
+	  CB += initYScl * pcPic4DLFMISCL3->getStride(COMPONENT_Cb);
+	  for(Int j = 0; j < pcPic4DLFMISCL3->getHeight(COMPONENT_Cb); j+=iMISize)
+	  {
+		  for(Int i = 0; i < pcPic4DLFMISCL3->getWidth(COMPONENT_Cb); i+=iMISize)
+		  {
+			  CB[i + initXScl] = pcPic->getPicYuvRec()->getAddr(COMPONENT_Cb)[(j/iMISize)*pcPic->getPicYuvRec()->getStride(COMPONENT_Cb) + i/iMISize];
+		  }
+		  CB += iMISize * pcPic4DLFMISCL3->getStride(COMPONENT_Cb);
+	  }
+	  // COMPONENT_CR
+	  CR += initYScl * pcPic4DLFMISCL3->getStride(COMPONENT_Cr);
+	  for(Int j = 0; j < pcPic4DLFMISCL3->getHeight(COMPONENT_Cr); j+=iMISize)
+	  {
+		  for(Int i = 0; i < pcPic4DLFMISCL3->getWidth(COMPONENT_Cr); i+=iMISize)
+		  {
+			  CR[i + initXScl] = pcPic->getPicYuvRec()->getAddr(COMPONENT_Cr)[(j/iMISize)*pcPic->getPicYuvRec()->getStride(COMPONENT_Cr) + i/iMISize];
+		  }
+		  CR += iMISize * pcPic4DLFMISCL3->getStride(COMPONENT_Cr);
+	  }
+  }
+  if(pcPic->getPOC() < 45) // LAYER 3 & 4
+  {
+	  // SCALABLE 4DLF-MI BUFFER 7x7
+	  // COMPONENT_Y
+	  initYScl = floor(initY / 2);
+	  initXScl = floor(initX / 2);
+	  Y = pcPic4DLFMISCL7->getAddr(COMPONENT_Y);
+	  CB = pcPic4DLFMISCL7->getAddr(COMPONENT_Cb);
+	  CR = pcPic4DLFMISCL7->getAddr(COMPONENT_Cr);
+	  iMISize = 7;
+	  Y += initYScl * pcPic4DLFMISCL7->getStride(COMPONENT_Y);
+	  for(Int j = 0; j < pcPic4DLFMISCL7->getHeight(COMPONENT_Y); j+=iMISize)
+	  {
+		  for(Int i = 0; i < pcPic4DLFMISCL7->getWidth(COMPONENT_Y); i+=iMISize)
+		  {
+			  Y[i + initXScl] = pcPic->getPicYuvRec()->getAddr(COMPONENT_Y)[(j/iMISize)*pcPic->getPicYuvRec()->getStride(COMPONENT_Y) + i/iMISize];
+		  }
+		  Y += iMISize * pcPic4DLFMISCL7->getStride(COMPONENT_Y);
+	  }
+	  // COMPONENT_CB
+	  CB += initYScl * pcPic4DLFMISCL7->getStride(COMPONENT_Cb);
+	  for(Int j = 0; j < pcPic4DLFMISCL7->getHeight(COMPONENT_Cb); j+=iMISize)
+	  {
+		  for(Int i = 0; i < pcPic4DLFMISCL7->getWidth(COMPONENT_Cb); i+=iMISize)
+		  {
+			  CB[i + initXScl] = pcPic->getPicYuvRec()->getAddr(COMPONENT_Cb)[(j/iMISize)*pcPic->getPicYuvRec()->getStride(COMPONENT_Cb) + i/iMISize];
+		  }
+		  CB += iMISize * pcPic4DLFMISCL7->getStride(COMPONENT_Cb);
+	  }
+	  // COMPONENT_CR
+	  CR += initYScl * pcPic4DLFMISCL7->getStride(COMPONENT_Cr);
+	  for(Int j = 0; j < pcPic4DLFMISCL7->getHeight(COMPONENT_Cr); j+=iMISize)
+	  {
+		  for(Int i = 0; i < pcPic4DLFMISCL7->getWidth(COMPONENT_Cr); i+=iMISize)
+		  {
+			  CR[i + initXScl] = pcPic->getPicYuvRec()->getAddr(COMPONENT_Cr)[(j/iMISize)*pcPic->getPicYuvRec()->getStride(COMPONENT_Cr) + i/iMISize];
+		  }
+		  CR += iMISize * pcPic4DLFMISCL7->getStride(COMPONENT_Cr);
+	  }
+  }
+  // SCALABLE 4DLF-MI BUFFER 13x13
+  // COMPONENT_Y
+  Y = pcPic4DLFMISCL13->getAddr(COMPONENT_Y);
+  CB = pcPic4DLFMISCL13->getAddr(COMPONENT_Cb);
+  CR = pcPic4DLFMISCL13->getAddr(COMPONENT_Cr);
+  iMISize = pcPic->getMicroImageSize();
+  Y += initY * pcPic4DLFMISCL13->getStride(COMPONENT_Y);
+  for(Int j = 0; j < pcPic4DLFMISCL13->getHeight(COMPONENT_Y); j+=iMISize)
+  {
+	  for(Int i = 0; i < pcPic4DLFMISCL13->getWidth(COMPONENT_Y); i+=iMISize)
+	  {
+		  Y[i + initX] = pcPic->getPicYuvRec()->getAddr(COMPONENT_Y)[(j/iMISize)*pcPic->getPicYuvRec()->getStride(COMPONENT_Y) + i/iMISize];
+	  }
+	  Y += iMISize * pcPic4DLFMISCL13->getStride(COMPONENT_Y);
+  }
+  // COMPONENT_CB
+  CB += initY * pcPic4DLFMISCL13->getStride(COMPONENT_Cb);
+  for(Int j = 0; j < pcPic4DLFMISCL13->getHeight(COMPONENT_Cb); j+=iMISize)
+  {
+	  for(Int i = 0; i < pcPic4DLFMISCL13->getWidth(COMPONENT_Cb); i+=iMISize)
+	  {
+		  CB[i + initX] = pcPic->getPicYuvRec()->getAddr(COMPONENT_Cb)[(j/iMISize)*pcPic->getPicYuvRec()->getStride(COMPONENT_Cb) + i/iMISize];
+	  }
+	  CB += iMISize * pcPic4DLFMISCL13->getStride(COMPONENT_Cb);
+  }
+  // COMPONENT_CR
+  CR += initY * pcPic4DLFMISCL13->getStride(COMPONENT_Cr);
+  for(Int j = 0; j < pcPic4DLFMISCL13->getHeight(COMPONENT_Cr); j+=iMISize)
+  {
+	  for(Int i = 0; i < pcPic4DLFMISCL13->getWidth(COMPONENT_Cr); i+=iMISize)
+	  {
+		  CR[i + initX] = pcPic->getPicYuvRec()->getAddr(COMPONENT_Cr)[(j/iMISize)*pcPic->getPicYuvRec()->getStride(COMPONENT_Cr) + i/iMISize];
+	  }
+	  CR += iMISize * pcPic4DLFMISCL13->getStride(COMPONENT_Cr);
+  }
+
+#endif
 #if RM_DEBUG_FILES
   fileID.open("4DLFMI_DEC.yuv", ios::binary | ios::app);
   pcPic->writePlane(fileID, pcPic4DLFMI->getAddr(COMPONENT_Y), true, pcPic4DLFMI->getStride(COMPONENT_Y), pcPic4DLFMI->getWidth(COMPONENT_Y), pcPic4DLFMI->getHeight(COMPONENT_Y), COMPONENT_Y, CHROMA_444, CHROMA_444, 10);
