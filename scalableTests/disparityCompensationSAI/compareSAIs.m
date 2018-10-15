@@ -1,8 +1,9 @@
 clear all
 close all
 LF_Image_PVS_SCL = '/home/rmonteiro/PhD/Sequences/EPFL/4DLF_PVS_Scalable/I01_Bikes__Decoded_13x13_YUV444_10bpp.yuv';
-LF_Image_PVS_SCL_Buff34 = 'BM_Block8_WindAssym_8_1_LF_Buff_L34.yuv';
-LF_Image_PVS_SCL_Buff56 = 'BM_Block8_WindAssym_8_1_LF_Buff_L56.yuv';
+LF_Image_PVS_SCL_Buff34 = 'BM_B16_WindSym_4_1_LF_Buff_L34.yuv';
+LF_Image_PVS_SCL_Buff56 = 'BM_B16_WindSym_4_1_LF_Buff_L56.yuv';
+compareSAIs_results =     'BM_B16_WindSym_4_1_results.txt';
 
 num_Layers = 6;
 layerMask =  [ 6 6 4 6 3 6 4 6 3 6 4 6 6 ;
@@ -18,6 +19,28 @@ layerMask =  [ 6 6 4 6 3 6 4 6 3 6 4 6 6 ;
                4 6 2 6 4 6 2 6 4 6 2 6 4 ;
                6 5 6 5 6 5 6 5 6 5 6 5 6 ;
                6 6 4 6 3 6 4 6 3 6 4 6 6 ];
+           
+expandToLF7 = [ 0 0 0 0 0 0 0 ;
+                0 9 1 9 1 9 0 ;
+                0 2 3 2 4 2 0 ;
+                0 9 1 9 1 9 0 ;
+                0 2 4 2 3 2 0 ;
+                0 9 1 9 1 9 0 ;
+                0 0 0 0 0 0 0 ];
+            
+expandToLF13 = [ 0 0 9 1 9 1 9 1 9 1 9 0 0 ;
+                 0 0 2 3 2 3 2 4 2 4 2 0 0 ;
+                 9 1 9 1 9 1 9 1 9 1 9 1 9 ;
+                 2 3 2 3 2 3 2 4 2 4 2 4 2 ;
+                 9 1 9 1 9 1 9 1 9 1 9 1 9 ;
+                 2 3 2 3 2 3 2 4 2 4 2 4 2 ;
+                 9 1 9 1 9 1 9 1 9 1 9 1 9 ;
+                 2 4 2 4 2 4 2 3 2 3 2 3 2 ;
+                 9 1 9 1 9 1 9 1 9 1 9 1 9 ;
+                 2 4 2 4 2 4 2 3 2 3 2 3 2 ;
+                 9 1 9 1 9 1 9 1 9 1 9 1 9 ;
+                 0 0 2 4 2 4 2 3 2 3 2 0 0 ;
+                 0 0 9 1 9 1 9 1 9 1 9 0 0 ];
            
 W_BUF = 8125; % buffer res
 H_BUF = 5642; % 13 * 434
@@ -73,7 +96,7 @@ SAIDistance(:,:) = -1;
 f = fopen(LF_Image_PVS_SCL,'r');
 fBuff34 = fopen(LF_Image_PVS_SCL_Buff34,'r');
 fBuff56 = fopen(LF_Image_PVS_SCL_Buff56,'r');
-fResults = fopen('results.txt','w');
+fResults = fopen(compareSAIs_results,'w');
 
 frameNum = 0;
 cc_spiral = spiral(miSize);
@@ -122,6 +145,8 @@ for l = 1:num_Layers
                             UBuff34 = fread(fBuff34, [miSizeL34 * W_PVS_wo_padding miSizeL34 * H_PVS_wo_padding], 'uint16');
                             VBuff34 = fread(fBuff34, [miSizeL34 * W_PVS_wo_padding miSizeL34 * H_PVS_wo_padding], 'uint16');
                             YBuff34 = YBuff34'; UBuff34 = UBuff34'; VBuff34 = VBuff34';
+                            acum_PSNR_Y = 0;
+                            numOfGeneratedSAIs = 0;
                             for iSAI = 10:45
                                 [yposNonCausal, xposNonCausal] = find(scl_spiral == iSAI);
                                 for y = 1:H_PVS_wo_padding
@@ -131,11 +156,18 @@ for l = 1:num_Layers
                                         PVS_REC(y,x,3) = VBuff34((yposNonCausal+1)/2 + (y-1)*miSizeL34, (xposNonCausal+1)/2 + (x-1)*miSizeL34);
                                     end
                                 end
-                                ds = (squeeze(PVS(iSAI,:,:,1)) - squeeze(PVS_REC(:,:,1))).^2;
-                                MSE_Y = mean(ds(:));
-                                PSNR_Y = 10*log10(MAX/MSE_Y);
-                                fprintf(fResults,'%f\t%f\t%f\n',frameNum,iSAI,PSNR_Y);
+                                if expandToLF7((yposNonCausal+1)/2,(xposNonCausal+1)/2) > 0 && expandToLF7((yposNonCausal+1)/2,(xposNonCausal+1)/2) < 8
+                                    ds = (squeeze(PVS(iSAI,:,:,1)) - squeeze(PVS_REC(:,:,1))).^2;
+                                    MSE_Y = mean(ds(:));
+                                    PSNR_Y = 10*log10(MAX/MSE_Y);
+                                    fprintf(fResults,'%f\t%f\t%f\n',frameNum,iSAI,PSNR_Y);
+                                    if PSNR_Y < Inf
+                                        acum_PSNR_Y = acum_PSNR_Y + PSNR_Y;
+                                        numOfGeneratedSAIs = numOfGeneratedSAIs + 1;
+                                    end
+                                end
                             end
+                            fprintf(fResults,'%f\t%f\t%f\n',frameNum,iSAI,acum_PSNR_Y/numOfGeneratedSAIs);
                         end
                     end
                     if l == 5 || l == 6 % 7x7 LF to 13x13 LF
@@ -144,6 +176,8 @@ for l = 1:num_Layers
                             UBuff56 = fread(fBuff56, [miSizeL56 * W_PVS_wo_padding miSizeL56 * H_PVS_wo_padding], 'uint16');
                             VBuff56 = fread(fBuff56, [miSizeL56 * W_PVS_wo_padding miSizeL56 * H_PVS_wo_padding], 'uint16');
                             YBuff56 = YBuff56'; UBuff56 = UBuff56'; VBuff56 = VBuff56';
+                            acum_PSNR_Y = 0;
+                            numOfGeneratedSAIs = 0;
                             for iSAI = 46:169
                                 [yposNonCausal, xposNonCausal] = find(scl_spiral == iSAI);
                                 for y = 1:H_PVS_wo_padding
@@ -153,11 +187,18 @@ for l = 1:num_Layers
                                         PVS_REC(y,x,3) = VBuff56(yposNonCausal + (y-1)*miSizeL56, xposNonCausal + (x-1)*miSizeL56);
                                     end
                                 end
-                                ds = (squeeze(PVS(iSAI,:,:,1)) - squeeze(PVS_REC(:,:,1))).^2;
-                                MSE_Y = mean(ds(:));
-                                PSNR_Y = 10*log10(MAX/MSE_Y);
-                                fprintf(fResults,'%f\t%f\t%f\n',frameNum,iSAI,PSNR_Y);
+                                if expandToLF13(yposNonCausal,xposNonCausal) > 0 && expandToLF13(yposNonCausal,xposNonCausal) < 8
+                                    ds = (squeeze(PVS(iSAI,:,:,1)) - squeeze(PVS_REC(:,:,1))).^2;
+                                    MSE_Y = mean(ds(:));
+                                    PSNR_Y = 10*log10(MAX/MSE_Y);
+                                    fprintf(fResults,'%f\t%f\t%f\n',frameNum,iSAI,PSNR_Y);
+                                    if PSNR_Y < Inf
+                                        acum_PSNR_Y = acum_PSNR_Y + PSNR_Y;
+                                        numOfGeneratedSAIs = numOfGeneratedSAIs + 1;
+                                    end
+                                end
                             end
+                            fprintf(fResults,'%f\t%f\t%f\n',frameNum,iSAI,acum_PSNR_Y/numOfGeneratedSAIs);
                         end
                     end
                 end
