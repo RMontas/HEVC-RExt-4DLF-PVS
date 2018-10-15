@@ -1078,6 +1078,14 @@ Void TEncGOP::compressGOP( Int iPOCLast, Int iNumPicRcvd, TComList<TComPic*>& rc
                            TComList<TComPicYuv*>& rcListPicYuvRecOut,
 #if RM_4DLF_MI_BUFFER
 						   TComPicYuv* pcPic4DLFMI,
+#if RM_4DLF_SAI_BUFFER
+						   TComPicYuv* pcPic4DLFSAI,
+#endif
+#if RM_SCALABLE
+						   TComPicYuv* pcPic4DLFMISCL3,
+						   TComPicYuv* pcPic4DLFMISCL7,
+						   TComPicYuv* pcPic4DLFMISCL13,
+#endif
 #endif
 						   std::list<AccessUnit>& accessUnitsInGOP,
                            Bool isField, Bool isTff, const InputColourSpaceConversion snr_conversion, const Bool printFrameMSE )
@@ -1171,7 +1179,7 @@ Void TEncGOP::compressGOP( Int iPOCLast, Int iNumPicRcvd, TComList<TComPic*>& rc
 
     m_pcSliceEncoder->initEncSlice ( pcPic, iPOCLast, pocCurr, iGOPid, pcSlice, isField );
 
-#if RM_4DLF_MI_BUFFER
+#if RM_4DLF_MI_BUFFER // TODO: Adapt to scalable
     pcPic->setPicYuv4DLFMI(pcPic4DLFMI); // set 4DLF_MI buffer
     pcPic->setMicroImageSize(sqrt(m_pcCfg->getFramesToBeEncoded())); //number of frames (sqrt(number of frames)) - limited to 1, 9, 25, 49, 81, 121, 169, 225
     pcPic->setTotalNumberOfSAIs(m_pcCfg->getFramesToBeEncoded());
@@ -1180,6 +1188,14 @@ Void TEncGOP::compressGOP( Int iPOCLast, Int iNumPicRcvd, TComList<TComPic*>& rc
     pcPic->setCurrentSAIsSpiralPosX(posX);
     pcPic->setCurrentSAIsSpiralPosY(posY);
     pcPic->setCurrentSAI(m_totalCoded);
+#if RM_4DLF_SAI_BUFFER
+    pcPic->setPicYuv4DLFSAI(pcPic4DLFSAI); // set 4DLF_SAI buffer
+#endif
+#if RM_SCALABLE
+    pcPic->setPicYuv4DLFSAI(pcPic4DLFMISCL3); // set 4DLF_SCL_3 buffer
+    pcPic->setPicYuv4DLFSAI(pcPic4DLFMISCL7); // set 4DLF_SCL_7 buffer
+    pcPic->setPicYuv4DLFSAI(pcPic4DLFMISCL13); // set 4DLF_SCL_13 buffer
+#endif
 #endif
 
     //Set Frame/Field coding
@@ -1880,7 +1896,7 @@ Void TEncGOP::compressGOP( Int iPOCLast, Int iNumPicRcvd, TComList<TComPic*>& rc
     Pel* CR = pcPic4DLFMI->getAddr(COMPONENT_Cr);
     // TODO: get MISize from config file or
     UInt iMISize = sqrt(m_pcCfg->getFramesToBeEncoded()), initX, initY;
-
+// TODO: adapt to scalable and add other buffers
     pcPic->spiral(m_totalCoded, iMISize, &initX, &initY); //number of frames (sqrt(number of frames)) - limited to 1, 9, 25, 49, 81, 121, 169, 225
     // COMPONENT_Y
     Y += initY * pcPic4DLFMI->getStride(COMPONENT_Y);
@@ -1937,6 +1953,14 @@ Void TEncGOP::compressGOP( Int iPOCLast, Int iNumPicRcvd, TComList<TComPic*>& rc
 
 #if RM_4DLF_MI_BUFFER
   pcPic->setPicYuv4DLFMI(NULL);
+#if RM_4DLF_SAI_BUFFER
+  pcPic->setPicYuv4DLFSAI(NULL);
+#endif
+#if RM_SCALABLE
+  pcPic->setPicYuv4DLFMISCL3(NULL);
+  pcPic->setPicYuv4DLFMISCL7(NULL);
+  pcPic->setPicYuv4DLFMISCL13(NULL);
+#endif
 #endif
 
   delete pcBitstreamRedirect;

@@ -478,6 +478,14 @@ Void TAppEncTop::encode()
   TComPicYuv*       pcPicYuvRec = NULL;
 #if RM_4DLF_MI_BUFFER
   TComPicYuv*       pcPic4DLFMI = new TComPicYuv;
+#if RM_4DLF_SAI_BUFFER
+  TComPicYuv*       pcPic4DLFSAI = new TComPicYuv;
+#endif
+#if RM_SCALABLE
+  TComPicYuv*       pcPic4DLFMISCL3 = new TComPicYuv;
+  TComPicYuv*       pcPic4DLFMISCL7 = new TComPicYuv;
+  TComPicYuv*       pcPic4DLFMISCL13 = new TComPicYuv;
+#endif
 #endif
 
   // initialize internal class & member variables
@@ -514,6 +522,15 @@ Void TAppEncTop::encode()
   Int iMISize = sqrt(m_framesToBeEncoded); // DEBUG // TODO: Add as conf file input
   pcPic4DLFMI->create( m_iSourceWidth * iMISize, m_iSourceHeight * iMISize, m_chromaFormatIDC, m_uiMaxCUWidth, m_uiMaxCUHeight, m_uiMaxTotalCUDepth, true );
  // pcPic4DLFMI->init4DLFMIBuffer( m_iSourceWidth * iMISize, m_iSourceHeight * iMISize, pcPic4DLFMI->getStride(COMPONENT_Y));
+
+#if RM_4DLF_SAI_BUFFER
+  pcPic4DLFSAI->create( m_iSourceWidth * iMISize, m_iSourceHeight * iMISize, m_chromaFormatIDC, m_uiMaxCUWidth, m_uiMaxCUHeight, m_uiMaxTotalCUDepth, true );
+#endif
+#if RM_SCALABLE
+  pcPic4DLFMISCL3->create( m_iSourceWidth * 3, m_iSourceHeight * 3, m_chromaFormatIDC, m_uiMaxCUWidth, m_uiMaxCUHeight, m_uiMaxTotalCUDepth, true );
+  pcPic4DLFMISCL7->create( m_iSourceWidth * 7, m_iSourceHeight * 7, m_chromaFormatIDC, m_uiMaxCUWidth, m_uiMaxCUHeight, m_uiMaxTotalCUDepth, true );
+  pcPic4DLFMISCL13->create( m_iSourceWidth * iMISize, m_iSourceHeight * iMISize, m_chromaFormatIDC, m_uiMaxCUWidth, m_uiMaxCUHeight, m_uiMaxTotalCUDepth, true );
+#endif
 #endif
 
   while ( !bEos )
@@ -545,6 +562,14 @@ Void TAppEncTop::encode()
       m_cTEncTop.encode( bEos, flush ? 0 : pcPicYuvOrg, flush ? 0 : &cPicYuvTrueOrg, snrCSC, m_cListPicYuvRec, outputAccessUnits, iNumEncoded
 #if RM_4DLF_MI_BUFFER
 			   , pcPic4DLFMI
+#if RM_4DLF_SAI_BUFFER
+			   , pcPic4DLFSAI
+#endif
+#if RM_SCALABLE
+			   , pcPic4DLFMISCL3
+			   , pcPic4DLFMISCL7
+			   , pcPic4DLFMISCL13
+#endif
 #endif
 			   , m_isTopFieldFirst );
     }
@@ -553,6 +578,14 @@ Void TAppEncTop::encode()
       m_cTEncTop.encode( bEos, flush ? 0 : pcPicYuvOrg, flush ? 0 : &cPicYuvTrueOrg, snrCSC, m_cListPicYuvRec, outputAccessUnits, iNumEncoded
 #if RM_4DLF_MI_BUFFER
 			   , pcPic4DLFMI
+#if RM_4DLF_SAI_BUFFER
+			   , pcPic4DLFSAI
+#endif
+#if RM_SCALABLE
+			   , pcPic4DLFMISCL3
+			   , pcPic4DLFMISCL7
+			   , pcPic4DLFMISCL13
+#endif
 #endif
 			   );
     }

@@ -47,10 +47,17 @@
 // ====================================================================================================================
 // HEVC-RExt-4DLF-PVS : Ricardo Monteiro
 // ====================================================================================================================
-#define RM_DECODER_VERBOSE									  	1 ///< Writes decoder verbose
+#define RM_DECODER_VERBOSE									  	0 ///< Writes decoder verbose
 #define RM_DEBUG_FILES									  		0 ///< Writes output files for debug purposes
 #define RM_DEBUG_VERBOSE								  		0 ///< Prints debug information
+
+#define RM_RANDOM_ACCESS								  		0 ///< Future development
+#define RM_RA_PROFILE											0 ///< Future development
+
+#define RM_SCALABLE												1 ///< Scalable version of HEVC-HR
+
 #define RM_4DLF_MI_BUFFER							      		1 ///< Generates buffer of encoded pixels in a 4DLF_MI format
+#define RM_4DLF_SAI_BUFFER										1 ///< Generates buffer of encoded pixels in a 4DLF_SAI format
 
 #define RM_4DLF_MI_BUFFER_MULTI_MODE							1 ///< 0 Indiv modes
 																  ///< 1 DC, LOCO, GAP, AGSP, LSP3, LSP5, LSP7, LSP9 modes
@@ -64,6 +71,7 @@
 #define RM_4DLF_MI_INTRA_MODE_LSP						  		1 ///< Pred Mode LSP
 #define RM_4DLF_MI_INTRA_MODE_LSP_PRED_ORDER			  		3 // < Pred Order for LSP
 #define RM_4DLF_MI_INTRA_MODE_LSP_EXTEND_TRAINING_AREA	  		4 // < Extends LSP training area to L, U, R and D... MIs (1 to 8)
+
 // these tools do not produce very good results
 #define RM_4DLF_MI_INTRA_MODE_LSP_EXTEND_SUPPORT	  	  		0 // < Extends LSP support area to L, U, R and D... MIs (1 to 8)
 #define RM_4DLF_MI_INTRA_MODE_LSP_EXTEND_SUPPORT_PRED_ORDER	  	0 // < Extended LSP support pred order

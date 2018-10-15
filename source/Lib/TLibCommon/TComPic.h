@@ -76,6 +76,14 @@ private:
   UInt					m_uiCurrentSAIsSpiralPosX;
   UInt					m_uiCurrentSAIsSpiralPosY;
   UInt 					m_uiCurrentSAI;
+#if RM_4DLF_SAI_BUFFER
+  TComPicYuv* 			m_pcPic4DLFSAI;
+#endif
+#if RM_SCALABLE
+  TComPicYuv* 			m_pcPic4DLFMISCL3;
+  TComPicYuv* 			m_pcPic4DLFMISCL7;
+  TComPicYuv* 			m_pcPic4DLFMISCL13;
+#endif
 #endif
   TComPicYuv*           m_pcPicYuvPred;           //  Prediction
   TComPicYuv*           m_pcPicYuvResi;           //  Residual
@@ -135,6 +143,18 @@ public:
   Void 			spiral(UInt idx, UInt size, UInt* x, UInt* y);
   Void          setCurrentSAI( UInt sai ) { m_uiCurrentSAI = sai; }
   UInt   		getCurrentSAI()       		{ return  m_uiCurrentSAI; }
+#if RM_4DLF_SAI_BUFFER
+  TComPicYuv*   getPicYuv4DLFSAI()       				{ return  m_pcPic4DLFSAI; }
+  Void        	setPicYuv4DLFSAI( TComPicYuv* pcPicYuv ) { m_pcPic4DLFSAI = pcPicYuv; }
+#endif
+#if RM_SCALABLE
+  TComPicYuv*   getPicYuv4DLFMISCL3()       				{ return  m_pcPic4DLFMISCL3; }
+  Void        	setPicYuv4DLFMISCL3( TComPicYuv* pcPicYuv ) { m_pcPic4DLFMISCL3 = pcPicYuv; }
+  TComPicYuv*   getPicYuv4DLFMISCL7()       				{ return  m_pcPic4DLFMISCL7; }
+  Void        	setPicYuv4DLFMISCL7( TComPicYuv* pcPicYuv ) { m_pcPic4DLFMISCL7 = pcPicYuv; }
+  TComPicYuv*   getPicYuv4DLFMISCL13()       				{ return  m_pcPic4DLFMISCL13; }
+  Void        	setPicYuv4DLFMISCL13( TComPicYuv* pcPicYuv ) { m_pcPic4DLFMISCL13 = pcPicYuv; }
+#endif
 #endif
   TComPicYuv*   getPicYuvPred()       { return  m_pcPicYuvPred; }
   TComPicYuv*   getPicYuvResi()       { return  m_pcPicYuvResi; }

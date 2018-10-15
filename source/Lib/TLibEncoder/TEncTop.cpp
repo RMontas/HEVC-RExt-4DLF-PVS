@@ -323,6 +323,14 @@ Void TEncTop::deletePicBuffer()
 Void TEncTop::encode( Bool flush, TComPicYuv* pcPicYuvOrg, TComPicYuv* pcPicYuvTrueOrg, const InputColourSpaceConversion snrCSC, TComList<TComPicYuv*>& rcListPicYuvRecOut, std::list<AccessUnit>& accessUnitsOut, Int& iNumEncoded
 #if RM_4DLF_MI_BUFFER
 		, TComPicYuv* pcPic4DLFMI
+#if RM_4DLF_SAI_BUFFER
+		,TComPicYuv* pcPic4DLFSAI
+#endif
+#if RM_SCALABLE
+		,TComPicYuv* pcPic4DLFMISCL3
+		,TComPicYuv* pcPic4DLFMISCL7
+		,TComPicYuv* pcPic4DLFMISCL13
+#endif
 #endif
 		)
 {
@@ -357,6 +365,14 @@ Void TEncTop::encode( Bool flush, TComPicYuv* pcPicYuvOrg, TComPicYuv* pcPicYuvT
   m_cGOPEncoder.compressGOP(m_iPOCLast, m_iNumPicRcvd, m_cListPic, rcListPicYuvRecOut,
 #if RM_4DLF_MI_BUFFER
 		  	  	  	  	  	pcPic4DLFMI,
+#if RM_4DLF_SAI_BUFFER
+							pcPic4DLFSAI,
+#endif
+#if RM_SCALABLE
+							pcPic4DLFMISCL3,
+							pcPic4DLFMISCL7,
+							pcPic4DLFMISCL13,
+#endif
 #endif
 							accessUnitsOut, false, false, snrCSC, m_printFrameMSE);
 
@@ -395,6 +411,14 @@ Void separateFields(Pel* org, Pel* dstField, UInt stride, UInt width, UInt heigh
 Void TEncTop::encode(Bool flush, TComPicYuv* pcPicYuvOrg, TComPicYuv* pcPicYuvTrueOrg, const InputColourSpaceConversion snrCSC, TComList<TComPicYuv*>& rcListPicYuvRecOut, std::list<AccessUnit>& accessUnitsOut, Int& iNumEncoded,
 #if RM_4DLF_MI_BUFFER
 		 TComPicYuv* pcPic4DLFMI,
+#if RM_4DLF_SAI_BUFFER
+		 TComPicYuv* pcPic4DLFSAI,
+#endif
+#if RM_SCALABLE
+		 TComPicYuv* pcPic4DLFMISCL3,
+		 TComPicYuv* pcPic4DLFMISCL7,
+		 TComPicYuv* pcPic4DLFMISCL13,
+#endif
 #endif
 		 Bool isTff)
 {
@@ -467,6 +491,14 @@ Void TEncTop::encode(Bool flush, TComPicYuv* pcPicYuvOrg, TComPicYuv* pcPicYuvTr
       m_cGOPEncoder.compressGOP(m_iPOCLast, m_iNumPicRcvd, m_cListPic, rcListPicYuvRecOut,
 #if RM_4DLF_MI_BUFFER
 		  	  	  	  	  	  	pcPic4DLFMI,
+#if RM_4DLF_SAI_BUFFER
+								pcPic4DLFSAI,
+#endif
+#if RM_SCALABLE
+								pcPic4DLFMISCL3,
+								pcPic4DLFMISCL7,
+								pcPic4DLFMISCL13,
+#endif
 #endif
 								accessUnitsOut, true, isTff, snrCSC, m_printFrameMSE);
 

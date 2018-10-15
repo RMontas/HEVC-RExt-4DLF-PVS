@@ -102,6 +102,14 @@ public:
   Void  decompressSlice(TComInputBitstream* pcBitstream, TComPic* pcPic
 #if RM_4DLF_MI_BUFFER
 						   ,TComPicYuv* pcPic4DLFMI
+#if RM_4DLF_SAI_BUFFER
+						   ,TComPicYuv* pcPic4DLFSAI
+#endif
+#if RM_SCALABLE
+						   ,TComPicYuv* pcPic4DLFMISCL3
+						   ,TComPicYuv* pcPic4DLFMISCL7
+						   ,TComPicYuv* pcPic4DLFMISCL13
+#endif
 #endif
   );
   Void  filterPicture  (TComPic* pcPic );

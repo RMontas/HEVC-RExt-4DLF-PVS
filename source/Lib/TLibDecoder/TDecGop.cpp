@@ -103,6 +103,14 @@ Void TDecGop::init( TDecEntropy*            pcEntropyDecoder,
 Void TDecGop::decompressSlice(TComInputBitstream* pcBitstream, TComPic* pcPic
 #if RM_4DLF_MI_BUFFER
 						   ,TComPicYuv* pcPic4DLFMI
+#if RM_4DLF_SAI_BUFFER
+						   ,TComPicYuv* pcPic4DLFSAI
+#endif
+#if RM_SCALABLE
+						   ,TComPicYuv* pcPic4DLFMISCL3
+						   ,TComPicYuv* pcPic4DLFMISCL7
+						   ,TComPicYuv* pcPic4DLFMISCL13
+#endif
 #endif
 	)
 {
@@ -125,7 +133,7 @@ Void TDecGop::decompressSlice(TComInputBitstream* pcBitstream, TComPic* pcPic
     ppcSubstreams[ui] = pcBitstream->extractSubstream(ui+1 < uiNumSubstreams ? (pcSlice->getSubstreamSize(ui)<<3) : pcBitstream->getNumBitsLeft());
   }
 
-#if RM_4DLF_MI_BUFFER
+#if RM_4DLF_MI_BUFFER // TODO: adapt to scalable
   UInt posX = 0, posY = 0;
   pcPic->spiral(pcPic->getPOC(), pcPic->getMicroImageSize(), &posX, &posY);
   pcPic->setCurrentSAIsSpiralPosX(posX);

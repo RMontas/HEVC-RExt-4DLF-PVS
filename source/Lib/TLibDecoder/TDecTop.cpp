@@ -222,6 +222,14 @@ Void TDecTop::executeLoopFilters(Int& poc, TComList<TComPic*>*& rpcListPic)
 
 #if RM_4DLF_MI_BUFFER
   TComPicYuv *pcPic4DLFMI = pcPic->getPicYuv4DLFMI();
+#if RM_4DLF_SAI_BUFFER
+  TComPicYuv* pcPic4DLFSAI; // TODO: adapt to scalable
+#endif
+#if RM_SCALABLE
+  TComPicYuv* pcPic4DLFMISCL3;
+  TComPicYuv* pcPic4DLFMISCL7;
+  TComPicYuv* pcPic4DLFMISCL13;
+#endif
 #if RM_DEBUG_FILES
   fstream fileID;
   fileID.open("4DLFMI_DEC_before_inloopfil.yuv", ios::binary | ios::app);
@@ -493,6 +501,14 @@ Void TDecTop::xParsePrefixSEImessages()
 Bool TDecTop::xDecodeSlice(InputNALUnit &nalu, Int &iSkipFrame, Int iPOCLastDisplay
 #if RM_4DLF_MI_BUFFER
     		  ,TComPicYuv* pcPic4DLFMI
+#if RM_4DLF_SAI_BUFFER
+			  ,TComPicYuv* pcPic4DLFSAI
+#endif
+#if RM_SCALABLE
+			  ,TComPicYuv* pcPic4DLFMISCL3
+			  ,TComPicYuv* pcPic4DLFMISCL7
+			  ,TComPicYuv* pcPic4DLFMISCL13
+#endif
 #endif
 )
 {
@@ -674,8 +690,32 @@ Bool TDecTop::xDecodeSlice(InputNALUnit &nalu, Int &iSkipFrame, Int iPOCLastDisp
 	  pcPic4DLFMI->create( m_pcPic->getPicYuvRec()->getWidth(COMPONENT_Y) * iMISize, m_pcPic->getPicYuvRec()->getHeight(COMPONENT_Y) * iMISize,
 			  	  	  	   m_pcPic->getChromaFormat(), pcSlice->getSPS()->getMaxCUWidth(), pcSlice->getSPS()->getMaxCUHeight(),
 						   pcSlice->getSPS()->getMaxTotalCUDepth(), true );
+#if RM_4DLF_SAI_BUFFER
+	  pcPic4DLFSAI->create( m_pcPic->getPicYuvRec()->getWidth(COMPONENT_Y) * iMISize, m_pcPic->getPicYuvRec()->getHeight(COMPONENT_Y) * iMISize,
+	  			  	  	   m_pcPic->getChromaFormat(), pcSlice->getSPS()->getMaxCUWidth(), pcSlice->getSPS()->getMaxCUHeight(),
+	  					   pcSlice->getSPS()->getMaxTotalCUDepth(), true );
+#endif
+#if RM_SCALABLE
+	  pcPic4DLFMISCL3->create( m_pcPic->getPicYuvRec()->getWidth(COMPONENT_Y) * 3, m_pcPic->getPicYuvRec()->getHeight(COMPONENT_Y) * 3,
+	  	  			  	  	   m_pcPic->getChromaFormat(), pcSlice->getSPS()->getMaxCUWidth(), pcSlice->getSPS()->getMaxCUHeight(),
+							   pcSlice->getSPS()->getMaxTotalCUDepth(), true );
+	  pcPic4DLFMISCL7->create( m_pcPic->getPicYuvRec()->getWidth(COMPONENT_Y) * 7, m_pcPic->getPicYuvRec()->getHeight(COMPONENT_Y) * 7,
+	  	  	  			  	   m_pcPic->getChromaFormat(), pcSlice->getSPS()->getMaxCUWidth(), pcSlice->getSPS()->getMaxCUHeight(),
+	  						   pcSlice->getSPS()->getMaxTotalCUDepth(), true );
+	  pcPic4DLFMISCL13->create( m_pcPic->getPicYuvRec()->getWidth(COMPONENT_Y) * iMISize, m_pcPic->getPicYuvRec()->getHeight(COMPONENT_Y) * iMISize,
+	  	  	  			  	   m_pcPic->getChromaFormat(), pcSlice->getSPS()->getMaxCUWidth(), pcSlice->getSPS()->getMaxCUHeight(),
+	  						   pcSlice->getSPS()->getMaxTotalCUDepth(), true );
+#endif
   }
   m_pcPic->setPicYuv4DLFMI(pcPic4DLFMI); // set 4DLF_MI buffer
+#if RM_4DLF_SAI_BUFFER
+  m_pcPic->setPicYuv4DLFSAI(pcPic4DLFSAI); // set 4DLF_SAI buffer
+#endif
+#if RM_SCALABLE
+  m_pcPic->setPicYuv4DLFMISCL3(pcPic4DLFMISCL3); // set 4DLF_SCL_3 buffer
+  m_pcPic->setPicYuv4DLFMISCL7(pcPic4DLFMISCL7); // set 4DLF_SCL_7 buffer
+  m_pcPic->setPicYuv4DLFMISCL13(pcPic4DLFMISCL13); // set 4DLF_SCL_13 buffer
+#endif
   m_pcPic->setMicroImageSize(iMISize); //number of frames (sqrt(number of frames)) - limited to 1, 9, 25, 49, 81, 121, 169, 225
   m_pcPic->setTotalNumberOfSAIs(iMISize * iMISize);
   m_pcPic->setCurrentSAI(pcSlice->getPOC());
@@ -764,6 +804,14 @@ Bool TDecTop::xDecodeSlice(InputNALUnit &nalu, Int &iSkipFrame, Int iPOCLastDisp
   m_cGopDecoder.decompressSlice(&(nalu.getBitstream()), m_pcPic
 #if RM_4DLF_MI_BUFFER
 						   ,pcPic4DLFMI
+#if RM_4DLF_SAI_BUFFER
+						   ,pcPic4DLFSAI
+#endif
+#if RM_SCALABLE
+						   ,pcPic4DLFMISCL3
+						   ,pcPic4DLFMISCL7
+						   ,pcPic4DLFMISCL13
+#endif
 #endif
   );
 
@@ -801,6 +849,14 @@ Void TDecTop::xDecodePPS(const std::vector<UChar> &naluData)
 Bool TDecTop::decode(InputNALUnit& nalu, Int& iSkipFrame, Int& iPOCLastDisplay
 #if RM_4DLF_MI_BUFFER
         ,TComPicYuv* pcPic4DLFMI
+#if RM_4DLF_SAI_BUFFER
+		,TComPicYuv* pcPic4DLFSAI
+#endif
+#if RM_SCALABLE
+		,TComPicYuv* pcPic4DLFMISCL3
+		,TComPicYuv* pcPic4DLFMISCL7
+		,TComPicYuv* pcPic4DLFMISCL13
+#endif
 #endif
 		)
 {
@@ -863,6 +919,14 @@ Bool TDecTop::decode(InputNALUnit& nalu, Int& iSkipFrame, Int& iPOCLastDisplay
       return xDecodeSlice(nalu, iSkipFrame, iPOCLastDisplay
 #if RM_4DLF_MI_BUFFER
     		  ,pcPic4DLFMI
+#if RM_4DLF_SAI_BUFFER
+			  ,pcPic4DLFSAI
+#endif
+#if RM_SCALABLE
+			  ,pcPic4DLFMISCL3
+			  ,pcPic4DLFMISCL7
+			  ,pcPic4DLFMISCL13
+#endif
 #endif
       );
       break;

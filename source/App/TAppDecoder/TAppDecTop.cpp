@@ -89,6 +89,14 @@ Void TAppDecTop::decode()
   TComList<TComPic*>* pcListPic = NULL;
 #if RM_4DLF_MI_BUFFER
   TComPicYuv*       pcPic4DLFMI = new TComPicYuv;
+#if RM_4DLF_SAI_BUFFER
+  TComPicYuv*       pcPic4DLFSAI = new TComPicYuv;
+#endif
+#if RM_SCALABLE
+  TComPicYuv*       pcPic4DLFMISCL3 = new TComPicYuv;
+  TComPicYuv*       pcPic4DLFMISCL7 = new TComPicYuv;
+  TComPicYuv*       pcPic4DLFMISCL13 = new TComPicYuv;
+#endif
 #endif
 
   ifstream bitstreamFile(m_bitstreamFileName.c_str(), ifstream::in | ifstream::binary);
@@ -171,6 +179,14 @@ Void TAppDecTop::decode()
         bNewPicture = m_cTDecTop.decode(nalu, m_iSkipFrame, m_iPOCLastDisplay
 #if RM_4DLF_MI_BUFFER
         ,pcPic4DLFMI
+#if RM_4DLF_SAI_BUFFER
+		,pcPic4DLFSAI
+#endif
+#if RM_SCALABLE
+		,pcPic4DLFMISCL3
+		,pcPic4DLFMISCL7
+		,pcPic4DLFMISCL13
+#endif
 #endif
         );
         if (bNewPicture)
