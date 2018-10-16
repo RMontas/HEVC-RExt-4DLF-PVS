@@ -149,6 +149,8 @@ public:
 #endif
 #if RM_SCALABLE
   Void 			spiralScalable(UInt idx, UInt size, UInt* x, UInt* y);
+  Void 			genIntermediarySAI7x7(TComPicYuv* pcPic4DLFMISCL7, UInt miSize);
+  Void 			genIntermediarySAI13x13(TComPicYuv* pcPic4DLFMISCL13, UInt miSize);
   TComPicYuv*   getPicYuv4DLFMISCL3()       				{ return  m_pcPic4DLFMISCL3; }
   Void        	setPicYuv4DLFMISCL3( TComPicYuv* pcPicYuv ) { m_pcPic4DLFMISCL3 = pcPicYuv; }
   TComPicYuv*   getPicYuv4DLFMISCL7()       				{ return  m_pcPic4DLFMISCL7; }

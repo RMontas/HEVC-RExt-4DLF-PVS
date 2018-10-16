@@ -2014,13 +2014,13 @@ Void TEncGOP::compressGOP( Int iPOCLast, Int iNumPicRcvd, TComList<TComPic*>& rc
   if(m_totalCoded < 45) // LAYER 3 & 4
   {
 	  // SCALABLE 4DLF-MI BUFFER 7x7
-	  // COMPONENT_Y
 	  initYScl = floor(initY / 2);
 	  initXScl = floor(initX / 2);
 	  Y = pcPic4DLFMISCL7->getAddr(COMPONENT_Y);
 	  CB = pcPic4DLFMISCL7->getAddr(COMPONENT_Cb);
 	  CR = pcPic4DLFMISCL7->getAddr(COMPONENT_Cr);
 	  iMISize = 7;
+	  // COMPONENT_Y
 	  Y += initYScl * pcPic4DLFMISCL7->getStride(COMPONENT_Y);
 	  for(Int j = 0; j < pcPic4DLFMISCL7->getHeight(COMPONENT_Y); j+=iMISize)
 	  {
@@ -2049,6 +2049,10 @@ Void TEncGOP::compressGOP( Int iPOCLast, Int iNumPicRcvd, TComList<TComPic*>& rc
 			  CR[i + initXScl] = pcPic->getPicYuvRec()->getAddr(COMPONENT_Cr)[(j/iMISize)*pcPic->getPicYuvRec()->getStride(COMPONENT_Cr) + i/iMISize];
 		  }
 		  CR += iMISize * pcPic4DLFMISCL7->getStride(COMPONENT_Cr);
+	  }
+	  if(m_totalCoded == 8)
+	  { // generate intermediary SAIs in LF 7x7
+		  pcPic->genIntermediarySAI7x7(pcPic4DLFMISCL7, sqrt(m_pcCfg->getFramesToBeEncoded()));
 	  }
   }
   // SCALABLE 4DLF-MI BUFFER 13x13
@@ -2085,6 +2089,10 @@ Void TEncGOP::compressGOP( Int iPOCLast, Int iNumPicRcvd, TComList<TComPic*>& rc
 		  CR[i + initX] = pcPic->getPicYuvRec()->getAddr(COMPONENT_Cr)[(j/iMISize)*pcPic->getPicYuvRec()->getStride(COMPONENT_Cr) + i/iMISize];
 	  }
 	  CR += iMISize * pcPic4DLFMISCL13->getStride(COMPONENT_Cr);
+  }
+  if(m_totalCoded == 44)
+  { // generate intermediary SAIs in LF 13x13
+	  pcPic->genIntermediarySAI13x13(pcPic4DLFMISCL13, sqrt(m_pcCfg->getFramesToBeEncoded()));
   }
 #endif
 #if RM_DEBUG_FILES

@@ -212,10 +212,9 @@ Void TComPic::spiral(UInt idx, UInt size, UInt* x, UInt* y)
 	*x = x_pos;
 	*y = y_pos;
 }
-
+#if RM_SCALABLE
 Void TComPic::spiralScalable(UInt idx, UInt size, UInt* x, UInt* y)
 {
-
 	Int layerMask[size][size] = { {6, 6, 4, 6, 3, 6, 4, 6, 3, 6, 4, 6, 6},
 								  {6, 5, 6, 5, 6, 5, 6, 5, 6, 5, 6, 5, 6},
 							      {4, 6, 2, 6, 4, 6, 2, 6, 4, 6, 2, 6, 4},
@@ -296,6 +295,199 @@ Void TComPic::spiralScalable(UInt idx, UInt size, UInt* x, UInt* y)
 	*x = x_pos;
 	*y = y_pos;
 }
+
+Void TComPic::genIntermediarySAI7x7(TComPicYuv* pcPic4DLFMISCL7, UInt miSize)
+{
+	// use in the future if disp compensation is used
+	// 9 - causal reference SAI
+	// 8 - causal NON reference SAI (same layer) - not used yet
+	// 1 - horizontal     '-'
+	// 2 - vertical       '|'
+	// 3 - diagonal left  '\'
+	// 4 - diagonal right '/'
+	// 5 - use closest reference
+	Int currentBufferMISize = 7;
+	Int expandToLF7[7][7] = {{5, 5, 5, 5, 5, 5, 5 },
+	                  		 {5, 9, 1, 9, 1, 9, 5 },
+							 {5, 2, 3, 2, 4, 2, 5 },
+							 {5, 9, 1, 9, 1, 9, 5 },
+							 {5, 2, 4, 2, 3, 2, 5 },
+							 {5, 9, 1, 9, 1, 9, 5 },
+							 {5, 5, 5, 5, 5, 5, 5 }};
+
+	Pel* Y = pcPic4DLFMISCL7->getAddr(COMPONENT_Y);
+	Pel* CB = pcPic4DLFMISCL7->getAddr(COMPONENT_Cb);
+	Pel* CR = pcPic4DLFMISCL7->getAddr(COMPONENT_Cr);
+	UInt posX = floor(miSize/2), posY = floor(miSize/2);
+	UInt posXScl = floor(posX/2), posYScl = floor(posY/2);
+	Int refSAI0 = 0, refSAI1 = 0; // use more than one reference (future dev for better disp comp)
+	UInt refSAI0posX = 0, refSAI0posY = 0;
+	Int sclSpiralScanOrder[miSize][miSize];
+	Int lowestSAINumber = miSize*miSize;
+
+	for(UInt SAI = 0; SAI < miSize*miSize; SAI++)
+	{
+		spiralScalable(SAI, miSize, &posX, &posY);
+		sclSpiralScanOrder[posX][posY] = SAI;
+	}
+
+	for(UInt SAI = 9; SAI <= 44; SAI++)
+	{
+		spiralScalable(SAI, miSize, &posX, &posY);
+		posYScl = floor(posY/2);
+		posXScl = floor(posX/2);
+		lowestSAINumber = miSize*miSize;
+		if(expandToLF7[posYScl][posXScl] > 0 && expandToLF7[posYScl][posXScl] < 8)
+		{
+			// very simple method to get the SAI with the lowest frame number around the current SAI
+			// this will copy the refSAI0 to the current SAI position
+			for(Int j = -2; j<=2; j+=2)
+			{
+				for(Int i = -2; i<=2; i+=2)
+				{
+					if((Int)posY+j < miSize && (Int)posY+i < miSize && (Int)posY+j > 0 && (Int)posX+i > 0)
+						if(sclSpiralScanOrder[posY+j][posX+i] < lowestSAINumber)
+							lowestSAINumber = sclSpiralScanOrder[posY+j][posX+i];
+				}
+			}
+			refSAI0 = lowestSAINumber;
+			spiralScalable(refSAI0, miSize, &refSAI0posX, &refSAI0posY);
+			Y = pcPic4DLFMISCL7->getAddr(COMPONENT_Y);
+			CB = pcPic4DLFMISCL7->getAddr(COMPONENT_Cb);
+			CR = pcPic4DLFMISCL7->getAddr(COMPONENT_Cr);
+			// COMPONENT_Y
+			Y += posYScl * pcPic4DLFMISCL7->getStride(COMPONENT_Y);
+			for(Int j = 0; j < pcPic4DLFMISCL7->getHeight(COMPONENT_Y); j+=currentBufferMISize)
+			{
+				for(Int i = 0; i < pcPic4DLFMISCL7->getWidth(COMPONENT_Y); i+=currentBufferMISize)
+				{
+					Y[i + posXScl] = pcPic4DLFMISCL7->getAddr(COMPONENT_Y)[(Int)(floor(refSAI0posY/2))*pcPic4DLFMISCL7->getStride(COMPONENT_Y) + i + (Int)(floor(refSAI0posX/2))];
+				}
+				Y += currentBufferMISize * pcPic4DLFMISCL7->getStride(COMPONENT_Y);
+			}
+			CB += posYScl * pcPic4DLFMISCL7->getStride(COMPONENT_Cb);
+			for(Int j = 0; j < pcPic4DLFMISCL7->getHeight(COMPONENT_Cb); j+=currentBufferMISize)
+			{
+				for(Int i = 0; i < pcPic4DLFMISCL7->getWidth(COMPONENT_Cb); i+=currentBufferMISize)
+				{
+					CB[i + posXScl] = pcPic4DLFMISCL7->getAddr(COMPONENT_Cb)[(Int)(floor(refSAI0posY/2))*pcPic4DLFMISCL7->getStride(COMPONENT_Cb) + i + (Int)floor(refSAI0posX/2)];
+				}
+				CB += currentBufferMISize * pcPic4DLFMISCL7->getStride(COMPONENT_Cb);
+			}
+			CR += posYScl * pcPic4DLFMISCL7->getStride(COMPONENT_Cr);
+			for(Int j = 0; j < pcPic4DLFMISCL7->getHeight(COMPONENT_Cr); j+=currentBufferMISize)
+			{
+				for(Int i = 0; i < pcPic4DLFMISCL7->getWidth(COMPONENT_Cr); i+=currentBufferMISize)
+				{
+					CR[i + posXScl] = pcPic4DLFMISCL7->getAddr(COMPONENT_Cr)[(Int)(floor(refSAI0posY/2))*pcPic4DLFMISCL7->getStride(COMPONENT_Cr) + i + (Int)floor(refSAI0posX/2)];
+				}
+				CR += currentBufferMISize * pcPic4DLFMISCL7->getStride(COMPONENT_Cr);
+			}
+		}
+	}
+
+}
+
+Void TComPic::genIntermediarySAI13x13(TComPicYuv* pcPic4DLFMISCL13, UInt miSize)
+{
+	// use in the future if disp compensation is used
+	// 9 - causal reference SAI
+	// 8 - causal NON reference SAI (same layer) - not used yet
+	// 1 - horizontal     '-'
+	// 2 - vertical       '|'
+	// 3 - diagonal left  '\'
+	// 4 - diagonal right '/'
+	// 5 - use closest reference
+	Int currentBufferMISize = 13;
+
+	Int expandToLF13[miSize][miSize] =
+						{{ 5, 5, 9, 1, 9, 1, 9, 1, 9, 1, 9, 5, 5 },
+	                    { 5, 5, 2, 3, 2, 3, 2, 4, 2, 4, 2, 5, 5 },
+	                    { 9, 1, 9, 1, 9, 1, 9, 1, 9, 1, 9, 1, 9 },
+						{ 2, 3, 2, 3, 2, 3, 2, 4, 2, 4, 2, 4, 2 },
+						{ 9, 1, 9, 1, 9, 1, 9, 1, 9, 1, 9, 1, 9 },
+						{ 2, 3, 2, 3, 2, 3, 2, 4, 2, 4, 2, 4, 2 },
+						{ 9, 1, 9, 1, 9, 1, 9, 1, 9, 1, 9, 1, 9 },
+						{ 2, 4, 2, 4, 2, 4, 2, 3, 2, 3, 2, 3, 2 },
+						{ 9, 1, 9, 1, 9, 1, 9, 1, 9, 1, 9, 1, 9 },
+						{ 2, 4, 2, 4, 2, 4, 2, 3, 2, 3, 2, 3, 2 },
+						{ 9, 1, 9, 1, 9, 1, 9, 1, 9, 1, 9, 1, 9 },
+						{ 5, 5, 2, 4, 2, 4, 2, 3, 2, 3, 2, 5, 5 },
+						{ 5, 5, 9, 1, 9, 1, 9, 1, 9, 1, 9, 5, 5 }};
+
+	Pel* Y = pcPic4DLFMISCL13->getAddr(COMPONENT_Y);
+	Pel* CB = pcPic4DLFMISCL13->getAddr(COMPONENT_Cb);
+	Pel* CR = pcPic4DLFMISCL13->getAddr(COMPONENT_Cr);
+	UInt posX = floor(miSize/2), posY = floor(miSize/2);
+	UInt posXScl = floor(posX/2), posYScl = floor(posY/2);
+	UInt refSAI0 = 0, refSAI1 = 0; // use more than one reference (future dev for better disp comp)
+	UInt refSAI0posX = 0, refSAI0posY = 0;
+	Int sclSpiralScanOrder[miSize][miSize];
+	Int lowestSAINumber = miSize*miSize;
+
+	for(UInt SAI = 0; SAI < miSize*miSize; SAI++)
+	{
+		spiralScalable(SAI, miSize, &posX, &posY);
+		sclSpiralScanOrder[posX][posY] = SAI;
+	}
+
+	for(UInt SAI = 45; SAI <= 168; SAI++)
+	{
+		spiralScalable(SAI, miSize, &posX, &posY);
+		posYScl = posY;
+		posXScl = posX;
+		lowestSAINumber = miSize*miSize;
+		if(expandToLF13[posYScl][posXScl] > 0 && expandToLF13[posYScl][posXScl] < 8)
+		{
+			// very simple method to get the SAI with the lowest frame number around the current SAI
+			// this will copy the refSAI0 to the current SAI position
+			for(Int j = -1; j<=1; j+=1)
+			{
+				for(Int i = -1; i<=1; i+=1)
+				{
+					if((Int)posY+j < miSize && (Int)posY+i < miSize && (Int)posY+j > 0 && (Int)posX+i > 0)
+						if(sclSpiralScanOrder[posY+j][posX+i] < lowestSAINumber)
+							lowestSAINumber = sclSpiralScanOrder[posY+j][posX+i];
+				}
+			}
+			refSAI0 = lowestSAINumber;
+			spiralScalable(refSAI0, miSize, &refSAI0posX, &refSAI0posY);
+			Y = pcPic4DLFMISCL13->getAddr(COMPONENT_Y);
+			CB = pcPic4DLFMISCL13->getAddr(COMPONENT_Cb);
+			CR = pcPic4DLFMISCL13->getAddr(COMPONENT_Cr);
+			// COMPONENT_Y
+			Y += posYScl * pcPic4DLFMISCL13->getStride(COMPONENT_Y);
+			for(Int j = 0; j < pcPic4DLFMISCL13->getHeight(COMPONENT_Y); j+=currentBufferMISize)
+			{
+				for(Int i = 0; i < pcPic4DLFMISCL13->getWidth(COMPONENT_Y); i+=currentBufferMISize)
+				{
+					Y[i + posXScl] = pcPic4DLFMISCL13->getAddr(COMPONENT_Y)[(Int)(refSAI0posY)*pcPic4DLFMISCL13->getStride(COMPONENT_Y) + i + (Int)(refSAI0posX)];
+				}
+				Y += currentBufferMISize * pcPic4DLFMISCL13->getStride(COMPONENT_Y);
+			}
+			CB += posYScl * pcPic4DLFMISCL13->getStride(COMPONENT_Cb);
+			for(Int j = 0; j < pcPic4DLFMISCL13->getHeight(COMPONENT_Cb); j+=currentBufferMISize)
+			{
+				for(Int i = 0; i < pcPic4DLFMISCL13->getWidth(COMPONENT_Cb); i+=currentBufferMISize)
+				{
+					CB[i + posXScl] = pcPic4DLFMISCL13->getAddr(COMPONENT_Cb)[(Int)(refSAI0posY)*pcPic4DLFMISCL13->getStride(COMPONENT_Cb) + i + (Int)(refSAI0posX)];
+				}
+				CB += currentBufferMISize * pcPic4DLFMISCL13->getStride(COMPONENT_Cb);
+			}
+			CR += posYScl * pcPic4DLFMISCL13->getStride(COMPONENT_Cr);
+			for(Int j = 0; j < pcPic4DLFMISCL13->getHeight(COMPONENT_Cr); j+=currentBufferMISize)
+			{
+				for(Int i = 0; i < pcPic4DLFMISCL13->getWidth(COMPONENT_Cr); i+=currentBufferMISize)
+				{
+					CR[i + posXScl] = pcPic4DLFMISCL13->getAddr(COMPONENT_Cr)[(Int)(refSAI0posY)*pcPic4DLFMISCL13->getStride(COMPONENT_Cr) + i + (Int)(refSAI0posX)];
+				}
+				CR += currentBufferMISize * pcPic4DLFMISCL13->getStride(COMPONENT_Cr);
+			}
+		}
+	}
+}
+
+#endif
 #if RM_DEBUG_FILES
 Bool TComPic::writePlane(std::ostream& fd, Pel* src, Bool is16bit,
                        UInt stride444,

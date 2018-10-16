@@ -394,6 +394,10 @@ Void TDecTop::executeLoopFilters(Int& poc, TComList<TComPic*>*& rpcListPic)
 		  }
 		  CR += iMISize * pcPic4DLFMISCL7->getStride(COMPONENT_Cr);
 	  }
+	  if(pcPic->getPOC() == 8)
+	  { // generate intermediary SAIs in LF 7x7
+		  pcPic->genIntermediarySAI7x7(pcPic4DLFMISCL7, iMISize);
+	  }
   }
   // SCALABLE 4DLF-MI BUFFER 13x13
   // COMPONENT_Y
@@ -430,7 +434,10 @@ Void TDecTop::executeLoopFilters(Int& poc, TComList<TComPic*>*& rpcListPic)
 	  }
 	  CR += iMISize * pcPic4DLFMISCL13->getStride(COMPONENT_Cr);
   }
-
+  if(pcPic->getPOC() == 44)
+  { // generate intermediary SAIs in LF 13x13
+	  pcPic->genIntermediarySAI13x13(pcPic4DLFMISCL13, iMISize);
+  }
 #endif
 #if RM_DEBUG_FILES
   fileID.open("4DLFMI_DEC.yuv", ios::binary | ios::app);
