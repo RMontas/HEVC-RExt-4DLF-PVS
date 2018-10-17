@@ -1195,9 +1195,9 @@ Void TEncGOP::compressGOP( Int iPOCLast, Int iNumPicRcvd, TComList<TComPic*>& rc
     pcPic->setPicYuv4DLFSAI(pcPic4DLFSAI); // set 4DLF_SAI buffer
 #endif
 #if RM_SCALABLE
-    pcPic->setPicYuv4DLFSAI(pcPic4DLFMISCL3); // set 4DLF_SCL_3 buffer
-    pcPic->setPicYuv4DLFSAI(pcPic4DLFMISCL7); // set 4DLF_SCL_7 buffer
-    pcPic->setPicYuv4DLFSAI(pcPic4DLFMISCL13); // set 4DLF_SCL_13 buffer
+    pcPic->setPicYuv4DLFMISCL3(pcPic4DLFMISCL3); // set 4DLF_SCL_3 buffer
+    pcPic->setPicYuv4DLFMISCL7(pcPic4DLFMISCL7); // set 4DLF_SCL_7 buffer
+    pcPic->setPicYuv4DLFMISCL13(pcPic4DLFMISCL13); // set 4DLF_SCL_13 buffer
 #endif
 #endif
 

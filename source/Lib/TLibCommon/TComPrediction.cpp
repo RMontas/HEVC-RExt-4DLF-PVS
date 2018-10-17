@@ -997,6 +997,9 @@ Double* TComPrediction::trainRasterLSP( Int* causalSupportX, Int* causalSupportY
 			{
 				supportIncomplete = false;
 				dir_idx = spiral(idx, miSize, &i, &j);
+#if RM_SCALABLE
+				dir_idx = spiralScalable(idx, miSize, &i, &j);
+#endif
 				I = (Int)i - spiralOffset;
 				J = (Int)j - spiralOffset;
 				pixelOffset = I + J*stride;
@@ -1079,6 +1082,9 @@ Double* TComPrediction::trainSpiralLSP( Int current_SAI, Int miSize, Pel* p4DLFM
 	for(Int idx = 0; idx < current_SAI; idx++)
 	{
 		dir_idx = spiral(idx, miSize, &i, &j);
+#if RM_SCALABLE
+		dir_idx = spiralScalable(idx, miSize, &i, &j);
+#endif
 		I = (Int)i - spiralOffset;
 		J = (Int)j - spiralOffset;
 		pixelOffset = I + J*stride;
@@ -1198,6 +1204,9 @@ UInt TComPrediction::LSP( Double *lspCoefs, Int N, Pel* p4DLFMI, Int current_SAI
 	char current_direction[] = "RDLU";
 
 	dir_idx = spiral(current_SAI, mi, &i, &j);
+#if RM_SCALABLE
+	dir_idx = spiralScalable(current_SAI, mi, &i, &j);
+#endif
 	if(current_direction[dir_idx] == 'R')
 	{
 		predictor = lspCoefs[0] * (Double)p4DLFMI[current_pixel_pos + 1]; // RIGHT
@@ -1263,6 +1272,10 @@ UInt TComPrediction::LSP3( Double *lspCoefs, Int M, Pel* p4DLFMI, Int current_SA
 	char current_direction[] = "RDLU";
 
 	dir_idx = spiral(current_SAI, mi, &i, &j);
+#if RM_SCALABLE
+	dir_idx = spiralScalable(current_SAI, mi, &i, &j);
+#endif
+
 	if(current_direction[dir_idx] == 'R')
 	{
 		predictor = lspCoefs[0] * (Double)p4DLFMI[current_pixel_pos - 1]; // LEFT
@@ -1631,6 +1644,9 @@ Int TComPrediction::getCausalSupportAdaptive( Int M, Int MExt, Int* causalSuppor
 	for(Int idx=0; idx<currentSAI; idx++)
 	{
 		dir_idx = spiral(idx, mi, &i, &j);
+#if RM_SCALABLE
+		dir_idx = spiralScalable(idx, mi, &i, &j);
+#endif
 		l1Distance[j*mi + i] = abs(currentPixelPosX - ((Int)i - spiralBorderOffset)) + abs(currentPixelPosY - ((Int)j - spiralBorderOffset));
 			//if(l1Distance[(spiralBorderOffset+y)*mi + spiralBorderOffset+x] == 0)
 			//	cout << "WRONG DISTANCE" << endl;
@@ -1767,6 +1783,9 @@ Void TComPrediction::getCausalSupportFromSpiral_LOCO_I( Int* a, Int* b, Int* c, 
 	else{
 		// find current spiral direction
 		dir_idx = spiral(current_SAI, sqrt(total_number_of_SAIS), &x, &y);
+#if RM_SCALABLE
+		dir_idx = spiralScalable(current_SAI, sqrt(total_number_of_SAIS), &x, &y);
+#endif
 		if(current_direction[dir_idx] == 'R')
 		{
 			A = p4DLFMI[current_pixel_pos - 1]; 			// LEFT
@@ -1829,6 +1848,9 @@ Void TComPrediction::getCausalSupportFromSpiral_GAP( Int* w, Int* ww, Int* n, In
 	else{
 		// find current spiral direction
 		dir_idx = spiral(current_SAI, sqrt(total_number_of_SAIS), &x, &y);
+#if RM_SCALABLE
+		dir_idx = spiralScalable(current_SAI, sqrt(total_number_of_SAIS), &x, &y);
+#endif
 		if(current_direction[dir_idx] == 'R')
 		{
 			W = p4DLFMI[current_pixel_pos + 1]; // RIGHT
@@ -1955,6 +1977,9 @@ Void TComPrediction::getCausalSupportFromSpiral_AGSP( Int* w, Int* ww, Int* n, I
 	else{
 		// find current spiral direction
 		dir_idx = spiral(current_SAI, sqrt(total_number_of_SAIS), &x, &y);
+#if RM_SCALABLE
+		dir_idx = spiralScalable(current_SAI, sqrt(total_number_of_SAIS), &x, &y);
+#endif
 		if(current_direction[dir_idx] == 'R')
 		{
 			W = p4DLFMI[current_pixel_pos + 1]; // RIGHT
@@ -2169,6 +2194,126 @@ Int TComPrediction::spiral(UInt idx, UInt size, UInt* x, UInt* y)
 
 	return last_dir_idx; // return last direction
 }
+
+Int TComPrediction::spiralScalable(UInt idx, UInt size, UInt* x, UInt* y)
+{
+	Int layerMask13[13][13] = { {6, 6, 4, 6, 3, 6, 4, 6, 3, 6, 4, 6, 6},
+							  {6, 5, 6, 5, 6, 5, 6, 5, 6, 5, 6, 5, 6},
+							  {4, 6, 2, 6, 4, 6, 2, 6, 4, 6, 2, 6, 4},
+							  {6, 5, 6, 5, 6, 5, 6, 5, 6, 5, 6, 5, 6},
+							  {3, 6, 4, 6, 3, 6, 4, 6, 3, 6, 4, 6, 3},
+							  {6, 5, 6, 5, 6, 5, 6, 5, 6, 5, 6, 5, 6},
+							  {4, 6, 2, 6, 4, 6, 1, 6, 4, 6, 2, 6, 4},
+							  {6, 5, 6, 5, 6, 5, 6, 5, 6, 5, 6, 5, 6},
+							  {3, 6, 4, 6, 3, 6, 4, 6, 3, 6, 4, 6, 3},
+							  {6, 5, 6, 5, 6, 5, 6, 5, 6, 5, 6, 5, 6},
+							  {4, 6, 2, 6, 4, 6, 2, 6, 4, 6, 2, 6, 4},
+							  {6, 5, 6, 5, 6, 5, 6, 5, 6, 5, 6, 5, 6},
+							  {6, 6, 4, 6, 3, 6, 4, 6, 3, 6, 4, 6, 6} };
+	Int layerMask7[7][7] =    {{5, 4, 3, 4, 3, 4, 5 },
+		                  	   {4, 2, 4, 2, 4, 2, 4 },
+							   {3, 4, 3, 4, 3, 4, 3 },
+							   {4, 2, 4, 1, 4, 2, 4 },
+							   {3, 4, 3, 4, 3, 4, 3 },
+							   {4, 2, 4, 2, 4, 2, 4 },
+							   {5, 4, 3, 4, 3, 4, 5 }};
+	Int layerMask3[3][3] =    {{2, 2, 2},
+							   {2, 1, 2},
+							   {2, 2, 2}};
+
+	Int init = floor(size/2);
+	Int current_idx = 0;
+	char current_direction[] = "RDLU";
+	Int dir_idx = 0;
+	Int original_steps_to_update = 1;
+	Int original_steps_to_change_dir = 1;
+	Int steps_to_update = 2;
+	Int steps_to_change_dir = 1;
+	Int step = 0;
+	Int x_pos = init;
+	Int y_pos = init;
+	Int last_dir_idx = 0;
+
+	while(current_idx < idx)
+	{
+		for(Int l = 2; l <= 6; l++)
+		{
+			original_steps_to_update = 1;
+			original_steps_to_change_dir = 1;
+			steps_to_update = 2;
+			steps_to_change_dir = 1;
+			dir_idx = 0;
+			step = 0;
+			x_pos = init;
+			y_pos = init;
+			last_dir_idx = 0;
+			while(x_pos >= 0 && x_pos < size && y_pos >= 0 && y_pos < size)
+			{
+				last_dir_idx = dir_idx;
+				if(current_direction[dir_idx] == 'R') // RIGHT
+					x_pos++;
+				else if(current_direction[dir_idx] == 'D') // DOWN
+					y_pos++;
+				else if(current_direction[dir_idx] == 'L') // LEFT
+					x_pos--;
+				else // UP
+					y_pos--;
+				if(step == steps_to_change_dir-1)
+				{
+					step = 0;
+					steps_to_change_dir = original_steps_to_change_dir;
+					dir_idx++;
+					if(dir_idx > 3)
+						dir_idx = 0;
+				}
+				else
+					step++;
+				if(size == 3)
+				{
+					if(layerMask3[y_pos][x_pos] == l)
+					{
+						current_idx++;
+						if(current_idx == idx)
+							break;
+					}
+				}
+				if(size == 7)
+				{
+					if(layerMask7[y_pos][x_pos] == l)
+					{
+						current_idx++;
+						if(current_idx == idx)
+							break;
+					}
+				}
+				if(size == 13)
+				{
+					if(layerMask13[y_pos][x_pos] == l)
+					{
+						current_idx++;
+						if(current_idx == idx)
+							break;
+					}
+				}
+				steps_to_update--;
+				if(steps_to_update == 0)
+				{
+					original_steps_to_change_dir++;
+					steps_to_change_dir = original_steps_to_change_dir;
+					original_steps_to_update++;
+					steps_to_update = original_steps_to_update * 2; // 1, 2, 4, 6, 8, 10...
+				}
+			}
+			if(current_idx == idx)
+				break;
+		}
+	}
+
+	*x = x_pos;
+	*y = y_pos;
+
+	return last_dir_idx; // return last direction
+}
 #endif
 
 Void TComPrediction::predIntraAng( const ComponentID compID, UInt uiDirMode, Pel* piOrg /* Will be null for decoding */, UInt uiOrgStride, Pel* piPred, UInt uiStride, TComTU &rTu, const Bool bUseFilteredPredSamples, const Bool bUseLosslessDPCM )
@@ -2285,16 +2430,48 @@ Void TComPrediction::predIntraAng( const ComponentID compID, UInt uiDirMode, Pel
       }
 #else
       TComPic *const pcPic = rTu.getCU()->getPic();
-      TComPicYuv *const pcPic4DLFMI = pcPic->getPicYuv4DLFMI();
-      UInt const miSize = pcPic->getMicroImageSize();
-      UInt const currentSAIsSpiralPosX = pcPic->getCurrentSAIsSpiralPosX();
-      UInt const currentSAIsSpiralPosY = pcPic->getCurrentSAIsSpiralPosY();
-      UInt const totalNumberOfSAIs = pcPic->getTotalNumberOfSAIs();
-      UInt const currentSAI = pcPic->getCurrentSAI();
+      TComPicYuv * pcPic4DLFMI = pcPic->getPicYuv4DLFMI();
+      UInt  miSize = pcPic->getMicroImageSize();
+      UInt  currentSAIsSpiralPosX = pcPic->getCurrentSAIsSpiralPosX();
+      UInt  currentSAIsSpiralPosY = pcPic->getCurrentSAIsSpiralPosY();
+      UInt  totalNumberOfSAIs = pcPic->getTotalNumberOfSAIs();
+      UInt  currentSAI = pcPic->getCurrentSAI();
       UInt const pcCUAbsPartIdx = pcCU->getZorderIdxInCtu();
       UInt const uiAbsPartIdxInRaster = g_auiZscanToRaster[pcCUAbsPartIdx];
       UInt const uiPosX = (uiAbsPartIdxInRaster % 16) * 4 + (pcCU->getCtuRsAddr() % pcPic->getFrameWidthInCtus()) * 64;
       UInt const uiPosY = (uiAbsPartIdxInRaster / 16) * 4 + (pcCU->getCtuRsAddr() / pcPic->getFrameWidthInCtus()) * 64;
+
+#if RM_SCALABLE
+     // cout << currentSAI << " " << currentSAIsSpiralPosY << " " << currentSAIsSpiralPosX << endl;
+     // Int spiralScanOrder7[7][7], spiralScanOrder13[miSize][miSize];
+     // UInt sy, sx;
+      if (currentSAI < 9)
+      {
+    	  miSize = 3;
+    	  pcPic4DLFMI = pcPic->getPicYuv4DLFMISCL3();
+    	  spiralScalable(currentSAI, pcPic->getMicroImageSize(), &currentSAIsSpiralPosX, &currentSAIsSpiralPosY);
+    	  //currentSAIsSpiralPosX = floor(currentSAIsSpiralPosX/4);
+    	  //currentSAIsSpiralPosY = floor(currentSAIsSpiralPosY/4);
+      }
+      else if(currentSAI >= 9 && currentSAI <= 44 )
+      {
+    	  miSize = 7;
+    	  pcPic4DLFMI = pcPic->getPicYuv4DLFMISCL7();
+    	  spiralScalable(currentSAI, pcPic->getMicroImageSize(), &currentSAIsSpiralPosX, &currentSAIsSpiralPosY);
+    	  //currentSAIsSpiralPosX = floor(currentSAIsSpiralPosX/2);
+    	  //currentSAIsSpiralPosY = floor(currentSAIsSpiralPosY/2);
+      }
+      else // 45 -> 168
+      {
+    	  miSize = pcPic->getMicroImageSize();
+    	  pcPic4DLFMI = pcPic->getPicYuv4DLFMISCL13();
+    	  spiralScalable(currentSAI, pcPic->getMicroImageSize(), &currentSAIsSpiralPosX, &currentSAIsSpiralPosY);
+
+      }
+      totalNumberOfSAIs = miSize*miSize;
+      //cout << currentSAI << " " << currentSAIsSpiralPosY << " " << currentSAIsSpiralPosX << endl;
+#endif
+
 #if RM_4DLF_MI_BUFFER_MULTI_MODE == 1
       if( uiDirMode == 3 ) // less probable modes - 3, 7, 11, 15, 19, 23, 27, 31
     	  xPred4DLFMI_DC_3x3( channelsBitDepthForPrediction, ptrSrc+sw+1, sw, pDst, uiStride, iWidth, iHeight, channelType, uiDirMode,
@@ -2317,9 +2494,10 @@ Void TComPrediction::predIntraAng( const ComponentID compID, UInt uiDirMode, Pel
       else if( uiDirMode == 27 )
     	  xPred4DLFMI_LSP7( channelsBitDepthForPrediction, ptrSrc+sw+1, sw, pDst, uiStride, iWidth, iHeight, channelType, uiDirMode,
     	      			  	  pcPic4DLFMI, miSize, currentSAIsSpiralPosX, currentSAIsSpiralPosY, totalNumberOfSAIs, currentSAI, uiAbsPartIdxInRaster, uiPosX, uiPosY, compID );
-      else if( uiDirMode == 31 )
-          xPred4DLFMI_LSP9( channelsBitDepthForPrediction, ptrSrc+sw+1, sw, pDst, uiStride, iWidth, iHeight, channelType, uiDirMode,
-          	      			  pcPic4DLFMI, miSize, currentSAIsSpiralPosX, currentSAIsSpiralPosY, totalNumberOfSAIs, currentSAI, uiAbsPartIdxInRaster, uiPosX, uiPosY, compID );
+
+      //else if( uiDirMode == 31 ) // commented because the paper doesn't include the LSP9
+       //   xPred4DLFMI_LSP9( channelsBitDepthForPrediction, ptrSrc+sw+1, sw, pDst, uiStride, iWidth, iHeight, channelType, uiDirMode,
+        //  	      			  pcPic4DLFMI, miSize, currentSAIsSpiralPosX, currentSAIsSpiralPosY, totalNumberOfSAIs, currentSAI, uiAbsPartIdxInRaster, uiPosX, uiPosY, compID );
 #endif
 #if RM_4DLF_MI_BUFFER_MULTI_MODE == 2
       if( !((uiDirMode + 1) % 4) && uiDirMode <= 31 ) // less probable modes - 3, 7, 11, 15, 19, 23, 27, 31

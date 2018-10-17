@@ -223,12 +223,12 @@ Void TDecTop::executeLoopFilters(Int& poc, TComList<TComPic*>*& rpcListPic)
 #if RM_4DLF_MI_BUFFER
   TComPicYuv *pcPic4DLFMI = pcPic->getPicYuv4DLFMI();
 #if RM_4DLF_SAI_BUFFER
-  TComPicYuv* pcPic4DLFSAI;
+  TComPicYuv* pcPic4DLFSAI = pcPic->getPicYuv4DLFSAI();
 #endif
 #if RM_SCALABLE
-  TComPicYuv* pcPic4DLFMISCL3;
-  TComPicYuv* pcPic4DLFMISCL7;
-  TComPicYuv* pcPic4DLFMISCL13;
+  TComPicYuv* pcPic4DLFMISCL3 = pcPic->getPicYuv4DLFMISCL3();
+  TComPicYuv* pcPic4DLFMISCL7 = pcPic->getPicYuv4DLFMISCL7();
+  TComPicYuv* pcPic4DLFMISCL13 = pcPic->getPicYuv4DLFMISCL13();
 #endif
 #if RM_DEBUG_FILES
   fstream fileID;
@@ -396,7 +396,7 @@ Void TDecTop::executeLoopFilters(Int& poc, TComList<TComPic*>*& rpcListPic)
 	  }
 	  if(pcPic->getPOC() == 8)
 	  { // generate intermediary SAIs in LF 7x7
-		  pcPic->genIntermediarySAI7x7(pcPic4DLFMISCL7, iMISize);
+		  pcPic->genIntermediarySAI7x7(pcPic4DLFMISCL7, pcPic->getMicroImageSize());
 	  }
   }
   // SCALABLE 4DLF-MI BUFFER 13x13
@@ -436,7 +436,7 @@ Void TDecTop::executeLoopFilters(Int& poc, TComList<TComPic*>*& rpcListPic)
   }
   if(pcPic->getPOC() == 44)
   { // generate intermediary SAIs in LF 13x13
-	  pcPic->genIntermediarySAI13x13(pcPic4DLFMISCL13, iMISize);
+	  pcPic->genIntermediarySAI13x13(pcPic4DLFMISCL13, pcPic->getMicroImageSize());
   }
 #endif
 #if RM_DEBUG_FILES
