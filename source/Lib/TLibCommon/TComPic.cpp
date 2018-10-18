@@ -364,6 +364,8 @@ Void TComPic::genIntermediarySAI7x7(TComPicYuv* pcPic4DLFMISCL7, UInt miSize)
 			}
 			refSAI0 = lowestSAINumber;
 			spiralScalable(refSAI0, miSize, &refSAI0posX, &refSAI0posY);
+			refSAI0posY = floor(refSAI0posY/2); // convert to 7x7 coordinates
+			refSAI0posX = floor(refSAI0posX/2);
 			Y = pcPic4DLFMISCL7->getAddr(COMPONENT_Y);
 			CB = pcPic4DLFMISCL7->getAddr(COMPONENT_Cb);
 			CR = pcPic4DLFMISCL7->getAddr(COMPONENT_Cr);
@@ -373,7 +375,7 @@ Void TComPic::genIntermediarySAI7x7(TComPicYuv* pcPic4DLFMISCL7, UInt miSize)
 			{
 				for(Int i = 0; i < pcPic4DLFMISCL7->getWidth(COMPONENT_Y); i+=currentBufferMISize)
 				{
-					Y[i + posXScl] = pcPic4DLFMISCL7->getAddr(COMPONENT_Y)[(Int)(floor(refSAI0posY/2))*pcPic4DLFMISCL7->getStride(COMPONENT_Y) + i + (Int)(floor(refSAI0posX/2))];
+					Y[i + posXScl] = pcPic4DLFMISCL7->getAddr(COMPONENT_Y)[(j + refSAI0posY)*pcPic4DLFMISCL7->getStride(COMPONENT_Y) + i + refSAI0posX];
 				}
 				Y += currentBufferMISize * pcPic4DLFMISCL7->getStride(COMPONENT_Y);
 			}
@@ -382,7 +384,7 @@ Void TComPic::genIntermediarySAI7x7(TComPicYuv* pcPic4DLFMISCL7, UInt miSize)
 			{
 				for(Int i = 0; i < pcPic4DLFMISCL7->getWidth(COMPONENT_Cb); i+=currentBufferMISize)
 				{
-					CB[i + posXScl] = pcPic4DLFMISCL7->getAddr(COMPONENT_Cb)[(Int)(floor(refSAI0posY/2))*pcPic4DLFMISCL7->getStride(COMPONENT_Cb) + i + (Int)floor(refSAI0posX/2)];
+					CB[i + posXScl] = pcPic4DLFMISCL7->getAddr(COMPONENT_Cb)[(j + refSAI0posY)*pcPic4DLFMISCL7->getStride(COMPONENT_Cb) + i + refSAI0posX];
 				}
 				CB += currentBufferMISize * pcPic4DLFMISCL7->getStride(COMPONENT_Cb);
 			}
@@ -391,7 +393,7 @@ Void TComPic::genIntermediarySAI7x7(TComPicYuv* pcPic4DLFMISCL7, UInt miSize)
 			{
 				for(Int i = 0; i < pcPic4DLFMISCL7->getWidth(COMPONENT_Cr); i+=currentBufferMISize)
 				{
-					CR[i + posXScl] = pcPic4DLFMISCL7->getAddr(COMPONENT_Cr)[(Int)(floor(refSAI0posY/2))*pcPic4DLFMISCL7->getStride(COMPONENT_Cr) + i + (Int)floor(refSAI0posX/2)];
+					CR[i + posXScl] = pcPic4DLFMISCL7->getAddr(COMPONENT_Cr)[(j + refSAI0posY)*pcPic4DLFMISCL7->getStride(COMPONENT_Cr) + i + refSAI0posX];
 				}
 				CR += currentBufferMISize * pcPic4DLFMISCL7->getStride(COMPONENT_Cr);
 			}
@@ -477,6 +479,8 @@ Void TComPic::genIntermediarySAI7x7(TComPicYuv* pcPic4DLFMISCL7, UInt miSize)
 			}
 			else if(expandToLF7[posYScl][posXScl] == 5) // only one ref available -> do SAI copy
 			{
+				// very simple method to get the SAI with the lowest frame number around the current SAI
+				// this will copy the refSAI0 to the current SAI position
 				for(Int j = -2; j<=2; j+=2)
 				{
 					for(Int i = -2; i<=2; i+=2)
@@ -488,6 +492,8 @@ Void TComPic::genIntermediarySAI7x7(TComPicYuv* pcPic4DLFMISCL7, UInt miSize)
 				}
 				refSAI0 = lowestSAINumber;
 				spiralScalable(refSAI0, miSize, &refSAI0posX, &refSAI0posY);
+				refSAI0posY = floor(refSAI0posY/2); // convert to 7x7 coordinates
+				refSAI0posX = floor(refSAI0posX/2);
 				Y = pcPic4DLFMISCL7->getAddr(COMPONENT_Y);
 				CB = pcPic4DLFMISCL7->getAddr(COMPONENT_Cb);
 				CR = pcPic4DLFMISCL7->getAddr(COMPONENT_Cr);
@@ -497,7 +503,7 @@ Void TComPic::genIntermediarySAI7x7(TComPicYuv* pcPic4DLFMISCL7, UInt miSize)
 				{
 					for(Int i = 0; i < pcPic4DLFMISCL7->getWidth(COMPONENT_Y); i+=currentBufferMISize)
 					{
-						Y[i + posXScl] = pcPic4DLFMISCL7->getAddr(COMPONENT_Y)[(Int)(floor(refSAI0posY/2))*pcPic4DLFMISCL7->getStride(COMPONENT_Y) + i + (Int)(floor(refSAI0posX/2))];
+						Y[i + posXScl] = pcPic4DLFMISCL7->getAddr(COMPONENT_Y)[(j + refSAI0posY)*pcPic4DLFMISCL7->getStride(COMPONENT_Y) + i + refSAI0posX];
 					}
 					Y += currentBufferMISize * pcPic4DLFMISCL7->getStride(COMPONENT_Y);
 				}
@@ -506,7 +512,7 @@ Void TComPic::genIntermediarySAI7x7(TComPicYuv* pcPic4DLFMISCL7, UInt miSize)
 				{
 					for(Int i = 0; i < pcPic4DLFMISCL7->getWidth(COMPONENT_Cb); i+=currentBufferMISize)
 					{
-						CB[i + posXScl] = pcPic4DLFMISCL7->getAddr(COMPONENT_Cb)[(Int)(floor(refSAI0posY/2))*pcPic4DLFMISCL7->getStride(COMPONENT_Cb) + i + (Int)floor(refSAI0posX/2)];
+						CB[i + posXScl] = pcPic4DLFMISCL7->getAddr(COMPONENT_Cb)[(j + refSAI0posY)*pcPic4DLFMISCL7->getStride(COMPONENT_Cb) + i + refSAI0posX];
 					}
 					CB += currentBufferMISize * pcPic4DLFMISCL7->getStride(COMPONENT_Cb);
 				}
@@ -515,7 +521,7 @@ Void TComPic::genIntermediarySAI7x7(TComPicYuv* pcPic4DLFMISCL7, UInt miSize)
 				{
 					for(Int i = 0; i < pcPic4DLFMISCL7->getWidth(COMPONENT_Cr); i+=currentBufferMISize)
 					{
-						CR[i + posXScl] = pcPic4DLFMISCL7->getAddr(COMPONENT_Cr)[(Int)(floor(refSAI0posY/2))*pcPic4DLFMISCL7->getStride(COMPONENT_Cr) + i + (Int)floor(refSAI0posX/2)];
+						CR[i + posXScl] = pcPic4DLFMISCL7->getAddr(COMPONENT_Cr)[(j + refSAI0posY)*pcPic4DLFMISCL7->getStride(COMPONENT_Cr) + i + refSAI0posX];
 					}
 					CR += currentBufferMISize * pcPic4DLFMISCL7->getStride(COMPONENT_Cr);
 				}
@@ -704,7 +710,7 @@ Void TComPic::genIntermediarySAI13x13(TComPicYuv* pcPic4DLFMISCL13, UInt miSize)
 			{
 				for(Int i = 0; i < pcPic4DLFMISCL13->getWidth(COMPONENT_Y); i+=currentBufferMISize)
 				{
-					Y[i + posXScl] = pcPic4DLFMISCL13->getAddr(COMPONENT_Y)[(Int)(refSAI0posY)*pcPic4DLFMISCL13->getStride(COMPONENT_Y) + i + (Int)(refSAI0posX)];
+					Y[i + posXScl] = pcPic4DLFMISCL13->getAddr(COMPONENT_Y)[(Int)(refSAI0posY + j)*pcPic4DLFMISCL13->getStride(COMPONENT_Y) + i + (Int)(refSAI0posX)];
 				}
 				Y += currentBufferMISize * pcPic4DLFMISCL13->getStride(COMPONENT_Y);
 			}
@@ -713,7 +719,7 @@ Void TComPic::genIntermediarySAI13x13(TComPicYuv* pcPic4DLFMISCL13, UInt miSize)
 			{
 				for(Int i = 0; i < pcPic4DLFMISCL13->getWidth(COMPONENT_Cb); i+=currentBufferMISize)
 				{
-					CB[i + posXScl] = pcPic4DLFMISCL13->getAddr(COMPONENT_Cb)[(Int)(refSAI0posY)*pcPic4DLFMISCL13->getStride(COMPONENT_Cb) + i + (Int)(refSAI0posX)];
+					CB[i + posXScl] = pcPic4DLFMISCL13->getAddr(COMPONENT_Cb)[(Int)(refSAI0posY + j)*pcPic4DLFMISCL13->getStride(COMPONENT_Cb) + i + (Int)(refSAI0posX)];
 				}
 				CB += currentBufferMISize * pcPic4DLFMISCL13->getStride(COMPONENT_Cb);
 			}
@@ -722,7 +728,7 @@ Void TComPic::genIntermediarySAI13x13(TComPicYuv* pcPic4DLFMISCL13, UInt miSize)
 			{
 				for(Int i = 0; i < pcPic4DLFMISCL13->getWidth(COMPONENT_Cr); i+=currentBufferMISize)
 				{
-					CR[i + posXScl] = pcPic4DLFMISCL13->getAddr(COMPONENT_Cr)[(Int)(refSAI0posY)*pcPic4DLFMISCL13->getStride(COMPONENT_Cr) + i + (Int)(refSAI0posX)];
+					CR[i + posXScl] = pcPic4DLFMISCL13->getAddr(COMPONENT_Cr)[(Int)(refSAI0posY + j)*pcPic4DLFMISCL13->getStride(COMPONENT_Cr) + i + (Int)(refSAI0posX)];
 				}
 				CR += currentBufferMISize * pcPic4DLFMISCL13->getStride(COMPONENT_Cr);
 			}
@@ -828,7 +834,7 @@ Void TComPic::genIntermediarySAI13x13(TComPicYuv* pcPic4DLFMISCL13, UInt miSize)
 				{
 					for(Int i = 0; i < pcPic4DLFMISCL13->getWidth(COMPONENT_Y); i+=currentBufferMISize)
 					{
-						Y[i + posXScl] = pcPic4DLFMISCL13->getAddr(COMPONENT_Y)[(Int)(refSAI0posY)*pcPic4DLFMISCL13->getStride(COMPONENT_Y) + i + (Int)(refSAI0posX)];
+						Y[i + posXScl] = pcPic4DLFMISCL13->getAddr(COMPONENT_Y)[(Int)(refSAI0posY + j)*pcPic4DLFMISCL13->getStride(COMPONENT_Y) + i + (Int)(refSAI0posX)];
 					}
 					Y += currentBufferMISize * pcPic4DLFMISCL13->getStride(COMPONENT_Y);
 				}
@@ -837,7 +843,7 @@ Void TComPic::genIntermediarySAI13x13(TComPicYuv* pcPic4DLFMISCL13, UInt miSize)
 				{
 					for(Int i = 0; i < pcPic4DLFMISCL13->getWidth(COMPONENT_Cb); i+=currentBufferMISize)
 					{
-						CB[i + posXScl] = pcPic4DLFMISCL13->getAddr(COMPONENT_Cb)[(Int)(refSAI0posY)*pcPic4DLFMISCL13->getStride(COMPONENT_Cb) + i + (Int)(refSAI0posX)];
+						CB[i + posXScl] = pcPic4DLFMISCL13->getAddr(COMPONENT_Cb)[(Int)(refSAI0posY + j)*pcPic4DLFMISCL13->getStride(COMPONENT_Cb) + i + (Int)(refSAI0posX)];
 					}
 					CB += currentBufferMISize * pcPic4DLFMISCL13->getStride(COMPONENT_Cb);
 				}
@@ -846,7 +852,7 @@ Void TComPic::genIntermediarySAI13x13(TComPicYuv* pcPic4DLFMISCL13, UInt miSize)
 				{
 					for(Int i = 0; i < pcPic4DLFMISCL13->getWidth(COMPONENT_Cr); i+=currentBufferMISize)
 					{
-						CR[i + posXScl] = pcPic4DLFMISCL13->getAddr(COMPONENT_Cr)[(Int)(refSAI0posY)*pcPic4DLFMISCL13->getStride(COMPONENT_Cr) + i + (Int)(refSAI0posX)];
+						CR[i + posXScl] = pcPic4DLFMISCL13->getAddr(COMPONENT_Cr)[(Int)(refSAI0posY + j)*pcPic4DLFMISCL13->getStride(COMPONENT_Cr) + i + (Int)(refSAI0posX)];
 					}
 					CR += currentBufferMISize * pcPic4DLFMISCL13->getStride(COMPONENT_Cr);
 				}
@@ -862,7 +868,7 @@ Void TComPic::genIntermediarySAI13x13(TComPicYuv* pcPic4DLFMISCL13, UInt miSize)
 }
 
 #endif
-#if RM_DEBUG_FILES
+
 Bool TComPic::writePlane(std::ostream& fd, Pel* src, Bool is16bit,
                        UInt stride444,
                        UInt width444, UInt height444,
@@ -991,6 +997,7 @@ Bool TComPic::writePlane(std::ostream& fd, Pel* src, Bool is16bit,
   }
   return true;
 }
+#if RM_DEBUG_FILES
 #endif
 #endif
 

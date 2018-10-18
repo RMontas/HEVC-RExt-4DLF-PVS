@@ -1949,24 +1949,24 @@ Void TEncGOP::compressGOP( Int iPOCLast, Int iNumPicRcvd, TComList<TComPic*>& rc
   	  Y += pcPic4DLFSAI->getStride(COMPONENT_Y);
     }
     // COMPONENT_CB
-    Y += initY * pcPic->getPicYuvRec()->getStride(COMPONENT_Cb);
+    CB += initY * pcPic->getPicYuvRec()->getStride(COMPONENT_Cb);
     for(Int j = 0; j < pcPic->getPicYuvRec()->getHeight(COMPONENT_Cb); j++)
     {
   	  for(Int i = 0; i < pcPic->getPicYuvRec()->getWidth(COMPONENT_Cb); i++)
   	  {
-  		  Y[i + initX * pcPic->getPicYuvRec()->getWidth(COMPONENT_Cb)] = pcPic->getPicYuvRec()->getAddr(COMPONENT_Cb)[(j)*pcPic->getPicYuvRec()->getStride(COMPONENT_Cb) + i];
+  		CB[i + initX * pcPic->getPicYuvRec()->getWidth(COMPONENT_Cb)] = pcPic->getPicYuvRec()->getAddr(COMPONENT_Cb)[(j)*pcPic->getPicYuvRec()->getStride(COMPONENT_Cb) + i];
   	  }
-  	  Y += pcPic4DLFSAI->getStride(COMPONENT_Cb);
+  	CB += pcPic4DLFSAI->getStride(COMPONENT_Cb);
     }
     // COMPONENT_CR
-    Y += initY * pcPic->getPicYuvRec()->getStride(COMPONENT_Cr);
+    CR += initY * pcPic->getPicYuvRec()->getStride(COMPONENT_Cr);
     for(Int j = 0; j < pcPic->getPicYuvRec()->getHeight(COMPONENT_Cr); j++)
     {
   	  for(Int i = 0; i < pcPic->getPicYuvRec()->getWidth(COMPONENT_Cr); i++)
   	  {
-  		  Y[i + initX * pcPic->getPicYuvRec()->getWidth(COMPONENT_Cr)] = pcPic->getPicYuvRec()->getAddr(COMPONENT_Cr)[(j)*pcPic->getPicYuvRec()->getStride(COMPONENT_Cr) + i];
+  		CR[i + initX * pcPic->getPicYuvRec()->getWidth(COMPONENT_Cr)] = pcPic->getPicYuvRec()->getAddr(COMPONENT_Cr)[(j)*pcPic->getPicYuvRec()->getStride(COMPONENT_Cr) + i];
   	  }
-  	  Y += pcPic4DLFSAI->getStride(COMPONENT_Cr);
+  	CR += pcPic4DLFSAI->getStride(COMPONENT_Cr);
     }
 #endif
 #if RM_SCALABLE
@@ -2053,6 +2053,12 @@ Void TEncGOP::compressGOP( Int iPOCLast, Int iNumPicRcvd, TComList<TComPic*>& rc
 	  if(m_totalCoded == 8)
 	  { // generate intermediary SAIs in LF 7x7
 		  pcPic->genIntermediarySAI7x7(pcPic4DLFMISCL7, sqrt(m_pcCfg->getFramesToBeEncoded()));
+		  fstream fileID;
+		  fileID.open("4DLFMI_SCL_7x7_Buffer.yuv", ios::binary | ios::app);
+		  pcPic->writePlane(fileID, pcPic4DLFMISCL7->getAddr(COMPONENT_Y), true, pcPic4DLFMISCL7->getStride(COMPONENT_Y), pcPic4DLFMISCL7->getWidth(COMPONENT_Y), pcPic4DLFMISCL7->getHeight(COMPONENT_Y), COMPONENT_Y, CHROMA_444, CHROMA_444, 10);
+		  pcPic->writePlane(fileID, pcPic4DLFMISCL7->getAddr(COMPONENT_Cb), true, pcPic4DLFMISCL7->getStride(COMPONENT_Cb), pcPic4DLFMISCL7->getWidth(COMPONENT_Cb), pcPic4DLFMISCL7->getHeight(COMPONENT_Cb), COMPONENT_Cb, CHROMA_444, CHROMA_444, 10);
+		  pcPic->writePlane(fileID, pcPic4DLFMISCL7->getAddr(COMPONENT_Cr), true, pcPic4DLFMISCL7->getStride(COMPONENT_Cr), pcPic4DLFMISCL7->getWidth(COMPONENT_Cr), pcPic4DLFMISCL7->getHeight(COMPONENT_Cr), COMPONENT_Cr, CHROMA_444, CHROMA_444, 10);
+		  fileID.close();
 	  }
   }
   // SCALABLE 4DLF-MI BUFFER 13x13
@@ -2093,6 +2099,12 @@ Void TEncGOP::compressGOP( Int iPOCLast, Int iNumPicRcvd, TComList<TComPic*>& rc
   if(m_totalCoded == 44)
   { // generate intermediary SAIs in LF 13x13
 	  pcPic->genIntermediarySAI13x13(pcPic4DLFMISCL13, sqrt(m_pcCfg->getFramesToBeEncoded()));
+	  fstream fileID2;
+	  fileID2.open("4DLFMI_SCL_13x13_Buffer.yuv", ios::binary | ios::app);
+	  pcPic->writePlane(fileID2, pcPic4DLFMISCL13->getAddr(COMPONENT_Y), true, pcPic4DLFMISCL13->getStride(COMPONENT_Y), pcPic4DLFMISCL13->getWidth(COMPONENT_Y), pcPic4DLFMISCL13->getHeight(COMPONENT_Y), COMPONENT_Y, CHROMA_444, CHROMA_444, 10);
+	  pcPic->writePlane(fileID2, pcPic4DLFMISCL13->getAddr(COMPONENT_Cb), true, pcPic4DLFMISCL13->getStride(COMPONENT_Cb), pcPic4DLFMISCL13->getWidth(COMPONENT_Cb), pcPic4DLFMISCL13->getHeight(COMPONENT_Cb), COMPONENT_Cb, CHROMA_444, CHROMA_444, 10);
+	  pcPic->writePlane(fileID2, pcPic4DLFMISCL13->getAddr(COMPONENT_Cr), true, pcPic4DLFMISCL13->getStride(COMPONENT_Cr), pcPic4DLFMISCL13->getWidth(COMPONENT_Cr), pcPic4DLFMISCL13->getHeight(COMPONENT_Cr), COMPONENT_Cr, CHROMA_444, CHROMA_444, 10);
+	  fileID2.close();
   }
 #endif
 #if RM_DEBUG_FILES
