@@ -55,7 +55,7 @@
 #define RM_RA_PROFILE											0 ///< Future development
 
 #define RM_SCALABLE												1 ///< Scalable version of HEVC-HR
-#define RM_DISP_COMP											0 ///< Disparity Compensation algorithm (0: SAI copy | 1: implicit BM | 2: explicit BM)
+#define RM_DISP_COMP											1 ///< Disparity Compensation algorithm (0: SAI copy | 1: implicit BM | 2: explicit BM)
 
 #define RM_4DLF_MI_BUFFER							      		1 ///< Generates buffer of encoded pixels in a 4DLF_MI format
 #define RM_4DLF_SAI_BUFFER										1 ///< Generates buffer of encoded pixels in a 4DLF_SAI format

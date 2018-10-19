@@ -2059,6 +2059,11 @@ Void TEncGOP::compressGOP( Int iPOCLast, Int iNumPicRcvd, TComList<TComPic*>& rc
 		  pcPic->writePlane(fileID, pcPic4DLFMISCL7->getAddr(COMPONENT_Cb), true, pcPic4DLFMISCL7->getStride(COMPONENT_Cb), pcPic4DLFMISCL7->getWidth(COMPONENT_Cb), pcPic4DLFMISCL7->getHeight(COMPONENT_Cb), COMPONENT_Cb, CHROMA_444, CHROMA_444, 10);
 		  pcPic->writePlane(fileID, pcPic4DLFMISCL7->getAddr(COMPONENT_Cr), true, pcPic4DLFMISCL7->getStride(COMPONENT_Cr), pcPic4DLFMISCL7->getWidth(COMPONENT_Cr), pcPic4DLFMISCL7->getHeight(COMPONENT_Cr), COMPONENT_Cr, CHROMA_444, CHROMA_444, 10);
 		  fileID.close();
+		  fileID.open("4DLFMI_SCL_3x3_Buffer.yuv", ios::binary | ios::app);
+		  pcPic->writePlane(fileID, pcPic4DLFMISCL3->getAddr(COMPONENT_Y), true, pcPic4DLFMISCL3->getStride(COMPONENT_Y), pcPic4DLFMISCL3->getWidth(COMPONENT_Y), pcPic4DLFMISCL3->getHeight(COMPONENT_Y), COMPONENT_Y, CHROMA_444, CHROMA_444, 10);
+		  pcPic->writePlane(fileID, pcPic4DLFMISCL3->getAddr(COMPONENT_Cb), true, pcPic4DLFMISCL3->getStride(COMPONENT_Cb), pcPic4DLFMISCL3->getWidth(COMPONENT_Cb), pcPic4DLFMISCL3->getHeight(COMPONENT_Cb), COMPONENT_Cb, CHROMA_444, CHROMA_444, 10);
+		  pcPic->writePlane(fileID, pcPic4DLFMISCL3->getAddr(COMPONENT_Cr), true, pcPic4DLFMISCL3->getStride(COMPONENT_Cr), pcPic4DLFMISCL3->getWidth(COMPONENT_Cr), pcPic4DLFMISCL3->getHeight(COMPONENT_Cr), COMPONENT_Cr, CHROMA_444, CHROMA_444, 10);
+		  fileID.close();
 	  }
   }
   // SCALABLE 4DLF-MI BUFFER 13x13

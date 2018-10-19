@@ -437,8 +437,8 @@ Void TComPic::genIntermediarySAI7x7(TComPicYuv* pcPic4DLFMISCL7, UInt miSize)
 					searchWindow[0][0] = -8; searchWindow[0][1] = 0; // ymin // xmin
 					searchWindow[1][0] = 0; searchWindow[1][1] = 8;	  // ymax // xmax
 				}
-				getSAIFrom4DLFMI(pcPic4DLFMISCL7, refFrameSAI0, currentBufferMISize, saiW, saiH, refSAI0posX, refSAI0posY, COMPONENT_Y);
-				getSAIFrom4DLFMI(pcPic4DLFMISCL7, refFrameSAI1, currentBufferMISize, saiW, saiH, refSAI1posX, refSAI1posY, COMPONENT_Y);
+				getSAIFrom4DLFMI(pcPic4DLFMISCL7, refFrameSAI0, currentBufferMISize, saiW, saiH, floor(refSAI0posX/2), floor(refSAI0posY/2), COMPONENT_Y);
+				getSAIFrom4DLFMI(pcPic4DLFMISCL7, refFrameSAI1, currentBufferMISize, saiW, saiH, floor(refSAI1posX/2), floor(refSAI1posY/2), COMPONENT_Y);
 				disparityCompensationSAI(refFrameSAI0, refFrameSAI1, disparityMapX, disparityMapY, saiW, saiH, searchWindow);
 				compensateSAI(refFrameSAI0, disparityMapX, disparityMapY, intermSAI, saiW, saiH);
 				Y = pcPic4DLFMISCL7->getAddr(COMPONENT_Y);
@@ -454,7 +454,7 @@ Void TComPic::genIntermediarySAI7x7(TComPicYuv* pcPic4DLFMISCL7, UInt miSize)
 					}
 					Y += currentBufferMISize * pcPic4DLFMISCL7->getStride(COMPONENT_Y);
 				}
-				getSAIFrom4DLFMI(pcPic4DLFMISCL7, refFrameSAI0, currentBufferMISize, saiW, saiH, refSAI0posX, refSAI0posY, COMPONENT_Cb);
+				getSAIFrom4DLFMI(pcPic4DLFMISCL7, refFrameSAI0, currentBufferMISize, saiW, saiH, floor(refSAI0posX/2), floor(refSAI0posY/2), COMPONENT_Cb);
 				compensateSAI(refFrameSAI0, disparityMapX, disparityMapY, intermSAI, saiW, saiH);
 				CB += posYScl * pcPic4DLFMISCL7->getStride(COMPONENT_Cb);
 				for(Int j = 0; j < pcPic4DLFMISCL7->getHeight(COMPONENT_Cb); j+=currentBufferMISize)
@@ -466,7 +466,7 @@ Void TComPic::genIntermediarySAI7x7(TComPicYuv* pcPic4DLFMISCL7, UInt miSize)
 					CB += currentBufferMISize * pcPic4DLFMISCL7->getStride(COMPONENT_Cb);
 				}
 				CR += posYScl * pcPic4DLFMISCL7->getStride(COMPONENT_Cr);
-				getSAIFrom4DLFMI(pcPic4DLFMISCL7, refFrameSAI0, currentBufferMISize, saiW, saiH, refSAI0posX, refSAI0posY, COMPONENT_Cr);
+				getSAIFrom4DLFMI(pcPic4DLFMISCL7, refFrameSAI0, currentBufferMISize, saiW, saiH, floor(refSAI0posX/2), floor(refSAI0posY/2), COMPONENT_Cr);
 				compensateSAI(refFrameSAI0, disparityMapX, disparityMapY, intermSAI, saiW, saiH);
 				for(Int j = 0; j < pcPic4DLFMISCL7->getHeight(COMPONENT_Cr); j+=currentBufferMISize)
 				{
@@ -556,8 +556,8 @@ Void TComPic::getSAIFrom4DLFMI(TComPicYuv* pcPic4DLFMI, Pel* SAI, UInt miSize, U
 Void TComPic::disparityCompensationSAI(Pel* SAI0, Pel* SAI1, Pel *disparityMapX, Pel *disparityMapY, UInt W, UInt H, Int searchWindow[2][2])
 {
 	Int blockSize = 8;
-	Int numBlocksH = blockSize/H;
-	Int numBlocksW = blockSize/W;
+	Int numBlocksH = H/blockSize;
+	Int numBlocksW = W/blockSize;
 	Int dispVector[2];
 	long currentDistortion = MAX_INT;
 	long bestDistortion = MAX_INT;
@@ -569,33 +569,33 @@ Void TComPic::disparityCompensationSAI(Pel* SAI0, Pel* SAI1, Pel *disparityMapX,
 		{
 			dispVector[0] = 0; // y
 			dispVector[1] = 0; // x
-			currentDistortion = MAX_DOUBLE;
-			bestDistortion = MAX_DOUBLE;
+			currentDistortion = 999999999999;
+			bestDistortion = 999999999999;
 			// search window
 			for(Int windH = searchWindow[0][0]; windH < searchWindow[1][0]; windH++)
 			{
 				for(Int windW = searchWindow[0][1]; windW < searchWindow[1][1]; windW++)
 				{
 					// calculate distortion in the current position of the search window
-					currentDistortion = 0;
 					if(j*blockSize + windH >= 0 && i*blockSize + windW >= 0 && (j+1)*blockSize + windH -1 < H && (i+1)*blockSize + windW -1 < W)
 					{
+						currentDistortion = 0;
 						for(Int y = 0; y < blockSize; y++)
 						{
 							for(Int x = 0; x < blockSize; x++)
 							{
 								currentDistortion += ((SAI0[ i * blockSize + x + (j * blockSize + y) * W] - SAI1[ i * blockSize + x + windW + (j * blockSize + y + windH) * W])
-													* (SAI0[ i * blockSize + x + (j * blockSize + y) * W] - SAI1[ i * blockSize + x + windW + (j * blockSize + y + windH) * W]));
+										* (SAI0[ i * blockSize + x + (j * blockSize + y) * W] - SAI1[ i * blockSize + x + windW + (j * blockSize + y + windH) * W]));
 							}
 						}
-					}
-					currentDistortion /= (blockSize*blockSize);
-					// if better save
-					if(currentDistortion < bestDistortion)
-					{
-						dispVector[0] = windH;
-						dispVector[1] =	windW;
-						bestDistortion = currentDistortion;
+						currentDistortion /= (blockSize*blockSize);
+						// if better save
+						if(currentDistortion < bestDistortion)
+						{
+							dispVector[0] = windH;
+							dispVector[1] =	windW;
+							bestDistortion = currentDistortion;
+						}
 					}
 				}
 			}
