@@ -119,10 +119,15 @@ static const Double MAX_DOUBLE =                             1.7e+308; ///< max.
 // Coding tool configuration
 // ====================================================================================================================
 // Most of these should not be changed - they resolve the meaning of otherwise magic numbers.
-
+#if !RM_OPTIMIZE_REF_SAIS
 static const Int MAX_GOP =                                         64; ///< max. value of hierarchical GOP size
 static const Int MAX_NUM_REF_PICS =                                16; ///< max. number of pictures used for reference
 static const Int MAX_NUM_REF =                                     16; ///< max. number of entries in picture reference list
+#else
+static const Int MAX_GOP =                                         256; ///< max. value of hierarchical GOP size
+static const Int MAX_NUM_REF_PICS =                                256; ///< max. number of pictures used for reference
+static const Int MAX_NUM_REF =                                     256; ///< max. number of entries in picture reference list
+#endif
 static const Int MAX_QP =                                          51;
 static const Int NOT_VALID =                                       -1;
 

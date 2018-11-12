@@ -740,7 +740,9 @@ Void TDecCavlc::parseSPS(TComSPS* pcSPS)
   }
 
   READ_UVLC( uiCode, "num_short_term_ref_pic_sets" );
+#if !RM_OPTIMIZE_REF_SAIS
   assert(uiCode <= 64);
+#endif
   pcSPS->createRPSList(uiCode);
 
   TComRPSList* rpsList = pcSPS->getRPSList();
