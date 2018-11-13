@@ -1,7 +1,8 @@
-function [] = genConfigFileForSpiralSCL(max_ref_pics)
+function [] = genConfigFileForSpiralSCL(max_ref_pics, SCL_FLAG)
 
 %max_ref_pics = 4;
 num_MIs = 13;
+if SCL_FLAG == 1
 num_Layers = 6;
 layerMask =  [ 6 6 4 6 3 6 4 6 3 6 4 6 6 ;
                6 5 6 5 6 5 6 5 6 5 6 5 6 ;
@@ -16,6 +17,22 @@ layerMask =  [ 6 6 4 6 3 6 4 6 3 6 4 6 6 ;
                4 6 2 6 4 6 2 6 4 6 2 6 4 ;
                6 5 6 5 6 5 6 5 6 5 6 5 6 ;
                6 6 4 6 3 6 4 6 3 6 4 6 6 ];
+else
+num_Layers = 6;
+layerMask =  [  2 2 2 2 2 2 2 2 2 2 2 2 2 ;
+		2 2 2 2 2 2 2 2 2 2 2 2 2 ;
+		2 2 2 2 2 2 2 2 2 2 2 2 2 ;
+		2 2 2 2 2 2 2 2 2 2 2 2 2 ;
+		2 2 2 2 2 2 2 2 2 2 2 2 2 ;
+		2 2 2 2 2 2 2 2 2 2 2 2 2 ;
+		2 2 2 2 2 2 1 2 2 2 2 2 2 ;
+		2 2 2 2 2 2 2 2 2 2 2 2 2 ;
+		2 2 2 2 2 2 2 2 2 2 2 2 2 ;
+		2 2 2 2 2 2 2 2 2 2 2 2 2 ;
+		2 2 2 2 2 2 2 2 2 2 2 2 2 ;
+		2 2 2 2 2 2 2 2 2 2 2 2 2 ;
+		2 2 2 2 2 2 2 2 2 2 2 2 2 ];
+end
 SAIUsage = zeros(num_MIs, num_MIs);
 SAIUsage(floor(num_MIs/2)+1,floor(num_MIs/2)+1) = -1;      
 cc_spiral = spiral(num_MIs); 
