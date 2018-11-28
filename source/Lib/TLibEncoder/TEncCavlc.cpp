@@ -111,6 +111,9 @@ Void TEncCavlc::codeShortTermRefPicSet( const TComReferencePictureSet* rps, Bool
 #if PRINT_RPS_INFO
   Int lastBits = getNumberOfWrittenBits();
 #endif
+#if RM_OPTIMIZE_REF_SAIS
+	  Int bitsForRefPicStruct = getNumberOfWrittenBits();
+#endif
   if (idx > 0)
   {
   WRITE_FLAG( rps->getInterRPSPrediction(), "inter_ref_pic_set_prediction_flag" ); // inter_RPS_prediction_flag
@@ -155,7 +158,9 @@ Void TEncCavlc::codeShortTermRefPicSet( const TComReferencePictureSet* rps, Bool
       WRITE_FLAG( rps->getUsed(j), "used_by_curr_pic_s1_flag" );
     }
   }
-
+#if RM_OPTIMIZE_REF_SAIS
+  printf("OPTIMIZE_REF_SAIS_SPS_BIT_REDUCTION = %d\n", getNumberOfWrittenBits() - bitsForRefPicStruct);
+#endif
 #if PRINT_RPS_INFO
   printf("irps=%d (%2d bits) ", rps->getInterRPSPrediction(), getNumberOfWrittenBits() - lastBits);
   rps->printDeltaPOC();

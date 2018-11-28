@@ -124,9 +124,9 @@ static const Int MAX_GOP =                                         64; ///< max.
 static const Int MAX_NUM_REF_PICS =                                16; ///< max. number of pictures used for reference
 static const Int MAX_NUM_REF =                                     16; ///< max. number of entries in picture reference list
 #else
-static const Int MAX_GOP =                                         256; ///< max. value of hierarchical GOP size
-static const Int MAX_NUM_REF_PICS =                                256; ///< max. number of pictures used for reference
-static const Int MAX_NUM_REF =                                     256; ///< max. number of entries in picture reference list
+static const Int MAX_GOP =                                         170; ///< max. value of hierarchical GOP size
+static const Int MAX_NUM_REF_PICS =                                170; ///< max. number of pictures used for reference
+static const Int MAX_NUM_REF =                                     170; ///< max. number of entries in picture reference list
 #endif
 static const Int MAX_QP =                                          51;
 static const Int NOT_VALID =                                       -1;
