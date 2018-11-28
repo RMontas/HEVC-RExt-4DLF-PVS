@@ -113,53 +113,108 @@ Void TEncCavlc::codeShortTermRefPicSet( const TComReferencePictureSet* rps, Bool
 #endif
 #if RM_OPTIMIZE_REF_SAIS
 	  Int bitsForRefPicStruct = getNumberOfWrittenBits();
+	  FILE* pFile;
+	  pFile = fopen("file.binary", "ab");
 #endif
   if (idx > 0)
   {
+#if RM_OPTIMIZE_REF_SAIS
+  char inter_ref_pic_set_prediction_flag = (rps->getInterRPSPrediction() == true ? 1 : 0);
+  fwrite(&inter_ref_pic_set_prediction_flag, 1, sizeof(char), pFile);
+#else
   WRITE_FLAG( rps->getInterRPSPrediction(), "inter_ref_pic_set_prediction_flag" ); // inter_RPS_prediction_flag
+#endif
   }
   if (rps->getInterRPSPrediction())
   {
     Int deltaRPS = rps->getDeltaRPS();
     if(calledFromSliceHeader)
     {
+#if RM_OPTIMIZE_REF_SAIS
+  int delta_idx_minus1 = rps->getDeltaRIdxMinus1();
+  fwrite(&delta_idx_minus1, 1, sizeof(int), pFile);
+#else
       WRITE_UVLC( rps->getDeltaRIdxMinus1(), "delta_idx_minus1" ); // delta index of the Reference Picture Set used for prediction minus 1
+#endif
     }
-
+#if RM_OPTIMIZE_REF_SAIS
+  int delta_rps_sign = deltaRPS >=0 ? 0: 1;
+  int abs_delta_rps_minus1 = abs(deltaRPS) - 1;
+  fwrite(&delta_rps_sign, 1, sizeof(int), pFile);
+  fwrite(&abs_delta_rps_minus1, 1, sizeof(int), pFile);
+#else
     WRITE_CODE( (deltaRPS >=0 ? 0: 1), 1, "delta_rps_sign" ); //delta_rps_sign
     WRITE_UVLC( abs(deltaRPS) - 1, "abs_delta_rps_minus1"); // absolute delta RPS minus 1
-
+#endif
     for(Int j=0; j < rps->getNumRefIdc(); j++)
     {
       Int refIdc = rps->getRefIdc(j);
+#if RM_OPTIMIZE_REF_SAIS
+  int used_by_curr_pic_flag = refIdc==1? 1: 0;
+  fwrite(&used_by_curr_pic_flag, 1, sizeof(int), pFile);
+#else
       WRITE_CODE( (refIdc==1? 1: 0), 1, "used_by_curr_pic_flag" ); //first bit is "1" if Idc is 1
+#endif
       if (refIdc != 1)
       {
+#if RM_OPTIMIZE_REF_SAIS
+  int use_delta_flag = refIdc>>1;
+  fwrite(&use_delta_flag, 1, sizeof(int), pFile);
+#else
         WRITE_CODE( refIdc>>1, 1, "use_delta_flag" ); //second bit is "1" if Idc is 2, "0" otherwise.
+#endif
       }
     }
   }
   else
   {
+#if RM_OPTIMIZE_REF_SAIS
+  int num_negative_pics = rps->getNumberOfNegativePictures();
+  int num_positive_pics = rps->getNumberOfPositivePictures();
+  fwrite(&num_negative_pics, 1, sizeof(int), pFile);
+  fwrite(&num_positive_pics, 1, sizeof(int), pFile);
+#else
     WRITE_UVLC( rps->getNumberOfNegativePictures(), "num_negative_pics" );
     WRITE_UVLC( rps->getNumberOfPositivePictures(), "num_positive_pics" );
+#endif
     Int prev = 0;
     for(Int j=0 ; j < rps->getNumberOfNegativePictures(); j++)
     {
+#if RM_OPTIMIZE_REF_SAIS
+  int delta_poc_s0_minus1 = prev-rps->getDeltaPOC(j)-1;
+  fwrite(&delta_poc_s0_minus1, 1, sizeof(int), pFile);
+#else
       WRITE_UVLC( prev-rps->getDeltaPOC(j)-1, "delta_poc_s0_minus1" );
+#endif
       prev = rps->getDeltaPOC(j);
+#if RM_OPTIMIZE_REF_SAIS
+  int used_by_curr_pic_s0_flag = rps->getUsed(j);
+  fwrite(&used_by_curr_pic_s0_flag, 1, sizeof(int), pFile);
+#else
       WRITE_FLAG( rps->getUsed(j), "used_by_curr_pic_s0_flag");
+#endif
     }
     prev = 0;
     for(Int j=rps->getNumberOfNegativePictures(); j < rps->getNumberOfNegativePictures()+rps->getNumberOfPositivePictures(); j++)
     {
+#if RM_OPTIMIZE_REF_SAIS
+  int delta_poc_s1_minus1 = rps->getDeltaPOC(j)-prev-1;
+  fwrite(&delta_poc_s1_minus1, 1, sizeof(int), pFile);
+#else
       WRITE_UVLC( rps->getDeltaPOC(j)-prev-1, "delta_poc_s1_minus1" );
+#endif
       prev = rps->getDeltaPOC(j);
+#if RM_OPTIMIZE_REF_SAIS
+  int used_by_curr_pic_s1_flag = rps->getUsed(j);
+  fwrite(&used_by_curr_pic_s1_flag, 1, sizeof(int), pFile);
+#else
       WRITE_FLAG( rps->getUsed(j), "used_by_curr_pic_s1_flag" );
+#endif
     }
   }
 #if RM_OPTIMIZE_REF_SAIS
   printf("OPTIMIZE_REF_SAIS_SPS_BIT_REDUCTION = %d\n", getNumberOfWrittenBits() - bitsForRefPicStruct);
+  fclose(pFile);
 #endif
 #if PRINT_RPS_INFO
   printf("irps=%d (%2d bits) ", rps->getInterRPSPrediction(), getNumberOfWrittenBits() - lastBits);

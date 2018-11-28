@@ -47,6 +47,7 @@
 #include "TLibCommon/TComRom.h"
 #include "TEncEntropy.h"
 #include "SyntaxElementWriter.h"
+#include <stdio.h>
 
 //! \ingroup TLibEncoder
 //! \{
@@ -74,7 +75,7 @@ public:
   virtual ~TEncCavlc();
 
 protected:
-  Void codeShortTermRefPicSet              ( const TComReferencePictureSet* pcRPS, Bool calledFromSliceHeader, Int idx );
+  Void codeShortTermRefPicSet              ( const TComReferencePictureSet* pcRPS, Bool calledFromSliceHeader, Int idx);
   Bool findMatchingLTRP ( TComSlice* pcSlice, UInt *ltrpsIndex, Int ltrpPOC, Bool usedFlag );
 
 public:
