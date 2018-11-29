@@ -87,13 +87,30 @@ TDecCavlc::~TDecCavlc()
 // Public member functions
 // ====================================================================================================================
 
-Void TDecCavlc::parseShortTermRefPicSet( TComSPS* sps, TComReferencePictureSet* rps, Int idx )
+Void TDecCavlc::parseShortTermRefPicSet( TComSPS* sps, TComReferencePictureSet* rps, Int idx
+#if RM_OPTIMIZE_REF_SAIS
+    ,long* byteCounter
+#endif
+	)
 {
+#if RM_OPTIMIZE_REF_SAIS
+	FILE* pFile;
+	pFile = fopen("shortTermRefPicSetInfo.bin", "rb");
+	fseek(pFile, *byteCounter * sizeof(int), SEEK_SET);
+#endif
   UInt code;
   UInt interRPSPred;
   if (idx > 0)
   {
-    READ_FLAG(interRPSPred, "inter_ref_pic_set_prediction_flag");  rps->setInterRPSPrediction(interRPSPred);
+#if RM_OPTIMIZE_REF_SAIS
+	int c_interRPSPred = 0;
+    fread(&c_interRPSPred, sizeof(int), 1, pFile);
+    (*byteCounter)++;
+    interRPSPred = c_interRPSPred;
+#else
+    READ_FLAG(interRPSPred, "inter_ref_pic_set_prediction_flag");
+#endif
+    rps->setInterRPSPrediction(interRPSPred);
   }
   else
   {
@@ -106,7 +123,11 @@ Void TDecCavlc::parseShortTermRefPicSet( TComSPS* sps, TComReferencePictureSet* 
     UInt bit;
     if(idx == sps->getRPSList()->getNumberOfReferencePictureSets())
     {
+#if RM_OPTIMIZE_REF_SAIS
+    fread(&code, sizeof(int), 1, pFile);
+#else
       READ_UVLC(code, "delta_idx_minus1" ); // delta index of the Reference Picture Set used for prediction minus 1
+#endif
     }
     else
     {
@@ -117,16 +138,33 @@ Void TDecCavlc::parseShortTermRefPicSet( TComSPS* sps, TComReferencePictureSet* 
     assert (rIdx <= idx-1 && rIdx >= 0); // Made assert tighter; if rIdx = idx then prediction is done from itself. rIdx must belong to range 0, idx-1, inclusive, see J0185-r2
     TComReferencePictureSet*   rpsRef = sps->getRPSList()->getReferencePictureSet(rIdx);
     Int k = 0, k0 = 0, k1 = 0;
+#if RM_OPTIMIZE_REF_SAIS
+    fread(&bit, sizeof(int), 1, pFile);
+    (*byteCounter)++;
+    fread(&code, sizeof(int), 1, pFile);
+    (*byteCounter)++;
+#else
     READ_CODE(1, bit, "delta_rps_sign"); // delta_RPS_sign
     READ_UVLC(code, "abs_delta_rps_minus1");  // absolute delta RPS minus 1
+#endif
     Int deltaRPS = (1 - 2 * bit) * (code + 1); // delta_RPS
     for(Int j=0 ; j <= rpsRef->getNumberOfPictures(); j++)
     {
+#if RM_OPTIMIZE_REF_SAIS
+      fread(&bit, sizeof(int), 1, pFile);
+      (*byteCounter)++;
+#else
       READ_CODE(1, bit, "used_by_curr_pic_flag" ); //first bit is "1" if Idc is 1
+#endif
       Int refIdc = bit;
       if (refIdc == 0)
       {
+#if RM_OPTIMIZE_REF_SAIS
+        fread(&bit, sizeof(int), 1, pFile);
+        (*byteCounter)++;
+#else
         READ_CODE(1, bit, "use_delta_flag" ); //second bit is "1" if Idc is 2, "0" otherwise.
+#endif
         refIdc = bit<<1; //second bit is "1" if refIdc is 2, "0" if refIdc = 0.
       }
       if (refIdc == 1 || refIdc == 2)
@@ -155,31 +193,68 @@ Void TDecCavlc::parseShortTermRefPicSet( TComSPS* sps, TComReferencePictureSet* 
   }
   else
   {
-    READ_UVLC(code, "num_negative_pics");           rps->setNumberOfNegativePictures(code);
-    READ_UVLC(code, "num_positive_pics");           rps->setNumberOfPositivePictures(code);
+#if RM_OPTIMIZE_REF_SAIS
+	  fread(&code, sizeof(int), 1, pFile);
+	  (*byteCounter)++;
+#else
+	  READ_UVLC(code, "num_negative_pics");
+#endif
+	  rps->setNumberOfNegativePictures(code);
+#if RM_OPTIMIZE_REF_SAIS
+	  fread(&code, sizeof(int), 1, pFile);
+	  (*byteCounter)++;
+#else
+	  READ_UVLC(code, "num_positive_pics");
+#endif
+	  rps->setNumberOfPositivePictures(code);
     Int prev = 0;
     Int poc;
     for(Int j=0 ; j < rps->getNumberOfNegativePictures(); j++)
     {
+#if RM_OPTIMIZE_REF_SAIS
+	  fread(&code, sizeof(int), 1, pFile);
+	  (*byteCounter)++;
+#else
       READ_UVLC(code, "delta_poc_s0_minus1");
+#endif
       poc = prev-code-1;
       prev = poc;
       rps->setDeltaPOC(j,poc);
-      READ_FLAG(code, "used_by_curr_pic_s0_flag");  rps->setUsed(j,code);
+#if RM_OPTIMIZE_REF_SAIS
+	  fread(&code, sizeof(int), 1, pFile);
+	  (*byteCounter)++;
+#else
+      READ_FLAG(code, "used_by_curr_pic_s0_flag");
+#endif
+      rps->setUsed(j,code);
     }
     prev = 0;
     for(Int j=rps->getNumberOfNegativePictures(); j < rps->getNumberOfNegativePictures()+rps->getNumberOfPositivePictures(); j++)
     {
+#if RM_OPTIMIZE_REF_SAIS
+	  fread(&code, sizeof(int), 1, pFile);
+	  (*byteCounter)++;
+#else
       READ_UVLC(code, "delta_poc_s1_minus1");
+#endif
       poc = prev+code+1;
       prev = poc;
       rps->setDeltaPOC(j,poc);
-      READ_FLAG(code, "used_by_curr_pic_s1_flag");  rps->setUsed(j,code);
+#if RM_OPTIMIZE_REF_SAIS
+	  fread(&code, sizeof(int), 1, pFile);
+	  (*byteCounter)++;
+#else
+      READ_FLAG(code, "used_by_curr_pic_s1_flag");
+#endif
+      rps->setUsed(j,code);
     }
     rps->setNumberOfPictures(rps->getNumberOfNegativePictures()+rps->getNumberOfPositivePictures());
   }
 #if PRINT_RPS_INFO
   rps->printDeltaPOC();
+#endif
+#if RM_OPTIMIZE_REF_SAIS
+  fclose(pFile);
 #endif
 }
 
@@ -748,10 +823,17 @@ Void TDecCavlc::parseSPS(TComSPS* pcSPS)
   TComRPSList* rpsList = pcSPS->getRPSList();
   TComReferencePictureSet* rps;
 
+#if RM_OPTIMIZE_REF_SAIS
+  long byteCounter = 0;
+#endif
   for(UInt i=0; i< rpsList->getNumberOfReferencePictureSets(); i++)
   {
     rps = rpsList->getReferencePictureSet(i);
-    parseShortTermRefPicSet(pcSPS,rps,i);
+    parseShortTermRefPicSet(pcSPS,rps,i
+#if RM_OPTIMIZE_REF_SAIS
+    ,&byteCounter
+#endif
+    );
   }
   READ_FLAG( uiCode, "long_term_ref_pics_present_flag" );          pcSPS->setLongTermRefsPresent(uiCode);
   if (pcSPS->getLongTermRefsPresent())
@@ -1059,7 +1141,11 @@ Void TDecCavlc::parseSliceHeader (TComSlice* pcSlice, ParameterSetManager *param
       READ_FLAG( uiCode, "short_term_ref_pic_set_sps_flag" );
       if(uiCode == 0) // use short-term reference picture set explicitly signalled in slice header
       {
-        parseShortTermRefPicSet(sps,rps, sps->getRPSList()->getNumberOfReferencePictureSets());
+        parseShortTermRefPicSet(sps,rps, sps->getRPSList()->getNumberOfReferencePictureSets()
+#if RM_OPTIMIZE_REF_SAIS
+    ,0
+#endif
+	);
       }
       else // use reference to short-term reference picture set in PPS
       {

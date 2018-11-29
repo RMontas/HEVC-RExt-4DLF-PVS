@@ -61,7 +61,11 @@ public:
 
 protected:
 
-  Void  parseShortTermRefPicSet            (TComSPS* pcSPS, TComReferencePictureSet* pcRPS, Int idx);
+  Void  parseShortTermRefPicSet            (TComSPS* pcSPS, TComReferencePictureSet* pcRPS, Int idx
+#if RM_OPTIMIZE_REF_SAIS
+    ,long* byteCounter
+#endif
+	);
 
 public:
 
