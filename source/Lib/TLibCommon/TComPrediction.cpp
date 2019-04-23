@@ -47,6 +47,512 @@
 // Tables
 // ====================================================================================================================
 
+#if RM_SCALABLE && RM_RANDOM_ACCESS_PROFILE > 0
+const Bool TComPrediction::m_2WayRAProfileLF3[2][3][3] = {
+							// N
+							{
+									{1, 1, 1},
+									{1, 1, 1},
+									{0, 0, 0}
+							},
+							// S
+							{
+									{0, 0, 0},
+									{1, 1, 1},
+									{1, 1, 1}
+							},
+};
+const Bool TComPrediction::m_2WayRAProfileLF7[2][7][7] = {
+							// N
+							{
+									{1, 1, 1, 1, 1, 1, 1},
+									{1, 1, 1, 1, 1, 1, 1},
+									{1, 1, 1, 1, 1, 1, 1},
+									{1, 1, 1, 1, 1, 1, 1},
+									{0, 0, 0, 0, 0, 0, 0},
+									{0, 0, 0, 0, 0, 0, 0},
+									{0, 0, 0, 0, 0, 0, 0}
+							},
+							// S
+							{
+									{0, 0, 0, 0, 0, 0, 0},
+									{0, 0, 0, 0, 0, 0, 0},
+									{0, 0, 0, 0, 0, 0, 0},
+									{1, 1, 1, 1, 1, 1, 1},
+									{1, 1, 1, 1, 1, 1, 1},
+									{1, 1, 1, 1, 1, 1, 1},
+									{1, 1, 1, 1, 1, 1, 1}
+							},
+};
+const Bool TComPrediction::m_2WayRAProfileLF13[2][13][13] = {
+							// N
+							{
+									{1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
+									{1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
+									{1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
+									{1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
+									{1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
+									{1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
+									{1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
+									{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+									{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+									{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+									{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+									{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+									{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}
+							},
+							// S
+							{
+									{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+									{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+									{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+									{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+									{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+									{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+									{1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
+									{1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
+									{1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
+									{1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
+									{1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
+									{1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
+									{1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1}
+							},
+};
+
+const Bool TComPrediction::m_4WayRAProfileLF3[4][3][3] = {
+							// NW
+							{
+									{1, 1, 0},
+									{1, 1, 0},
+									{0, 0, 0}
+							},
+							// NE
+							{
+									{0, 1, 1},
+									{0, 1, 1},
+									{0, 0, 0}
+							},
+							// SW
+							{
+									{0, 0, 0},
+									{1, 1, 0},
+									{1, 1, 0}
+							},
+							// SE
+							{
+									{0, 0, 0},
+									{0, 1, 1},
+									{0, 1, 1}
+							}
+};
+const Bool TComPrediction::m_4WayRAProfileLF7[4][7][7] = {
+							// NW
+							{
+									{1, 1, 1, 1, 0, 0, 0},
+									{1, 1, 1, 1, 0, 0, 0},
+									{1, 1, 1, 1, 0, 0, 0},
+									{1, 1, 1, 1, 0, 0, 0},
+									{0, 0, 0, 0, 0, 0, 0},
+									{0, 0, 0, 0, 0, 0, 0},
+									{0, 0, 0, 0, 0, 0, 0}
+							},
+							// NE
+							{
+									{0, 0, 0, 1, 1, 1, 1},
+									{0, 0, 0, 1, 1, 1, 1},
+									{0, 0, 0, 1, 1, 1, 1},
+									{0, 0, 0, 1, 1, 1, 1},
+									{0, 0, 0, 0, 0, 0, 0},
+									{0, 0, 0, 0, 0, 0, 0},
+									{0, 0, 0, 0, 0, 0, 0}
+							},
+							// SW
+							{
+									{0, 0, 0, 0, 0, 0, 0},
+									{0, 0, 0, 0, 0, 0, 0},
+									{0, 0, 0, 0, 0, 0, 0},
+									{1, 1, 1, 1, 0, 0, 0},
+									{1, 1, 1, 1, 0, 0, 0},
+									{1, 1, 1, 1, 0, 0, 0},
+									{1, 1, 1, 1, 0, 0, 0}
+							},
+							// SE
+							{
+									{0, 0, 0, 0, 0, 0, 0},
+									{0, 0, 0, 0, 0, 0, 0},
+									{0, 0, 0, 0, 0, 0, 0},
+									{0, 0, 0, 1, 1, 1, 1},
+									{0, 0, 0, 1, 1, 1, 1},
+									{0, 0, 0, 1, 1, 1, 1},
+									{0, 0, 0, 1, 1, 1, 1}
+							}
+};
+const Bool TComPrediction::m_4WayRAProfileLF13[4][13][13] = {
+							// NW
+							{
+									{1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0},
+									{1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0},
+									{1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0},
+									{1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0},
+									{1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0},
+									{1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0},
+									{1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0},
+									{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+									{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+									{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+									{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+									{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+									{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}
+							},
+							// NE
+							{
+									{0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1},
+									{0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1},
+									{0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1},
+									{0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1},
+									{0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1},
+									{0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1},
+									{0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1},
+									{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+									{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+									{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+									{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+									{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+									{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}
+							},
+							// SW
+							{
+									{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+									{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+									{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+									{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+									{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+									{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+									{1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0},
+									{1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0},
+									{1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0},
+									{1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0},
+									{1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0},
+									{1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0},
+									{1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0}
+							},
+							// SE
+							{
+									{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+									{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+									{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+									{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+									{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+									{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+									{0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1},
+									{0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1},
+									{0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1},
+									{0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1},
+									{0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1},
+									{0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1},
+									{0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1}
+							}
+};
+
+const Bool TComPrediction::m_9WayRAProfileLF3[9][3][3] = {
+							// NW
+							{
+									{1, 0, 0},
+									{0, 0, 0},
+									{0, 0, 0}
+							},
+							// N
+							{
+									{0, 1, 0},
+									{0, 0, 0},
+									{0, 0, 0}
+							},
+							// NE
+							{
+									{0, 0, 1},
+									{0, 0, 0},
+									{0, 0, 0}
+							},
+							// W
+							{
+									{0, 0, 0},
+									{1, 0, 0},
+									{0, 0, 0}
+							},
+							// C
+							{
+									{0, 0, 0},
+									{0, 1, 0},
+									{0, 0, 0}
+							},
+							// E
+							{
+									{0, 0, 0},
+									{0, 0, 1},
+									{0, 0, 0}
+							},
+							// SW
+							{
+									{0, 0, 0},
+									{0, 0, 0},
+									{1, 0, 0}
+							},
+							// S
+							{
+									{0, 0, 0},
+									{0, 0, 0},
+									{0, 1, 0}
+							},
+							// SE
+							{
+									{0, 0, 0},
+									{0, 0, 0},
+									{0, 0, 1}
+							}
+
+};
+const Bool TComPrediction::m_9WayRAProfileLF7[9][7][7] = {
+							// NW
+							{
+									{1, 1, 1, 0, 0, 0, 0},
+									{1, 1, 1, 0, 0, 0, 0},
+									{1, 1, 1, 0, 0, 0, 0},
+									{0, 0, 0, 0, 0, 0, 0},
+									{0, 0, 0, 0, 0, 0, 0},
+									{0, 0, 0, 0, 0, 0, 0},
+									{0, 0, 0, 0, 0, 0, 0}
+							},
+							// N
+							{
+									{0, 0, 1, 1, 1, 0, 0},
+									{0, 0, 1, 1, 1, 0, 0},
+									{0, 0, 1, 1, 1, 0, 0},
+									{0, 0, 0, 0, 0, 0, 0},
+									{0, 0, 0, 0, 0, 0, 0},
+									{0, 0, 0, 0, 0, 0, 0},
+									{0, 0, 0, 0, 0, 0, 0}
+							},
+							// NE
+							{
+									{0, 0, 0, 0, 1, 1, 1},
+									{0, 0, 0, 0, 1, 1, 1},
+									{0, 0, 0, 0, 1, 1, 1},
+									{0, 0, 0, 0, 0, 0, 0},
+									{0, 0, 0, 0, 0, 0, 0},
+									{0, 0, 0, 0, 0, 0, 0},
+									{0, 0, 0, 0, 0, 0, 0}
+							},
+							// W
+							{
+									{0, 0, 0, 0, 0, 0, 0},
+									{0, 0, 0, 0, 0, 0, 0},
+									{1, 1, 1, 0, 0, 0, 0},
+									{1, 1, 1, 0, 0, 0, 0},
+									{1, 1, 1, 0, 0, 0, 0},
+									{0, 0, 0, 0, 0, 0, 0},
+									{0, 0, 0, 0, 0, 0, 0}
+							},
+							// C
+							{
+									{0, 0, 0, 0, 0, 0, 0},
+									{0, 0, 0, 0, 0, 0, 0},
+									{0, 0, 1, 1, 1, 0, 0},
+									{0, 0, 1, 1, 1, 0, 0},
+									{0, 0, 1, 1, 1, 0, 0},
+									{0, 0, 0, 0, 0, 0, 0},
+									{0, 0, 0, 0, 0, 0, 0}
+							},
+							// E
+							{
+									{0, 0, 0, 0, 0, 0, 0},
+									{0, 0, 0, 0, 0, 0, 0},
+									{0, 0, 0, 0, 1, 1, 1},
+									{0, 0, 0, 0, 1, 1, 1},
+									{0, 0, 0, 0, 1, 1, 1},
+									{0, 0, 0, 0, 0, 0, 0},
+									{0, 0, 0, 0, 0, 0, 0}
+							},
+							// SW
+							{
+									{0, 0, 0, 0, 0, 0, 0},
+									{0, 0, 0, 0, 0, 0, 0},
+									{0, 0, 0, 0, 0, 0, 0},
+									{0, 0, 0, 0, 0, 0, 0},
+									{1, 1, 1, 0, 0, 0, 0},
+									{1, 1, 1, 0, 0, 0, 0},
+									{1, 1, 1, 0, 0, 0, 0}
+							},
+							// S
+							{
+									{0, 0, 0, 0, 0, 0, 0},
+									{0, 0, 0, 0, 0, 0, 0},
+									{0, 0, 0, 0, 0, 0, 0},
+									{0, 0, 0, 0, 0, 0, 0},
+									{0, 0, 1, 1, 1, 0, 0},
+									{0, 0, 1, 1, 1, 0, 0},
+									{0, 0, 1, 1, 1, 0, 0}
+							},
+							// SE
+							{
+									{0, 0, 0, 0, 0, 0, 0},
+									{0, 0, 0, 0, 0, 0, 0},
+									{0, 0, 0, 0, 0, 0, 0},
+									{0, 0, 0, 0, 0, 0, 0},
+									{0, 0, 0, 0, 1, 1, 1},
+									{0, 0, 0, 0, 1, 1, 1},
+									{0, 0, 0, 0, 1, 1, 1}
+							}
+
+};
+const Bool TComPrediction::m_9WayRAProfileLF13[9][13][13] = {
+							// NW
+							{
+									{1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0},
+									{1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0},
+									{1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0},
+									{1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0},
+									{1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0},
+									{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+									{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+									{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+									{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+									{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+									{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+									{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+									{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}
+							},
+							// N
+							{
+									{0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0, 0},
+									{0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0, 0},
+									{0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0, 0},
+									{0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0, 0},
+									{0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0, 0},
+									{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+									{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+									{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+									{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+									{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+									{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+									{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+									{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}
+							},
+							// NE
+							{
+									{0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1},
+									{0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1},
+									{0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1},
+									{0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1},
+									{0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1},
+									{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+									{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+									{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+									{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+									{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+									{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+									{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+									{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}
+							},
+							// W
+							{
+									{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+									{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+									{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+									{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+									{1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0},
+									{1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0},
+									{1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0},
+									{1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0},
+									{1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0},
+									{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+									{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+									{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+									{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}
+							},
+							// C
+							{
+									{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+									{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+									{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+									{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+									{0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0, 0},
+									{0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0, 0},
+									{0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0, 0},
+									{0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0, 0},
+									{0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0, 0},
+									{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+									{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+									{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+									{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}
+							},
+							// E
+							{
+									{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+									{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+									{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+									{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+									{0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1},
+									{0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1},
+									{0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1},
+									{0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1},
+									{0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1},
+									{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+									{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+									{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+									{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}
+							},
+							// SW
+							{
+									{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+									{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+									{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+									{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+									{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+									{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+									{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+									{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+									{1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0},
+									{1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0},
+									{1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0},
+									{1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0},
+									{1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0}
+							},
+							// S
+							{
+									{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+									{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+									{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+									{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+									{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+									{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+									{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+									{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+									{0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0, 0},
+									{0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0, 0},
+									{0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0, 0},
+									{0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0, 0},
+									{0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0, 0}
+							},
+							// SE
+							{
+									{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+									{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+									{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+									{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+									{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+									{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+									{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+									{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+									{0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1},
+									{0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1},
+									{0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1},
+									{0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1},
+									{0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1}
+							}
+
+};
+#endif
+
 const UChar TComPrediction::m_aucIntraFilter[MAX_NUM_CHANNEL_TYPE][MAX_INTRA_FILTER_DEPTHS] =
 {
   { // Luma
@@ -395,7 +901,11 @@ Void TComPrediction::xPred4DLFMI_DC_3x3(       Int bitDepth,
                                           UInt dirMode, TComPicYuv *const pcPic4DLFMI, UInt miSize,
 										  UInt currentSAIsSpiralPosX, UInt currentSAIsSpiralPosY,
 										  UInt totalNumberOfSAIs, UInt currentSAI, UInt uiAbsPartIdxInRaster,
-										  UInt uiPosX, UInt uiPosY, ComponentID compID )
+										  UInt uiPosX, UInt uiPosY, ComponentID compID
+#if RM_SCALABLE && RM_RANDOM_ACCESS_PROFILE
+							  ,Int currentRegionRA
+#endif
+)
 {
 
 	Int width=Int(uiWidth);
@@ -421,10 +931,17 @@ Void TComPrediction::xPred4DLFMI_DC_3x3(       Int bitDepth,
 					{
 						if((Int)currentSAIsSpiralPosX + (Int)uiPosX * (Int)mi - 1 + x*(Int)mi > 0 && (Int)currentSAIsSpiralPosY + (Int)uiPosY * (Int)mi - 1 + y*(Int)mi > 0) // if valid (inside frame)
 						{
-							if(p4DLFMI[(Int)firstPixelPos + i + x*mi + (j + y*mi)*(Int)ui4DLFMIStride]) // if available
+							if(p4DLFMI[(Int)firstPixelPos + i + x*mi + (j + y*mi)*(Int)ui4DLFMIStride] && !( j == i && j == 0 )) // if available
 							{
+#if RM_SCALABLE && RM_RANDOM_ACCESS_PROFILE
+							if(xCheckIfInTheSameRegion(currentRegionRA, currentSAI, currentSAIsSpiralPosX+i, currentSAIsSpiralPosY+j))
+							{
+#endif
 								predictor += p4DLFMI[(Int)firstPixelPos + i + x*mi + (j + y*mi)*(Int)ui4DLFMIStride];
 								availablePixels++;
+#if RM_SCALABLE && RM_RANDOM_ACCESS_PROFILE
+							}
+#endif
 							}
 						}
 					}
@@ -448,7 +965,11 @@ Void TComPrediction::xPred4DLFMI_LOCO_I(       Int bitDepth,
                                           UInt dirMode, TComPicYuv *const pcPic4DLFMI, UInt miSize,
 										  UInt currentSAIsSpiralPosX, UInt currentSAIsSpiralPosY,
 										  UInt totalNumberOfSAIs, UInt currentSAI, UInt uiAbsPartIdxInRaster,
-										  UInt uiPosX, UInt uiPosY, ComponentID compID )
+										  UInt uiPosX, UInt uiPosY, ComponentID compID
+#if RM_SCALABLE && RM_RANDOM_ACCESS_PROFILE
+							  ,Int currentRegionRA
+#endif
+)
 {
 
 	Int width=Int(uiWidth);
@@ -475,15 +996,19 @@ Void TComPrediction::xPred4DLFMI_LOCO_I(       Int bitDepth,
 			// ULEFT pixel = (firstPixelPosX + currentPixelPosX - 1, firstPixelPosY + currentPixelPosY - 1)
 			if((Int)currentSAIsSpiralPosX + (Int)uiPosX * (Int)mi - 1 + x*(Int)mi > 0 && (Int)currentSAIsSpiralPosY + (Int)uiPosY * (Int)mi - 1 + y*(Int)mi > 0) // if ULeft pixel is inside frame
 			{
-				getCausalSupportFromSpiral_LOCO_I( &a, &b, &c, (Int)currentSAI, (Int)totalNumberOfSAIs, p4DLFMI, (Int)firstPixelPos + x*(Int)mi + (y*(Int)mi)*(Int)ui4DLFMIStride, (Int)ui4DLFMIStride);
+				getCausalSupportFromSpiral_LOCO_I( &a, &b, &c, (Int)currentSAI, (Int)totalNumberOfSAIs, p4DLFMI, (Int)firstPixelPos + x*(Int)mi + (y*(Int)mi)*(Int)ui4DLFMIStride, (Int)ui4DLFMIStride
+#if RM_SCALABLE && RM_RANDOM_ACCESS_PROFILE
+							  ,currentSAIsSpiralPosX, currentSAIsSpiralPosY, currentRegionRA
+#endif
+				);
 				//a = p4DLFMI[firstPixelPos + (-1) + x*mi + (y*mi)*ui4DLFMIStride] ? p4DLFMI[firstPixelPos + (-1) + x*mi + (y*mi)*ui4DLFMIStride] : NOT_VALID; // Left
 				//b = p4DLFMI[firstPixelPos + x*mi + ((-1) + y*mi)*ui4DLFMIStride] ? p4DLFMI[firstPixelPos + x*mi + ((-1) + y*mi)*ui4DLFMIStride] : NOT_VALID; // Up
 				//c = p4DLFMI[firstPixelPos + (-1) + x*mi + ((-1) + y*mi)*ui4DLFMIStride] ? p4DLFMI[firstPixelPos + (-1) + x*mi + ((-1) + y*mi)*ui4DLFMIStride] : NOT_VALID; // ULeft
 
 				if(a == NOT_VALID && b == NOT_VALID && c == NOT_VALID)
 					predictor = 0;
-				else if(a == NOT_VALID || b == NOT_VALID || c == NOT_VALID) // median_3x3
-					predictor = median_3x3( p4DLFMI, firstPixelPos + x*mi + (y*mi)*ui4DLFMIStride, ui4DLFMIStride );
+				//else if(a == NOT_VALID || b == NOT_VALID || c == NOT_VALID) // median_3x3
+					//predictor = median_3x3( p4DLFMI, firstPixelPos + x*mi + (y*mi)*ui4DLFMIStride, ui4DLFMIStride );
 				else // LOCO-I
 					predictor = LOCO_I( a, b, c );
 			}
@@ -531,7 +1056,11 @@ Void TComPrediction::xPred4DLFMI_GAP(       Int bitDepth,
                                           UInt dirMode, TComPicYuv *const pcPic4DLFMI, UInt miSize,
 										  UInt currentSAIsSpiralPosX, UInt currentSAIsSpiralPosY,
 										  UInt totalNumberOfSAIs, UInt currentSAI, UInt uiAbsPartIdxInRaster,
-										  UInt uiPosX, UInt uiPosY, ComponentID compID )
+										  UInt uiPosX, UInt uiPosY, ComponentID compID
+#if RM_SCALABLE && RM_RANDOM_ACCESS_PROFILE
+							  ,Int currentRegionRA
+#endif
+)
 {
 
 	Int width=Int(uiWidth);
@@ -562,10 +1091,18 @@ Void TComPrediction::xPred4DLFMI_GAP(       Int bitDepth,
 			// 2ULEFT pixel = (firstPixelPosX + currentPixelPosX - 2, firstPixelPosY + currentPixelPosY - 2)
 			if((Int)currentSAIsSpiralPosX + (Int)uiPosX * (Int)mi - 2 + (Int)x*(Int)mi > 0 && (Int)currentSAIsSpiralPosY + (Int)uiPosY * (Int)mi - 2 + (Int)y*(Int)mi > 0) // if ULeft pixel is inside frame
 			{
-				getCausalSupportFromSpiral_GAP( &w, &ww, &n, &nn, &nw, &ne, &nne, (Int)currentSAI, (Int)totalNumberOfSAIs, p4DLFMI, (Int)firstPixelPos + x*(Int)mi + (y*(Int)mi)*(Int)ui4DLFMIStride, (Int)ui4DLFMIStride);
+				getCausalSupportFromSpiral_GAP( &w, &ww, &n, &nn, &nw, &ne, &nne, (Int)currentSAI, (Int)totalNumberOfSAIs, p4DLFMI, (Int)firstPixelPos + x*(Int)mi + (y*(Int)mi)*(Int)ui4DLFMIStride, (Int)ui4DLFMIStride
+#if RM_SCALABLE && RM_RANDOM_ACCESS_PROFILE
+						,currentSAIsSpiralPosX, currentSAIsSpiralPosY, currentRegionRA
+#endif
+				);
 				if(currentSAI < 9)// LOCO-I
 				{
-					getCausalSupportFromSpiral_LOCO_I( &w, &n, &nw, (Int)currentSAI, (Int)totalNumberOfSAIs, p4DLFMI, (Int)firstPixelPos + x*(Int)mi + (y*(Int)mi)*(Int)ui4DLFMIStride, (Int)ui4DLFMIStride);
+					getCausalSupportFromSpiral_LOCO_I( &w, &n, &nw, (Int)currentSAI, (Int)totalNumberOfSAIs, p4DLFMI, (Int)firstPixelPos + x*(Int)mi + (y*(Int)mi)*(Int)ui4DLFMIStride, (Int)ui4DLFMIStride
+#if RM_SCALABLE && RM_RANDOM_ACCESS_PROFILE
+							,currentSAIsSpiralPosX, currentSAIsSpiralPosY, currentRegionRA
+#endif
+					);
 					predictor = LOCO_I( w, n, nw );
 				}
 				else
@@ -590,7 +1127,11 @@ Void TComPrediction::xPred4DLFMI_AGSP(       Int bitDepth,
                                           UInt dirMode, TComPicYuv *const pcPic4DLFMI, UInt miSize,
 										  UInt currentSAIsSpiralPosX, UInt currentSAIsSpiralPosY,
 										  UInt totalNumberOfSAIs, UInt currentSAI, UInt uiAbsPartIdxInRaster,
-										  UInt uiPosX, UInt uiPosY, ComponentID compID )
+										  UInt uiPosX, UInt uiPosY, ComponentID compID
+#if RM_SCALABLE && RM_RANDOM_ACCESS_PROFILE
+							  ,Int currentRegionRA
+#endif
+)
 {
 
 	Int width=Int(uiWidth);
@@ -623,10 +1164,18 @@ Void TComPrediction::xPred4DLFMI_AGSP(       Int bitDepth,
 			// 2ULEFT pixel = (firstPixelPosX + currentPixelPosX - 2, firstPixelPosY + currentPixelPosY - 2)
 			if((Int)currentSAIsSpiralPosX + (Int)uiPosX * (Int)mi - 2 + (Int)x*(Int)mi > 0 && (Int)currentSAIsSpiralPosY + (Int)uiPosY * (Int)mi - 2 + (Int)y*(Int)mi > 0) // if ULeft pixel is inside frame
 			{
-				getCausalSupportFromSpiral_AGSP( &w, &ww, &n, &nn, &nw, &ne, &nne, &nww, &nnw, (Int)currentSAI, (Int)totalNumberOfSAIs, p4DLFMI, (Int)firstPixelPos + x*(Int)mi + (y*(Int)mi)*(Int)ui4DLFMIStride, (Int)ui4DLFMIStride);
+				getCausalSupportFromSpiral_AGSP( &w, &ww, &n, &nn, &nw, &ne, &nne, &nww, &nnw, (Int)currentSAI, (Int)totalNumberOfSAIs, p4DLFMI, (Int)firstPixelPos + x*(Int)mi + (y*(Int)mi)*(Int)ui4DLFMIStride, (Int)ui4DLFMIStride
+#if RM_SCALABLE && RM_RANDOM_ACCESS_PROFILE
+						,currentSAIsSpiralPosX, currentSAIsSpiralPosY, currentRegionRA
+#endif
+				);
 				if(currentSAI < 9)// LOCO-I
 				{
-					getCausalSupportFromSpiral_LOCO_I( &w, &n, &nw, (Int)currentSAI, (Int)totalNumberOfSAIs, p4DLFMI, (Int)firstPixelPos + x*(Int)mi + (y*(Int)mi)*(Int)ui4DLFMIStride, (Int)ui4DLFMIStride);
+					getCausalSupportFromSpiral_LOCO_I( &w, &n, &nw, (Int)currentSAI, (Int)totalNumberOfSAIs, p4DLFMI, (Int)firstPixelPos + x*(Int)mi + (y*(Int)mi)*(Int)ui4DLFMIStride, (Int)ui4DLFMIStride
+#if RM_SCALABLE && RM_RANDOM_ACCESS_PROFILE
+							,currentSAIsSpiralPosX, currentSAIsSpiralPosY, currentRegionRA
+#endif
+					);
 					predictor = LOCO_I( w, n, nw );
 				}
 				else
@@ -651,7 +1200,11 @@ Void TComPrediction::xPred4DLFMI_LSP3(       Int bitDepth,
                                           UInt dirMode, TComPicYuv *const pcPic4DLFMI, UInt miSize,
 										  UInt currentSAIsSpiralPosX, UInt currentSAIsSpiralPosY,
 										  UInt totalNumberOfSAIs, UInt currentSAI, UInt uiAbsPartIdxInRaster,
-										  UInt uiPosX, UInt uiPosY, ComponentID compID )
+										  UInt uiPosX, UInt uiPosY, ComponentID compID
+#if RM_SCALABLE && RM_RANDOM_ACCESS_PROFILE
+							  ,Int currentRegionRA
+#endif
+)
 {
 	Int width=Int(uiWidth);
 	Int height=Int(uiHeight);
@@ -668,7 +1221,11 @@ Void TComPrediction::xPred4DLFMI_LSP3(       Int bitDepth,
 	Int predOrder = 3;
 	Int causalSupportX[predOrder];
 	Int causalSupportY[predOrder];
-	Int availablePixels = getCausalSupportAdaptive( predOrder, 0, causalSupportX, causalSupportY, (Int)currentSAI, (Int)originPixelMI, (Int)firstPixelPos, (Int)mi, (Int)ui4DLFMIStride );
+	Int availablePixels = getCausalSupportAdaptive( predOrder, 0, causalSupportX, causalSupportY, (Int)currentSAI, (Int)originPixelMI, (Int)firstPixelPos, (Int)mi, (Int)ui4DLFMIStride
+#if RM_SCALABLE && RM_RANDOM_ACCESS_PROFILE
+			,currentSAIsSpiralPosX, currentSAIsSpiralPosY, currentRegionRA
+#endif
+	);
 	Int pixelMargin = (predOrder + 1) / 2 + mi; // +mi ext training area
 
 	// Create individual pixel predictor for each pixel
@@ -679,9 +1236,13 @@ Void TComPrediction::xPred4DLFMI_LSP3(       Int bitDepth,
 			Int predictor = 0;
 			if((Int)currentSAIsSpiralPosX + (Int)uiPosX * (Int)mi - pixelMargin + (Int)x*(Int)mi > 0 && (Int)currentSAIsSpiralPosY + (Int)uiPosY * (Int)mi - pixelMargin + (Int)y*(Int)mi > 0) // if ULeft pixel is inside frame
 			{
-				if(currentSAI > availablePixels)
+				if(currentSAI > availablePixels && availablePixels > 0 && currentSAI > predOrder)
 				{
-					lspCoefs = trainRasterLSP(causalSupportX, causalSupportY, (Int)currentSAI, (Int)mi, p4DLFMI, (Int)originPixelMI + x*(Int)mi + (y*(Int)mi)*(Int)ui4DLFMIStride, (Int)firstPixelPos + x*(Int)mi + (y*(Int)mi)*(Int)ui4DLFMIStride, (Int)ui4DLFMIStride, W, H, predOrder, 0);
+					lspCoefs = trainRasterLSP(causalSupportX, causalSupportY, (Int)currentSAI, (Int)mi, p4DLFMI, (Int)originPixelMI + x*(Int)mi + (y*(Int)mi)*(Int)ui4DLFMIStride, (Int)firstPixelPos + x*(Int)mi + (y*(Int)mi)*(Int)ui4DLFMIStride, (Int)ui4DLFMIStride, W, H, predOrder, 0
+#if RM_SCALABLE && RM_RANDOM_ACCESS_PROFILE
+							,currentSAIsSpiralPosX, currentSAIsSpiralPosY, currentRegionRA
+#endif
+					);
 					predictor = LSPM( causalSupportX, causalSupportY, lspCoefs, predOrder, p4DLFMI, (Int)currentSAI, (Int)mi, (Int)firstPixelPos + x*(Int)mi + (y*(Int)mi)*(Int)ui4DLFMIStride, (Int)ui4DLFMIStride, bitDepth);
 				}
 			}
@@ -699,7 +1260,11 @@ Void TComPrediction::xPred4DLFMI_LSP5(       Int bitDepth,
                                           UInt dirMode, TComPicYuv *const pcPic4DLFMI, UInt miSize,
 										  UInt currentSAIsSpiralPosX, UInt currentSAIsSpiralPosY,
 										  UInt totalNumberOfSAIs, UInt currentSAI, UInt uiAbsPartIdxInRaster,
-										  UInt uiPosX, UInt uiPosY, ComponentID compID )
+										  UInt uiPosX, UInt uiPosY, ComponentID compID
+#if RM_SCALABLE && RM_RANDOM_ACCESS_PROFILE
+							  ,Int currentRegionRA
+#endif
+)
 {
 	Int width=Int(uiWidth);
 	Int height=Int(uiHeight);
@@ -716,7 +1281,11 @@ Void TComPrediction::xPred4DLFMI_LSP5(       Int bitDepth,
 	Int predOrder = 5;
 	Int causalSupportX[predOrder];
 	Int causalSupportY[predOrder];
-	Int availablePixels = getCausalSupportAdaptive( predOrder, 0, causalSupportX, causalSupportY, (Int)currentSAI, (Int)originPixelMI, (Int)firstPixelPos, (Int)mi, (Int)ui4DLFMIStride );
+	Int availablePixels = getCausalSupportAdaptive( predOrder, 0, causalSupportX, causalSupportY, (Int)currentSAI, (Int)originPixelMI, (Int)firstPixelPos, (Int)mi, (Int)ui4DLFMIStride
+#if RM_SCALABLE && RM_RANDOM_ACCESS_PROFILE
+			,currentSAIsSpiralPosX, currentSAIsSpiralPosY, currentRegionRA
+#endif
+	);
 	Int pixelMargin = (predOrder + 1) / 2 + mi; // +mi ext training area
 
 	// Create individual pixel predictor for each pixel
@@ -727,9 +1296,13 @@ Void TComPrediction::xPred4DLFMI_LSP5(       Int bitDepth,
 			Int predictor = 0;
 			if((Int)currentSAIsSpiralPosX + (Int)uiPosX * (Int)mi - pixelMargin + (Int)x*(Int)mi > 0 && (Int)currentSAIsSpiralPosY + (Int)uiPosY * (Int)mi - pixelMargin + (Int)y*(Int)mi > 0) // if ULeft pixel is inside frame
 			{
-				if(currentSAI > availablePixels)
+				if(currentSAI > availablePixels && availablePixels > 0 && currentSAI > predOrder)
 				{
-					lspCoefs = trainRasterLSP(causalSupportX, causalSupportY, (Int)currentSAI, (Int)mi, p4DLFMI, (Int)originPixelMI + x*(Int)mi + (y*(Int)mi)*(Int)ui4DLFMIStride, (Int)firstPixelPos + x*(Int)mi + (y*(Int)mi)*(Int)ui4DLFMIStride, (Int)ui4DLFMIStride, W, H, predOrder, 0);
+					lspCoefs = trainRasterLSP(causalSupportX, causalSupportY, (Int)currentSAI, (Int)mi, p4DLFMI, (Int)originPixelMI + x*(Int)mi + (y*(Int)mi)*(Int)ui4DLFMIStride, (Int)firstPixelPos + x*(Int)mi + (y*(Int)mi)*(Int)ui4DLFMIStride, (Int)ui4DLFMIStride, W, H, predOrder, 0
+#if RM_SCALABLE && RM_RANDOM_ACCESS_PROFILE
+							,currentSAIsSpiralPosX, currentSAIsSpiralPosY, currentRegionRA
+#endif
+					);
 					predictor = LSPM( causalSupportX, causalSupportY, lspCoefs, predOrder, p4DLFMI, (Int)currentSAI, (Int)mi, (Int)firstPixelPos + x*(Int)mi + (y*(Int)mi)*(Int)ui4DLFMIStride, (Int)ui4DLFMIStride, bitDepth);
 				}
 			}
@@ -747,7 +1320,11 @@ Void TComPrediction::xPred4DLFMI_LSP7(       Int bitDepth,
                                           UInt dirMode, TComPicYuv *const pcPic4DLFMI, UInt miSize,
 										  UInt currentSAIsSpiralPosX, UInt currentSAIsSpiralPosY,
 										  UInt totalNumberOfSAIs, UInt currentSAI, UInt uiAbsPartIdxInRaster,
-										  UInt uiPosX, UInt uiPosY, ComponentID compID )
+										  UInt uiPosX, UInt uiPosY, ComponentID compID
+#if RM_SCALABLE && RM_RANDOM_ACCESS_PROFILE
+							  ,Int currentRegionRA
+#endif
+)
 {
 	Int width=Int(uiWidth);
 	Int height=Int(uiHeight);
@@ -764,7 +1341,11 @@ Void TComPrediction::xPred4DLFMI_LSP7(       Int bitDepth,
 	Int predOrder = 7;
 	Int causalSupportX[predOrder];
 	Int causalSupportY[predOrder];
-	Int availablePixels = getCausalSupportAdaptive( predOrder, 0, causalSupportX, causalSupportY, (Int)currentSAI, (Int)originPixelMI, (Int)firstPixelPos, (Int)mi, (Int)ui4DLFMIStride );
+	Int availablePixels = getCausalSupportAdaptive( predOrder, 0, causalSupportX, causalSupportY, (Int)currentSAI, (Int)originPixelMI, (Int)firstPixelPos, (Int)mi, (Int)ui4DLFMIStride
+#if RM_SCALABLE && RM_RANDOM_ACCESS_PROFILE
+			,currentSAIsSpiralPosX, currentSAIsSpiralPosY, currentRegionRA
+#endif
+	);
 	Int pixelMargin = (predOrder + 1) / 2 + mi; // +mi ext training area
 
 	// Create individual pixel predictor for each pixel
@@ -775,9 +1356,13 @@ Void TComPrediction::xPred4DLFMI_LSP7(       Int bitDepth,
 			Int predictor = 0;
 			if((Int)currentSAIsSpiralPosX + (Int)uiPosX * (Int)mi - pixelMargin + (Int)x*(Int)mi > 0 && (Int)currentSAIsSpiralPosY + (Int)uiPosY * (Int)mi - pixelMargin + (Int)y*(Int)mi > 0) // if ULeft pixel is inside frame
 			{
-				if(currentSAI > availablePixels)
+				if(currentSAI > availablePixels && availablePixels > 0 && currentSAI > predOrder)
 				{
-					lspCoefs = trainRasterLSP(causalSupportX, causalSupportY, (Int)currentSAI, (Int)mi, p4DLFMI, (Int)originPixelMI + x*(Int)mi + (y*(Int)mi)*(Int)ui4DLFMIStride, (Int)firstPixelPos + x*(Int)mi + (y*(Int)mi)*(Int)ui4DLFMIStride, (Int)ui4DLFMIStride, W, H, predOrder, 0);
+					lspCoefs = trainRasterLSP(causalSupportX, causalSupportY, (Int)currentSAI, (Int)mi, p4DLFMI, (Int)originPixelMI + x*(Int)mi + (y*(Int)mi)*(Int)ui4DLFMIStride, (Int)firstPixelPos + x*(Int)mi + (y*(Int)mi)*(Int)ui4DLFMIStride, (Int)ui4DLFMIStride, W, H, predOrder, 0
+#if RM_SCALABLE && RM_RANDOM_ACCESS_PROFILE
+							,currentSAIsSpiralPosX, currentSAIsSpiralPosY, currentRegionRA
+#endif
+					);
 					predictor = LSPM( causalSupportX, causalSupportY, lspCoefs, predOrder, p4DLFMI, (Int)currentSAI, (Int)mi, (Int)firstPixelPos + x*(Int)mi + (y*(Int)mi)*(Int)ui4DLFMIStride, (Int)ui4DLFMIStride, bitDepth);
 				}
 			}
@@ -795,7 +1380,11 @@ Void TComPrediction::xPred4DLFMI_LSP9(       Int bitDepth,
                                           UInt dirMode, TComPicYuv *const pcPic4DLFMI, UInt miSize,
 										  UInt currentSAIsSpiralPosX, UInt currentSAIsSpiralPosY,
 										  UInt totalNumberOfSAIs, UInt currentSAI, UInt uiAbsPartIdxInRaster,
-										  UInt uiPosX, UInt uiPosY, ComponentID compID )
+										  UInt uiPosX, UInt uiPosY, ComponentID compID
+#if RM_SCALABLE && RM_RANDOM_ACCESS_PROFILE
+							  ,Int currentRegionRA
+#endif
+)
 {
 	Int width=Int(uiWidth);
 	Int height=Int(uiHeight);
@@ -812,7 +1401,11 @@ Void TComPrediction::xPred4DLFMI_LSP9(       Int bitDepth,
 	Int predOrder = 9;
 	Int causalSupportX[predOrder];
 	Int causalSupportY[predOrder];
-	Int availablePixels = getCausalSupportAdaptive( predOrder, 0, causalSupportX, causalSupportY, (Int)currentSAI, (Int)originPixelMI, (Int)firstPixelPos, (Int)mi, (Int)ui4DLFMIStride );
+	Int availablePixels = getCausalSupportAdaptive( predOrder, 0, causalSupportX, causalSupportY, (Int)currentSAI, (Int)originPixelMI, (Int)firstPixelPos, (Int)mi, (Int)ui4DLFMIStride
+#if RM_SCALABLE && RM_RANDOM_ACCESS_PROFILE
+			,currentSAIsSpiralPosX, currentSAIsSpiralPosY, currentRegionRA
+#endif
+	);
 	Int pixelMargin = (predOrder + 1) / 2 + mi; // +mi ext training area
 
 	// Create individual pixel predictor for each pixel
@@ -823,9 +1416,13 @@ Void TComPrediction::xPred4DLFMI_LSP9(       Int bitDepth,
 			Int predictor = 0;
 			if((Int)currentSAIsSpiralPosX + (Int)uiPosX * (Int)mi - pixelMargin + (Int)x*(Int)mi > 0 && (Int)currentSAIsSpiralPosY + (Int)uiPosY * (Int)mi - pixelMargin + (Int)y*(Int)mi > 0) // if ULeft pixel is inside frame
 			{
-				if(currentSAI > availablePixels)
+				if(currentSAI > availablePixels && availablePixels > 0 && currentSAI > predOrder)
 				{
-					lspCoefs = trainRasterLSP(causalSupportX, causalSupportY, (Int)currentSAI, (Int)mi, p4DLFMI, (Int)originPixelMI + x*(Int)mi + (y*(Int)mi)*(Int)ui4DLFMIStride, (Int)firstPixelPos + x*(Int)mi + (y*(Int)mi)*(Int)ui4DLFMIStride, (Int)ui4DLFMIStride, W, H, predOrder, 0);
+					lspCoefs = trainRasterLSP(causalSupportX, causalSupportY, (Int)currentSAI, (Int)mi, p4DLFMI, (Int)originPixelMI + x*(Int)mi + (y*(Int)mi)*(Int)ui4DLFMIStride, (Int)firstPixelPos + x*(Int)mi + (y*(Int)mi)*(Int)ui4DLFMIStride, (Int)ui4DLFMIStride, W, H, predOrder, 0
+#if RM_SCALABLE && RM_RANDOM_ACCESS_PROFILE
+							,currentSAIsSpiralPosX, currentSAIsSpiralPosY, currentRegionRA
+#endif
+					);
 					predictor = LSPM( causalSupportX, causalSupportY, lspCoefs, predOrder, p4DLFMI, (Int)currentSAI, (Int)mi, (Int)firstPixelPos + x*(Int)mi + (y*(Int)mi)*(Int)ui4DLFMIStride, (Int)ui4DLFMIStride, bitDepth);
 				}
 			}
@@ -843,7 +1440,11 @@ Void TComPrediction::xPred4DLFMI_LSPM(       Int bitDepth,
                                           UInt dirMode, TComPicYuv *const pcPic4DLFMI, UInt miSize,
 										  UInt currentSAIsSpiralPosX, UInt currentSAIsSpiralPosY,
 										  UInt totalNumberOfSAIs, UInt currentSAI, UInt uiAbsPartIdxInRaster,
-										  UInt uiPosX, UInt uiPosY, ComponentID compID, Int predOrder )
+										  UInt uiPosX, UInt uiPosY, ComponentID compID, Int predOrder
+#if RM_SCALABLE && RM_RANDOM_ACCESS_PROFILE
+							  , Int currentRegionRA
+#endif
+)
 {
 	Int width=Int(uiWidth);
 	Int height=Int(uiHeight);
@@ -859,7 +1460,11 @@ Void TComPrediction::xPred4DLFMI_LSPM(       Int bitDepth,
 	UInt originPixelMI = originMI + uiPosX * mi + (originMI + uiPosY * mi) * ui4DLFMIStride;
 	Int causalSupportX[predOrder];
 	Int causalSupportY[predOrder];
-	Int availablePixels = getCausalSupportAdaptive( predOrder, 0, causalSupportX, causalSupportY, (Int)currentSAI, (Int)originPixelMI, (Int)firstPixelPos, (Int)mi, (Int)ui4DLFMIStride );
+	Int availablePixels = getCausalSupportAdaptive( predOrder, 0, causalSupportX, causalSupportY, (Int)currentSAI, (Int)originPixelMI, (Int)firstPixelPos, (Int)mi, (Int)ui4DLFMIStride
+#if RM_SCALABLE && RM_RANDOM_ACCESS_PROFILE
+			,currentSAIsSpiralPosX, currentSAIsSpiralPosY, currentRegionRA
+#endif
+	);
 	Int pixelMargin = (predOrder + 1) / 2 + mi; // +mi ext training area
 
 	// Create individual pixel predictor for each pixel
@@ -870,9 +1475,13 @@ Void TComPrediction::xPred4DLFMI_LSPM(       Int bitDepth,
 			Int predictor = 0;
 			if((Int)currentSAIsSpiralPosX + (Int)uiPosX * (Int)mi - pixelMargin + (Int)x*(Int)mi > 0 && (Int)currentSAIsSpiralPosY + (Int)uiPosY * (Int)mi - pixelMargin + (Int)y*(Int)mi > 0) // if ULeft pixel is inside frame
 			{
-				if(currentSAI > availablePixels)
+				if(currentSAI > availablePixels && availablePixels > 0 && currentSAI > predOrder)
 				{
-					lspCoefs = trainRasterLSP(causalSupportX, causalSupportY, (Int)currentSAI, (Int)mi, p4DLFMI, (Int)originPixelMI + x*(Int)mi + (y*(Int)mi)*(Int)ui4DLFMIStride, (Int)firstPixelPos + x*(Int)mi + (y*(Int)mi)*(Int)ui4DLFMIStride, (Int)ui4DLFMIStride, W, H, predOrder, 0);
+					lspCoefs = trainRasterLSP(causalSupportX, causalSupportY, (Int)currentSAI, (Int)mi, p4DLFMI, (Int)originPixelMI + x*(Int)mi + (y*(Int)mi)*(Int)ui4DLFMIStride, (Int)firstPixelPos + x*(Int)mi + (y*(Int)mi)*(Int)ui4DLFMIStride, (Int)ui4DLFMIStride, W, H, predOrder, 0
+#if RM_SCALABLE && RM_RANDOM_ACCESS_PROFILE
+							,currentSAIsSpiralPosX, currentSAIsSpiralPosY, currentRegionRA
+#endif
+					);
 					predictor = LSPM( causalSupportX, causalSupportY, lspCoefs, predOrder, p4DLFMI, (Int)currentSAI, (Int)mi, (Int)firstPixelPos + x*(Int)mi + (y*(Int)mi)*(Int)ui4DLFMIStride, (Int)ui4DLFMIStride, bitDepth);
 				}
 			}
@@ -890,7 +1499,11 @@ Void TComPrediction::xPred4DLFMI_LSP(       Int bitDepth,
                                           UInt dirMode, TComPicYuv *const pcPic4DLFMI, UInt miSize,
 										  UInt currentSAIsSpiralPosX, UInt currentSAIsSpiralPosY,
 										  UInt totalNumberOfSAIs, UInt currentSAI, UInt uiAbsPartIdxInRaster,
-										  UInt uiPosX, UInt uiPosY, ComponentID compID )
+										  UInt uiPosX, UInt uiPosY, ComponentID compID
+#if RM_SCALABLE && RM_RANDOM_ACCESS_PROFILE
+							  ,Int currentRegionRA
+#endif
+)
 {
 	Int width=Int(uiWidth);
 	Int height=Int(uiHeight);
@@ -908,7 +1521,11 @@ Void TComPrediction::xPred4DLFMI_LSP(       Int bitDepth,
 	Int predOrderExt = RM_4DLF_MI_INTRA_MODE_LSP_EXTEND_SUPPORT * RM_4DLF_MI_INTRA_MODE_LSP_EXTEND_SUPPORT_PRED_ORDER;
 	Int causalSupportX[predOrder + predOrderExt];
 	Int causalSupportY[predOrder + predOrderExt];
-	Int availablePixels = getCausalSupportAdaptive( predOrder, predOrderExt, causalSupportX, causalSupportY, (Int)currentSAI, (Int)originPixelMI, (Int)firstPixelPos, (Int)mi, (Int)ui4DLFMIStride );
+	Int availablePixels = getCausalSupportAdaptive( predOrder, predOrderExt, causalSupportX, causalSupportY, (Int)currentSAI, (Int)originPixelMI, (Int)firstPixelPos, (Int)mi, (Int)ui4DLFMIStride
+#if RM_SCALABLE && RM_RANDOM_ACCESS_PROFILE
+			,currentSAIsSpiralPosX, currentSAIsSpiralPosY, currentRegionRA
+#endif
+	);
 	Int pixelMargin = (RM_4DLF_MI_INTRA_MODE_LSP_PRED_ORDER + 1) / 2;
 #if RM_4DLF_MI_INTRA_MODE_LSP_EXTEND_SUPPORT
 	pixelMargin += mi;
@@ -932,7 +1549,7 @@ Void TComPrediction::xPred4DLFMI_LSP(       Int bitDepth,
 			Int predictor = 0;
 			if((Int)currentSAIsSpiralPosX + (Int)uiPosX * (Int)mi - pixelMargin + (Int)x*(Int)mi > 0 && (Int)currentSAIsSpiralPosY + (Int)uiPosY * (Int)mi - pixelMargin + (Int)y*(Int)mi > 0) // if ULeft pixel is inside frame
 			{
-				if(currentSAI > availablePixels)
+				if(currentSAI > availablePixels && availablePixels > 0 && currentSAI > predOrder)
 				{
 #if RM_4DLF_MI_INTRA_MODE_LSP_EXTEND_SUPPORT_SEARCH
 					for(Int m=0; m<predOrder + predOrderExt; m++) // restore the support to the default for each pixel
@@ -943,7 +1560,11 @@ Void TComPrediction::xPred4DLFMI_LSP(       Int bitDepth,
 					if(currentSAI > RM_4DLF_MI_INTRA_MODE_LSP_EXTEND_SUPPORT_SEARCH_TEMPLATE_SIZE)
 						extendedSupportSearch(p4DLFMI, predOrder, predOrderExt, causalSupportX, causalSupportY, (Int)currentSAI, (Int)originPixelMI, (Int)firstPixelPos, (Int)mi, (Int)ui4DLFMIStride );
 #endif
-					lspCoefs = trainRasterLSP(causalSupportX, causalSupportY, (Int)currentSAI, (Int)mi, p4DLFMI, (Int)originPixelMI + x*(Int)mi + (y*(Int)mi)*(Int)ui4DLFMIStride, (Int)firstPixelPos + x*(Int)mi + (y*(Int)mi)*(Int)ui4DLFMIStride, (Int)ui4DLFMIStride, W, H, predOrder, predOrderExt);
+					lspCoefs = trainRasterLSP(causalSupportX, causalSupportY, (Int)currentSAI, (Int)mi, p4DLFMI, (Int)originPixelMI + x*(Int)mi + (y*(Int)mi)*(Int)ui4DLFMIStride, (Int)firstPixelPos + x*(Int)mi + (y*(Int)mi)*(Int)ui4DLFMIStride, (Int)ui4DLFMIStride, W, H, predOrder, predOrderExt
+#if RM_SCALABLE && RM_RANDOM_ACCESS_PROFILE
+							,currentSAIsSpiralPosX, currentSAIsSpiralPosY, currentRegionRA
+#endif
+					);
 					predictor = LSPM( causalSupportX, causalSupportY, lspCoefs, predOrder + predOrderExt, p4DLFMI, (Int)currentSAI, (Int)mi, (Int)firstPixelPos + x*(Int)mi + (y*(Int)mi)*(Int)ui4DLFMIStride, (Int)ui4DLFMIStride, bitDepth);
 				}
 			}
@@ -954,7 +1575,11 @@ Void TComPrediction::xPred4DLFMI_LSP(       Int bitDepth,
 	}
 }
 
-Double* TComPrediction::trainRasterLSP( Int* causalSupportX, Int* causalSupportY, Int current_SAI, Int miSize, Pel* p4DLFMI, Int const origin_pixel_pos, Int const current_pixel_pos, Int const stride, Int W, Int H, Int predOrder, Int predOrderExt)
+Double* TComPrediction::trainRasterLSP( Int* causalSupportX, Int* causalSupportY, Int current_SAI, Int miSize, Pel* p4DLFMI, Int const origin_pixel_pos, Int const current_pixel_pos, Int const stride, Int W, Int H, Int predOrder, Int predOrderExt
+#if RM_SCALABLE && RM_RANDOM_ACCESS_PROFILE
+							  ,Int currentSAIsSpiralPosX, Int currentSAIsSpiralPosY, Int currentRegionRA
+#endif
+)
 {
 	Int dir_idx = 0;
 	//char current_direction[] = "RDLU";
@@ -1005,7 +1630,11 @@ Double* TComPrediction::trainRasterLSP( Int* causalSupportX, Int* causalSupportY
 				pixelOffset = I + J*stride;
 				for(Int m=0; m<predOrder + predOrderExt; m++)
 				{
+#if !(RM_SCALABLE && RM_RANDOM_ACCESS_PROFILE)
 					C[validIdx][m] 	= p4DLFMI[origin_pixel_pos + miOffset[mi] + pixelOffset + causalSupportX[m] + causalSupportY[m]*stride];
+#else
+					C[validIdx][m] 	=  xCheckIfInTheSameRegion(currentRegionRA, current_SAI, currentSAIsSpiralPosX + causalSupportX[m], currentSAIsSpiralPosY + causalSupportY[m]) ? p4DLFMI[origin_pixel_pos + miOffset[mi] + pixelOffset + causalSupportX[m] + causalSupportY[m]*stride] : 0;
+#endif
 					if(!C[validIdx][m])
 					{
 						supportIncomplete = true;
@@ -1608,7 +2237,11 @@ Void TComPrediction::lubksb(Double **a, Int n, Int *indx, Double b[])
 #endif
 
 #if RM_4DLF_MI_BUFFER
-Int TComPrediction::getCausalSupportAdaptive( Int M, Int MExt, Int* causalSupportX, Int* causalSupportY, Int currentSAI, Int origin_pixel_pos_MI, Int current_pixel_pos, Int mi, Int stride )
+Int TComPrediction::getCausalSupportAdaptive( Int M, Int MExt, Int* causalSupportX, Int* causalSupportY, Int currentSAI, Int origin_pixel_pos_MI, Int current_pixel_pos, Int mi, Int stride
+#if RM_SCALABLE && RM_RANDOM_ACCESS_PROFILE
+							  ,Int currentSAIsSpiralPosX, Int currentSAIsSpiralPosY, Int currentRegionRA
+#endif
+)
 {
 	Int numPixelsMI = mi*mi;
 	Int l1Distance[numPixelsMI];
@@ -1665,12 +2298,20 @@ Int TComPrediction::getCausalSupportAdaptive( Int M, Int MExt, Int* causalSuppor
 			for(Int x=-spiralBorderOffset; x<=spiralBorderOffset; x++)
 			{
 				if(l1Distance[(spiralBorderOffset+y)*mi + spiralBorderOffset+x] >= 0 &&
-				   l1Distance[(spiralBorderOffset+y)*mi + spiralBorderOffset+x] < minValue)
+				   l1Distance[(spiralBorderOffset+y)*mi + spiralBorderOffset+x] < minValue &&
+				   !(x == y && x == 0))
 				{
+#if RM_SCALABLE && RM_RANDOM_ACCESS_PROFILE
+					if(xCheckIfInTheSameRegion(currentRegionRA, currentSAI, currentSAIsSpiralPosX + x, currentSAIsSpiralPosY + y))
+					{
+#endif
 					atLeastOneValidPos = true;
 					minValue = l1Distance[(spiralBorderOffset+y)*mi + spiralBorderOffset+x];
 					minValuePosY = y - currentPixelPosY;
 					minValuePosX = x - currentPixelPosX;
+#if RM_SCALABLE && RM_RANDOM_ACCESS_PROFILE
+					}
+#endif
 				}
 			}
 		}
@@ -1703,7 +2344,8 @@ Void TComPrediction::extendedSupportSearch( Pel* p4DLFMI, Int M, Int MExt, Int* 
 	Int templateSupportX[templateSize];
 	Int templateSupportY[templateSize];
 	getCausalSupportAdaptive( templateSize, 0, templateSupportX, templateSupportY, currentSAI, origin_pixel_pos_MI, current_pixel_pos, mi, stride );
-
+#if RM_SCALABLE && RM_RANDOM_ACCESS_PROFILE
+#endif
 	Int miOffsetX[8], miOffsetY[8];
 	Int maxDisp = RM_4DLF_MI_INTRA_MODE_LSP_EXTEND_SUPPORT_SEARCH_WINDOW;
 	Int extendedSupportMIs = RM_4DLF_MI_INTRA_MODE_LSP_EXTEND_SUPPORT;
@@ -1761,7 +2403,11 @@ Void TComPrediction::extendedSupportSearch( Pel* p4DLFMI, Int M, Int MExt, Int* 
 }
 #endif
 
-Void TComPrediction::getCausalSupportFromSpiral_LOCO_I( Int* a, Int* b, Int* c, Int current_SAI, Int total_number_of_SAIS, Pel* p4DLFMI, Int const current_pixel_pos, Int const stride )
+Void TComPrediction::getCausalSupportFromSpiral_LOCO_I( Int* a, Int* b, Int* c, Int current_SAI, Int total_number_of_SAIS, Pel* p4DLFMI, Int const current_pixel_pos, Int const stride
+#if RM_SCALABLE && RM_RANDOM_ACCESS_PROFILE
+							  ,Int currentSAIsSpiralPosX, Int currentSAIsSpiralPosY, Int currentRegionRA
+#endif
+)
 {
 	Int A=0, B=0, C=0;
 	Int dir_idx = 0;
@@ -1786,6 +2432,7 @@ Void TComPrediction::getCausalSupportFromSpiral_LOCO_I( Int* a, Int* b, Int* c, 
 #if RM_SCALABLE
 		dir_idx = spiralScalable(current_SAI, sqrt(total_number_of_SAIS), &x, &y);
 #endif
+#if !(RM_SCALABLE && RM_RANDOM_ACCESS_PROFILE)
 		if(current_direction[dir_idx] == 'R')
 		{
 			A = p4DLFMI[current_pixel_pos - 1]; 			// LEFT
@@ -1810,6 +2457,32 @@ Void TComPrediction::getCausalSupportFromSpiral_LOCO_I( Int* a, Int* b, Int* c, 
 			C = p4DLFMI[current_pixel_pos + 1 + stride]; // RIGHT DOWN
 			A = p4DLFMI[current_pixel_pos + 1] ? p4DLFMI[current_pixel_pos + 1] : C; // RIGHT (may not be available)
 		}
+#else
+		if(current_direction[dir_idx] == 'R')
+		{
+			A = xCheckIfInTheSameRegion(currentRegionRA, current_SAI, currentSAIsSpiralPosX - 1, currentSAIsSpiralPosY) ? p4DLFMI[current_pixel_pos - 1] : NOT_VALID;
+			C = xCheckIfInTheSameRegion(currentRegionRA, current_SAI, currentSAIsSpiralPosX - 1, currentSAIsSpiralPosY + 1) ? p4DLFMI[current_pixel_pos - 1 + stride] : NOT_VALID;
+			B = xCheckIfInTheSameRegion(currentRegionRA, current_SAI, currentSAIsSpiralPosX, currentSAIsSpiralPosY + 1) ? (p4DLFMI[current_pixel_pos + stride] ? p4DLFMI[current_pixel_pos + stride] : C) : NOT_VALID;
+		}
+		else if(current_direction[dir_idx] == 'D')
+		{
+			B = xCheckIfInTheSameRegion(currentRegionRA, current_SAI, currentSAIsSpiralPosX, currentSAIsSpiralPosY - 1) ? p4DLFMI[current_pixel_pos - stride] : NOT_VALID; 		// UP
+			C = xCheckIfInTheSameRegion(currentRegionRA, current_SAI, currentSAIsSpiralPosX - 1, currentSAIsSpiralPosY - 1) ? p4DLFMI[current_pixel_pos - 1 - stride] : NOT_VALID;	// UP LEFT
+			A = xCheckIfInTheSameRegion(currentRegionRA, current_SAI, currentSAIsSpiralPosX - 1, currentSAIsSpiralPosY) ? (p4DLFMI[current_pixel_pos - 1] ? p4DLFMI[current_pixel_pos - 1] : C) : NOT_VALID; // LEFT (may not be available)
+		}
+		else if(current_direction[dir_idx] == 'L')
+		{
+			A = xCheckIfInTheSameRegion(currentRegionRA, current_SAI, currentSAIsSpiralPosX + 1, currentSAIsSpiralPosY) ? p4DLFMI[current_pixel_pos + 1] : NOT_VALID; // RIGHT
+			C = xCheckIfInTheSameRegion(currentRegionRA, current_SAI, currentSAIsSpiralPosX + 1, currentSAIsSpiralPosY - 1) ? p4DLFMI[current_pixel_pos + 1 - stride] : NOT_VALID; // UP RIGHT
+			B = xCheckIfInTheSameRegion(currentRegionRA, current_SAI, currentSAIsSpiralPosX, currentSAIsSpiralPosY - 1) ? (p4DLFMI[current_pixel_pos - stride] ? p4DLFMI[current_pixel_pos - stride] : C) : NOT_VALID; // UP (may not be available)
+		}
+		else
+		{
+			B = xCheckIfInTheSameRegion(currentRegionRA, current_SAI, currentSAIsSpiralPosX, currentSAIsSpiralPosY + 1) ? p4DLFMI[current_pixel_pos + stride] : NOT_VALID; // DOWN
+			C = xCheckIfInTheSameRegion(currentRegionRA, current_SAI, currentSAIsSpiralPosX + 1, currentSAIsSpiralPosY + 1) ? p4DLFMI[current_pixel_pos + 1 + stride] : NOT_VALID; // RIGHT DOWN
+			A = xCheckIfInTheSameRegion(currentRegionRA, current_SAI, currentSAIsSpiralPosX + 1, currentSAIsSpiralPosY) ? (p4DLFMI[current_pixel_pos + 1] ? p4DLFMI[current_pixel_pos + 1] : C) : NOT_VALID; // RIGHT (may not be available)
+		}
+#endif
 	}
 
 	*a = A;
@@ -1828,7 +2501,11 @@ Int TComPrediction::LOCO_I( Int a, Int b, Int c )
 }
 
 
-Void TComPrediction::getCausalSupportFromSpiral_GAP( Int* w, Int* ww, Int* n, Int* nn, Int* nw, Int* ne, Int *nne, Int current_SAI, Int total_number_of_SAIS, Pel* p4DLFMI, Int const current_pixel_pos, Int const stride )
+Void TComPrediction::getCausalSupportFromSpiral_GAP( Int* w, Int* ww, Int* n, Int* nn, Int* nw, Int* ne, Int *nne, Int current_SAI, Int total_number_of_SAIS, Pel* p4DLFMI, Int const current_pixel_pos, Int const stride
+#if RM_SCALABLE && RM_RANDOM_ACCESS_PROFILE
+		  ,Int currentSAIsSpiralPosX, Int currentSAIsSpiralPosY, Int currentRegionRA
+#endif
+)
 {
 	Int W=NOT_VALID, WW=NOT_VALID, N=NOT_VALID, NN=NOT_VALID, NW=NOT_VALID, NE=NOT_VALID, NNE=NOT_VALID;
 	Int dir_idx = 0;
@@ -1851,10 +2528,11 @@ Void TComPrediction::getCausalSupportFromSpiral_GAP( Int* w, Int* ww, Int* n, In
 #if RM_SCALABLE
 		dir_idx = spiralScalable(current_SAI, sqrt(total_number_of_SAIS), &x, &y);
 #endif
+#if !(RM_SCALABLE && RM_RANDOM_ACCESS_PROFILE)
 		if(current_direction[dir_idx] == 'R')
 		{
 			W = p4DLFMI[current_pixel_pos + 1]; // RIGHT
-			WW = p4DLFMI[current_pixel_pos + 1]; // 2RIGHT
+			WW = p4DLFMI[current_pixel_pos + 2]; // 2RIGHT
 			N = p4DLFMI[current_pixel_pos + stride]; // DOWN
 			NN = p4DLFMI[current_pixel_pos + 2*stride]; // 2DOWN
 			NW = p4DLFMI[current_pixel_pos + 1 + stride]; // DOWN RIGHT
@@ -1891,6 +2569,48 @@ Void TComPrediction::getCausalSupportFromSpiral_GAP( Int* w, Int* ww, Int* n, In
 			NE = p4DLFMI[current_pixel_pos + 1 + stride]; // DOWN RIGHT
 			NNE = p4DLFMI[current_pixel_pos + 2 + stride]; // DOWN 2RIGHT
 		}
+#else
+		if(current_direction[dir_idx] == 'R')
+		{
+			W = xCheckIfInTheSameRegion(currentRegionRA, current_SAI, currentSAIsSpiralPosX + 1, currentSAIsSpiralPosY) ? p4DLFMI[current_pixel_pos + 1] : NOT_VALID; // RIGHT
+			WW = xCheckIfInTheSameRegion(currentRegionRA, current_SAI, currentSAIsSpiralPosX + 2, currentSAIsSpiralPosY) ? p4DLFMI[current_pixel_pos + 2] : NOT_VALID; // 2RIGHT
+			N = xCheckIfInTheSameRegion(currentRegionRA, current_SAI, currentSAIsSpiralPosX, currentSAIsSpiralPosY + 1) ? p4DLFMI[current_pixel_pos + stride] : NOT_VALID; // DOWN
+			NN = xCheckIfInTheSameRegion(currentRegionRA, current_SAI, currentSAIsSpiralPosX, currentSAIsSpiralPosY + 2) ? p4DLFMI[current_pixel_pos + 2*stride] : NOT_VALID; // 2DOWN
+			NW = xCheckIfInTheSameRegion(currentRegionRA, current_SAI, currentSAIsSpiralPosX + 1, currentSAIsSpiralPosY + 1) ? p4DLFMI[current_pixel_pos + 1 + stride] : NOT_VALID; // DOWN RIGHT
+			NE = xCheckIfInTheSameRegion(currentRegionRA, current_SAI, currentSAIsSpiralPosX - 1, currentSAIsSpiralPosY + 1) ? p4DLFMI[current_pixel_pos - 1 + stride] : NOT_VALID; // DOWN LEFT
+			NNE = xCheckIfInTheSameRegion(currentRegionRA, current_SAI, currentSAIsSpiralPosX - 1, currentSAIsSpiralPosY + 2) ? p4DLFMI[current_pixel_pos - 1 + 2*stride] : NOT_VALID; // 2DOWN LEFT
+		}
+		else if(current_direction[dir_idx] == 'D')
+		{
+			W = xCheckIfInTheSameRegion(currentRegionRA, current_SAI, currentSAIsSpiralPosX, currentSAIsSpiralPosY + 1) ? p4DLFMI[current_pixel_pos + stride] : NOT_VALID; // DOWN
+			WW = xCheckIfInTheSameRegion(currentRegionRA, current_SAI, currentSAIsSpiralPosX, currentSAIsSpiralPosY + 2) ? p4DLFMI[current_pixel_pos + 2*stride] : NOT_VALID; // 2DOWN
+			N = xCheckIfInTheSameRegion(currentRegionRA, current_SAI, currentSAIsSpiralPosX - 1, currentSAIsSpiralPosY) ? p4DLFMI[current_pixel_pos - 1] : NOT_VALID; // LEFT
+			NN = xCheckIfInTheSameRegion(currentRegionRA, current_SAI, currentSAIsSpiralPosX - 2, currentSAIsSpiralPosY) ? p4DLFMI[current_pixel_pos - 2] : NOT_VALID; // 2LEFT
+			NW = xCheckIfInTheSameRegion(currentRegionRA, current_SAI, currentSAIsSpiralPosX - 1, currentSAIsSpiralPosY + 1) ? p4DLFMI[current_pixel_pos - 1 + stride] : NOT_VALID; // DOWN LEFT
+			NE = xCheckIfInTheSameRegion(currentRegionRA, current_SAI, currentSAIsSpiralPosX - 1, currentSAIsSpiralPosY - 1) ? p4DLFMI[current_pixel_pos - 1 - stride] : NOT_VALID; // UP LEFT
+			NNE = xCheckIfInTheSameRegion(currentRegionRA, current_SAI, currentSAIsSpiralPosX - 2, currentSAIsSpiralPosY - 1) ? p4DLFMI[current_pixel_pos - 2 - stride] : NOT_VALID; // UP 2LEFT
+		}
+		else if(current_direction[dir_idx] == 'L')
+		{
+			W = xCheckIfInTheSameRegion(currentRegionRA, current_SAI, currentSAIsSpiralPosX - 1, currentSAIsSpiralPosY) ? p4DLFMI[current_pixel_pos - 1] : NOT_VALID; // LEFT
+			WW = xCheckIfInTheSameRegion(currentRegionRA, current_SAI, currentSAIsSpiralPosX - 2, currentSAIsSpiralPosY) ? p4DLFMI[current_pixel_pos - 2] : NOT_VALID; // 2LEFT
+			N = xCheckIfInTheSameRegion(currentRegionRA, current_SAI, currentSAIsSpiralPosX, currentSAIsSpiralPosY - 1) ? p4DLFMI[current_pixel_pos - stride] : NOT_VALID; // UP
+			NN = xCheckIfInTheSameRegion(currentRegionRA, current_SAI, currentSAIsSpiralPosX, currentSAIsSpiralPosY - 2) ? p4DLFMI[current_pixel_pos - 2*stride] : NOT_VALID; // 2UP
+			NW = xCheckIfInTheSameRegion(currentRegionRA, current_SAI, currentSAIsSpiralPosX - 1, currentSAIsSpiralPosY - 1) ? p4DLFMI[current_pixel_pos - 1 - stride] : NOT_VALID; // UP LEFT
+			NE = xCheckIfInTheSameRegion(currentRegionRA, current_SAI, currentSAIsSpiralPosX + 1, currentSAIsSpiralPosY - 1) ? p4DLFMI[current_pixel_pos + 1 - stride] : NOT_VALID; // UP RIGHT
+			NNE = xCheckIfInTheSameRegion(currentRegionRA, current_SAI, currentSAIsSpiralPosX + 1, currentSAIsSpiralPosY - 2) ? p4DLFMI[current_pixel_pos + 1 - 2*stride] : NOT_VALID; // 2UP RIGHT
+		}
+		else
+		{
+			W = xCheckIfInTheSameRegion(currentRegionRA, current_SAI, currentSAIsSpiralPosX, currentSAIsSpiralPosY - 1) ? p4DLFMI[current_pixel_pos - stride] : NOT_VALID; // UP
+			WW = xCheckIfInTheSameRegion(currentRegionRA, current_SAI, currentSAIsSpiralPosX, currentSAIsSpiralPosY - 2) ? p4DLFMI[current_pixel_pos - 2*stride] : NOT_VALID; // 2UP
+			N = xCheckIfInTheSameRegion(currentRegionRA, current_SAI, currentSAIsSpiralPosX + 1, currentSAIsSpiralPosY) ? p4DLFMI[current_pixel_pos + 1] : NOT_VALID; // RIGHT
+			NN = xCheckIfInTheSameRegion(currentRegionRA, current_SAI, currentSAIsSpiralPosX + 2, currentSAIsSpiralPosY) ? p4DLFMI[current_pixel_pos + 2] : NOT_VALID; // 2RIGHT
+			NW = xCheckIfInTheSameRegion(currentRegionRA, current_SAI, currentSAIsSpiralPosX + 1, currentSAIsSpiralPosY - 1) ? p4DLFMI[current_pixel_pos + 1 - stride] : NOT_VALID; // UP RIGHT
+			NE = xCheckIfInTheSameRegion(currentRegionRA, current_SAI, currentSAIsSpiralPosX + 1, currentSAIsSpiralPosY + 1) ? p4DLFMI[current_pixel_pos + 1 + stride] : NOT_VALID; // DOWN RIGHT
+			NNE = xCheckIfInTheSameRegion(currentRegionRA, current_SAI, currentSAIsSpiralPosX + 2, currentSAIsSpiralPosY + 1) ? p4DLFMI[current_pixel_pos + 2 + stride] : NOT_VALID; // DOWN 2RIGHT
+		}
+#endif
 	}
 	// making sure all the pixels have an assigned value
 	if( !NNE )
@@ -1919,7 +2639,7 @@ Void TComPrediction::getCausalSupportFromSpiral_GAP( Int* w, Int* ww, Int* n, In
 	}
 	if(current_SAI >= 9)
 		if(W == NOT_VALID || WW == NOT_VALID || N == NOT_VALID || NN == NOT_VALID || NW == NOT_VALID ||	NE == NOT_VALID || NNE == NOT_VALID)
-			cout << "at least one pixel is not available" << endl;
+			//cout << "at least one pixel is not available" << endl;
 
 	*w = W;
 	*ww = WW;
@@ -1955,7 +2675,11 @@ Int TComPrediction::GAP( Int w, Int ww, Int n, Int nn, Int nw, Int ne, Int nne )
 	}
 }
 
-Void TComPrediction::getCausalSupportFromSpiral_AGSP( Int* w, Int* ww, Int* n, Int* nn, Int* nw, Int* ne, Int *nne, Int* nww, Int* nnw, Int current_SAI, Int total_number_of_SAIS, Pel* p4DLFMI, Int const current_pixel_pos, Int const stride )
+Void TComPrediction::getCausalSupportFromSpiral_AGSP( Int* w, Int* ww, Int* n, Int* nn, Int* nw, Int* ne, Int *nne, Int* nww, Int* nnw, Int current_SAI, Int total_number_of_SAIS, Pel* p4DLFMI, Int const current_pixel_pos, Int const stride
+#if RM_SCALABLE && RM_RANDOM_ACCESS_PROFILE
+		  ,Int currentSAIsSpiralPosX, Int currentSAIsSpiralPosY, Int currentRegionRA
+#endif
+)
 {
 	Int W=NOT_VALID, WW=NOT_VALID, N=NOT_VALID, NN=NOT_VALID, NW=NOT_VALID, NE=NOT_VALID, NNE=NOT_VALID, NWW=NOT_VALID, NNW=NOT_VALID;
 	Int dir_idx = 0;
@@ -1980,6 +2704,7 @@ Void TComPrediction::getCausalSupportFromSpiral_AGSP( Int* w, Int* ww, Int* n, I
 #if RM_SCALABLE
 		dir_idx = spiralScalable(current_SAI, sqrt(total_number_of_SAIS), &x, &y);
 #endif
+#if !(RM_SCALABLE && RM_RANDOM_ACCESS_PROFILE)
 		if(current_direction[dir_idx] == 'R')
 		{
 			W = p4DLFMI[current_pixel_pos + 1]; // RIGHT
@@ -2028,6 +2753,57 @@ Void TComPrediction::getCausalSupportFromSpiral_AGSP( Int* w, Int* ww, Int* n, I
 			NWW = p4DLFMI[current_pixel_pos + 1 - 2*stride]; // 2UP RIGHT
 			NNW = p4DLFMI[current_pixel_pos + 2 - stride];; // UP 2RIGHT
 		}
+#else
+		// xCheckIfInTheSameRegion(currentRegionRA, current_SAI, currentSAIsSpiralPosX, currentSAIsSpiralPosY) ?
+		if(current_direction[dir_idx] == 'R')
+		{
+			W = xCheckIfInTheSameRegion(currentRegionRA, current_SAI, currentSAIsSpiralPosX + 1, currentSAIsSpiralPosY) ? p4DLFMI[current_pixel_pos + 1] : NOT_VALID; // RIGHT
+			WW = xCheckIfInTheSameRegion(currentRegionRA, current_SAI, currentSAIsSpiralPosX + 2, currentSAIsSpiralPosY) ? p4DLFMI[current_pixel_pos + 2] : NOT_VALID; // 2RIGHT
+			N = xCheckIfInTheSameRegion(currentRegionRA, current_SAI, currentSAIsSpiralPosX, currentSAIsSpiralPosY + 1) ? p4DLFMI[current_pixel_pos + stride] : NOT_VALID; // DOWN
+			NN = xCheckIfInTheSameRegion(currentRegionRA, current_SAI, currentSAIsSpiralPosX, currentSAIsSpiralPosY + 2) ? p4DLFMI[current_pixel_pos + 2*stride] : NOT_VALID; // 2DOWN
+			NW = xCheckIfInTheSameRegion(currentRegionRA, current_SAI, currentSAIsSpiralPosX + 1, currentSAIsSpiralPosY + 1) ? p4DLFMI[current_pixel_pos + 1 + stride] : NOT_VALID; // DOWN RIGHT
+			NE = xCheckIfInTheSameRegion(currentRegionRA, current_SAI, currentSAIsSpiralPosX - 1, currentSAIsSpiralPosY + 1) ? p4DLFMI[current_pixel_pos - 1 + stride] : NOT_VALID; // DOWN LEFT
+			NNE = xCheckIfInTheSameRegion(currentRegionRA, current_SAI, currentSAIsSpiralPosX - 1, currentSAIsSpiralPosY + 2) ? p4DLFMI[current_pixel_pos - 1 + 2*stride] : NOT_VALID; // 2DOWN LEFT
+			NWW = xCheckIfInTheSameRegion(currentRegionRA, current_SAI, currentSAIsSpiralPosX + 2, currentSAIsSpiralPosY + 1) ? p4DLFMI[current_pixel_pos + 2 + stride] : NOT_VALID; // DOWN 2RIGHT
+			NNW = xCheckIfInTheSameRegion(currentRegionRA, current_SAI, currentSAIsSpiralPosX + 1, currentSAIsSpiralPosY + 2) ? p4DLFMI[current_pixel_pos + 1 + 2*stride] : NOT_VALID; // 2DOWN RIGHT
+		}
+		else if(current_direction[dir_idx] == 'D')
+		{
+			W = xCheckIfInTheSameRegion(currentRegionRA, current_SAI, currentSAIsSpiralPosX, currentSAIsSpiralPosY + 1) ? p4DLFMI[current_pixel_pos + stride] : NOT_VALID; // DOWN
+			WW = xCheckIfInTheSameRegion(currentRegionRA, current_SAI, currentSAIsSpiralPosX, currentSAIsSpiralPosY + 2) ? p4DLFMI[current_pixel_pos + 2*stride] : NOT_VALID; // 2DOWN
+			N = xCheckIfInTheSameRegion(currentRegionRA, current_SAI, currentSAIsSpiralPosX - 1, currentSAIsSpiralPosY) ? p4DLFMI[current_pixel_pos - 1] : NOT_VALID; // LEFT
+			NN = xCheckIfInTheSameRegion(currentRegionRA, current_SAI, currentSAIsSpiralPosX - 2, currentSAIsSpiralPosY) ? p4DLFMI[current_pixel_pos - 2] : NOT_VALID; // 2LEFT
+			NW = xCheckIfInTheSameRegion(currentRegionRA, current_SAI, currentSAIsSpiralPosX - 1, currentSAIsSpiralPosY + 1) ? p4DLFMI[current_pixel_pos - 1 + stride] : NOT_VALID; // DOWN LEFT
+			NE = xCheckIfInTheSameRegion(currentRegionRA, current_SAI, currentSAIsSpiralPosX - 1, currentSAIsSpiralPosY - 1) ? p4DLFMI[current_pixel_pos - 1 - stride] : NOT_VALID; // UP LEFT
+			NNE = xCheckIfInTheSameRegion(currentRegionRA, current_SAI, currentSAIsSpiralPosX - 2, currentSAIsSpiralPosY - 1) ? p4DLFMI[current_pixel_pos - 2 - stride] : NOT_VALID; // UP 2LEFT
+			NWW = xCheckIfInTheSameRegion(currentRegionRA, current_SAI, currentSAIsSpiralPosX - 1, currentSAIsSpiralPosY + 2) ? p4DLFMI[current_pixel_pos - 1 + 2*stride] : NOT_VALID; // 2DOWN LEFT
+			NNW = xCheckIfInTheSameRegion(currentRegionRA, current_SAI, currentSAIsSpiralPosX - 2, currentSAIsSpiralPosY + 1) ? p4DLFMI[current_pixel_pos - 2 + stride] : NOT_VALID; // DOWN 2LEFT
+		}
+		else if(current_direction[dir_idx] == 'L')
+		{
+			W = xCheckIfInTheSameRegion(currentRegionRA, current_SAI, currentSAIsSpiralPosX - 1, currentSAIsSpiralPosY) ? p4DLFMI[current_pixel_pos - 1] : NOT_VALID; // LEFT
+			WW = xCheckIfInTheSameRegion(currentRegionRA, current_SAI, currentSAIsSpiralPosX - 2, currentSAIsSpiralPosY) ? p4DLFMI[current_pixel_pos - 2] : NOT_VALID; // 2LEFT
+			N = xCheckIfInTheSameRegion(currentRegionRA, current_SAI, currentSAIsSpiralPosX, currentSAIsSpiralPosY - 1) ? p4DLFMI[current_pixel_pos - stride] : NOT_VALID; // UP
+			NN = xCheckIfInTheSameRegion(currentRegionRA, current_SAI, currentSAIsSpiralPosX, currentSAIsSpiralPosY - 2) ? p4DLFMI[current_pixel_pos - 2*stride] : NOT_VALID; // 2UP
+			NW = xCheckIfInTheSameRegion(currentRegionRA, current_SAI, currentSAIsSpiralPosX - 1, currentSAIsSpiralPosY - 1) ? p4DLFMI[current_pixel_pos - 1 - stride] : NOT_VALID; // UP LEFT
+			NE = xCheckIfInTheSameRegion(currentRegionRA, current_SAI, currentSAIsSpiralPosX + 1, currentSAIsSpiralPosY - 1) ? p4DLFMI[current_pixel_pos + 1 - stride] : NOT_VALID; // UP RIGHT
+			NNE = xCheckIfInTheSameRegion(currentRegionRA, current_SAI, currentSAIsSpiralPosX + 1, currentSAIsSpiralPosY - 2) ? p4DLFMI[current_pixel_pos + 1 - 2*stride] : NOT_VALID; // 2UP RIGHT
+			NWW = xCheckIfInTheSameRegion(currentRegionRA, current_SAI, currentSAIsSpiralPosX - 2, currentSAIsSpiralPosY - 1) ? p4DLFMI[current_pixel_pos - 2 - stride] : NOT_VALID; // UP 2LEFT
+			NNW = xCheckIfInTheSameRegion(currentRegionRA, current_SAI, currentSAIsSpiralPosX - 1, currentSAIsSpiralPosY - 2) ? p4DLFMI[current_pixel_pos - 1 - 2*stride] : NOT_VALID;// 2UP LEFT
+		}
+		else
+		{
+			W = xCheckIfInTheSameRegion(currentRegionRA, current_SAI, currentSAIsSpiralPosX, currentSAIsSpiralPosY - 1) ? p4DLFMI[current_pixel_pos - stride] : NOT_VALID; // UP
+			WW = xCheckIfInTheSameRegion(currentRegionRA, current_SAI, currentSAIsSpiralPosX, currentSAIsSpiralPosY - 2) ? p4DLFMI[current_pixel_pos - 2*stride] : NOT_VALID; // 2UP
+			N = xCheckIfInTheSameRegion(currentRegionRA, current_SAI, currentSAIsSpiralPosX + 1, currentSAIsSpiralPosY) ? p4DLFMI[current_pixel_pos + 1] : NOT_VALID; // RIGHT
+			NN = xCheckIfInTheSameRegion(currentRegionRA, current_SAI, currentSAIsSpiralPosX + 2, currentSAIsSpiralPosY) ? p4DLFMI[current_pixel_pos + 2] : NOT_VALID; // 2RIGHT
+			NW = xCheckIfInTheSameRegion(currentRegionRA, current_SAI, currentSAIsSpiralPosX + 1, currentSAIsSpiralPosY - 1) ? p4DLFMI[current_pixel_pos + 1 - stride] : NOT_VALID; // UP RIGHT
+			NE = xCheckIfInTheSameRegion(currentRegionRA, current_SAI, currentSAIsSpiralPosX + 1, currentSAIsSpiralPosY + 1) ? p4DLFMI[current_pixel_pos + 1 + stride] : NOT_VALID; // DOWN RIGHT
+			NNE = xCheckIfInTheSameRegion(currentRegionRA, current_SAI, currentSAIsSpiralPosX + 2, currentSAIsSpiralPosY + 1) ? p4DLFMI[current_pixel_pos + 2 + stride] : NOT_VALID; // DOWN 2RIGHT
+			NWW = xCheckIfInTheSameRegion(currentRegionRA, current_SAI, currentSAIsSpiralPosX + 1, currentSAIsSpiralPosY - 2) ? p4DLFMI[current_pixel_pos + 1 - 2*stride] : NOT_VALID; // 2UP RIGHT
+			NNW = xCheckIfInTheSameRegion(currentRegionRA, current_SAI, currentSAIsSpiralPosX + 2, currentSAIsSpiralPosY - 1) ? p4DLFMI[current_pixel_pos + 2 - stride] : NOT_VALID; // UP 2RIGHT
+		}
+#endif
 	}
 	// making sure all the pixels have an assigned value
 	if( !NNE )
@@ -2070,7 +2846,7 @@ Void TComPrediction::getCausalSupportFromSpiral_AGSP( Int* w, Int* ww, Int* n, I
 	}
 	if(current_SAI >= 9)
 		if(W == NOT_VALID || WW == NOT_VALID || N == NOT_VALID || NN == NOT_VALID || NW == NOT_VALID ||	NE == NOT_VALID || NNE == NOT_VALID)
-			cout << "at least one pixel is not available" << endl;
+			//cout << "at least one pixel is not available" << endl;
 
 	*w = W;
 	*ww = WW;
@@ -2450,16 +3226,16 @@ Void TComPrediction::predIntraAng( const ComponentID compID, UInt uiDirMode, Pel
     	  miSize = 3;
     	  pcPic4DLFMI = pcPic->getPicYuv4DLFMISCL3();
     	  spiralScalable(currentSAI, pcPic->getMicroImageSize(), &currentSAIsSpiralPosX, &currentSAIsSpiralPosY);
-    	  //currentSAIsSpiralPosX = floor(currentSAIsSpiralPosX/4);
-    	  //currentSAIsSpiralPosY = floor(currentSAIsSpiralPosY/4);
+    	  currentSAIsSpiralPosX = floor(currentSAIsSpiralPosX/4);
+    	  currentSAIsSpiralPosY = floor(currentSAIsSpiralPosY/4);
       }
       else if(currentSAI >= 9 && currentSAI <= 44 )
       {
     	  miSize = 7;
     	  pcPic4DLFMI = pcPic->getPicYuv4DLFMISCL7();
     	  spiralScalable(currentSAI, pcPic->getMicroImageSize(), &currentSAIsSpiralPosX, &currentSAIsSpiralPosY);
-    	  //currentSAIsSpiralPosX = floor(currentSAIsSpiralPosX/2);
-    	  //currentSAIsSpiralPosY = floor(currentSAIsSpiralPosY/2);
+    	  currentSAIsSpiralPosX = floor(currentSAIsSpiralPosX/2);
+    	  currentSAIsSpiralPosY = floor(currentSAIsSpiralPosY/2);
       }
       else // 45 -> 168
       {
@@ -2470,30 +3246,62 @@ Void TComPrediction::predIntraAng( const ComponentID compID, UInt uiDirMode, Pel
       }
       totalNumberOfSAIs = miSize*miSize;
       //cout << currentSAI << " " << currentSAIsSpiralPosY << " " << currentSAIsSpiralPosX << endl;
+#if RM_RANDOM_ACCESS_PROFILE
+      Int currentRegionRA = getCurrentRegion(currentSAI, currentSAIsSpiralPosY, currentSAIsSpiralPosX);
+#endif
 #endif
 
 #if RM_4DLF_MI_BUFFER_MULTI_MODE == 1
       if( uiDirMode == 3 ) // less probable modes - 3, 7, 11, 15, 19, 23, 27, 31
     	  xPred4DLFMI_DC_3x3( channelsBitDepthForPrediction, ptrSrc+sw+1, sw, pDst, uiStride, iWidth, iHeight, channelType, uiDirMode,
-    	      			  	  pcPic4DLFMI, miSize, currentSAIsSpiralPosX, currentSAIsSpiralPosY, totalNumberOfSAIs, currentSAI, uiAbsPartIdxInRaster, uiPosX, uiPosY, compID );
+    	      			  	  pcPic4DLFMI, miSize, currentSAIsSpiralPosX, currentSAIsSpiralPosY, totalNumberOfSAIs, currentSAI, uiAbsPartIdxInRaster, uiPosX, uiPosY, compID
+#if RM_SCALABLE && RM_RANDOM_ACCESS_PROFILE
+							  ,currentRegionRA
+#endif
+    	  );
       else if( uiDirMode == 7 )
     	  xPred4DLFMI_LOCO_I( channelsBitDepthForPrediction, ptrSrc+sw+1, sw, pDst, uiStride, iWidth, iHeight, channelType, uiDirMode,
-    	      	      		  pcPic4DLFMI, miSize, currentSAIsSpiralPosX, currentSAIsSpiralPosY, totalNumberOfSAIs, currentSAI, uiAbsPartIdxInRaster, uiPosX, uiPosY, compID );
+    	      	      		  pcPic4DLFMI, miSize, currentSAIsSpiralPosX, currentSAIsSpiralPosY, totalNumberOfSAIs, currentSAI, uiAbsPartIdxInRaster, uiPosX, uiPosY, compID
+#if RM_SCALABLE && RM_RANDOM_ACCESS_PROFILE
+							  ,currentRegionRA
+#endif
+    	  );
       else if( uiDirMode == 11 )
     	  xPred4DLFMI_GAP( channelsBitDepthForPrediction, ptrSrc+sw+1, sw, pDst, uiStride, iWidth, iHeight, channelType, uiDirMode,
-    	      	      	      pcPic4DLFMI, miSize, currentSAIsSpiralPosX, currentSAIsSpiralPosY, totalNumberOfSAIs, currentSAI, uiAbsPartIdxInRaster, uiPosX, uiPosY, compID );
+    	      	      	      pcPic4DLFMI, miSize, currentSAIsSpiralPosX, currentSAIsSpiralPosY, totalNumberOfSAIs, currentSAI, uiAbsPartIdxInRaster, uiPosX, uiPosY, compID
+#if RM_SCALABLE && RM_RANDOM_ACCESS_PROFILE
+							  ,currentRegionRA
+#endif
+    	  );
       else if( uiDirMode == 15 )
     	  xPred4DLFMI_AGSP( channelsBitDepthForPrediction, ptrSrc+sw+1, sw, pDst, uiStride, iWidth, iHeight, channelType, uiDirMode,
-    	      	      	      pcPic4DLFMI, miSize, currentSAIsSpiralPosX, currentSAIsSpiralPosY, totalNumberOfSAIs, currentSAI, uiAbsPartIdxInRaster, uiPosX, uiPosY, compID );
+    	      	      	      pcPic4DLFMI, miSize, currentSAIsSpiralPosX, currentSAIsSpiralPosY, totalNumberOfSAIs, currentSAI, uiAbsPartIdxInRaster, uiPosX, uiPosY, compID
+
+#if RM_SCALABLE && RM_RANDOM_ACCESS_PROFILE
+							  ,currentRegionRA
+#endif
+							  );
       else if( uiDirMode == 19 )
     	  xPred4DLFMI_LSP3( channelsBitDepthForPrediction, ptrSrc+sw+1, sw, pDst, uiStride, iWidth, iHeight, channelType, uiDirMode,
-    	      			  	  pcPic4DLFMI, miSize, currentSAIsSpiralPosX, currentSAIsSpiralPosY, totalNumberOfSAIs, currentSAI, uiAbsPartIdxInRaster, uiPosX, uiPosY, compID );
+    	      			  	  pcPic4DLFMI, miSize, currentSAIsSpiralPosX, currentSAIsSpiralPosY, totalNumberOfSAIs, currentSAI, uiAbsPartIdxInRaster, uiPosX, uiPosY, compID
+#if RM_SCALABLE && RM_RANDOM_ACCESS_PROFILE
+							  ,currentRegionRA
+#endif
+    	  );
       else if( uiDirMode == 23 )
     	  xPred4DLFMI_LSP5( channelsBitDepthForPrediction, ptrSrc+sw+1, sw, pDst, uiStride, iWidth, iHeight, channelType, uiDirMode,
-    	      			  	  pcPic4DLFMI, miSize, currentSAIsSpiralPosX, currentSAIsSpiralPosY, totalNumberOfSAIs, currentSAI, uiAbsPartIdxInRaster, uiPosX, uiPosY, compID );
+    	      			  	  pcPic4DLFMI, miSize, currentSAIsSpiralPosX, currentSAIsSpiralPosY, totalNumberOfSAIs, currentSAI, uiAbsPartIdxInRaster, uiPosX, uiPosY, compID
+#if RM_SCALABLE && RM_RANDOM_ACCESS_PROFILE
+							  ,currentRegionRA
+#endif
+    	  );
       else if( uiDirMode == 27 )
     	  xPred4DLFMI_LSP7( channelsBitDepthForPrediction, ptrSrc+sw+1, sw, pDst, uiStride, iWidth, iHeight, channelType, uiDirMode,
-    	      			  	  pcPic4DLFMI, miSize, currentSAIsSpiralPosX, currentSAIsSpiralPosY, totalNumberOfSAIs, currentSAI, uiAbsPartIdxInRaster, uiPosX, uiPosY, compID );
+    	      			  	  pcPic4DLFMI, miSize, currentSAIsSpiralPosX, currentSAIsSpiralPosY, totalNumberOfSAIs, currentSAI, uiAbsPartIdxInRaster, uiPosX, uiPosY, compID
+#if RM_SCALABLE && RM_RANDOM_ACCESS_PROFILE
+							  ,currentRegionRA
+#endif
+    	  );
 
       //else if( uiDirMode == 31 ) // commented because the paper doesn't include the LSP9
        //   xPred4DLFMI_LSP9( channelsBitDepthForPrediction, ptrSrc+sw+1, sw, pDst, uiStride, iWidth, iHeight, channelType, uiDirMode,
@@ -2517,6 +3325,137 @@ Void TComPrediction::predIntraAng( const ComponentID compID, UInt uiDirMode, Pel
   }
 
 }
+
+#if RM_RANDOM_ACCESS_PROFILE
+Bool TComPrediction::xCheckIfInTheSameRegion(Int currentRegion, Int currentSAI, Int currentPixelSupportPosX, Int currentPixelSupportPosY)
+{
+
+	if(currentSAI < 9) // L1 L2
+	{
+		if(RM_RANDOM_ACCESS_PROFILE == 1) // 2 way
+		{
+			if(m_2WayRAProfileLF3[currentRegion][currentPixelSupportPosY][currentPixelSupportPosX])
+				return true;
+		}
+		else if(RM_RANDOM_ACCESS_PROFILE == 2) // 4 way
+		{
+			if(m_4WayRAProfileLF3[currentRegion][currentPixelSupportPosY][currentPixelSupportPosX])
+				return true;
+		}
+		else if(RM_RANDOM_ACCESS_PROFILE == 3) // 9 way
+		{
+			if(m_9WayRAProfileLF3[currentRegion][currentPixelSupportPosY][currentPixelSupportPosX])
+				return true;
+		}
+	}
+	else if(currentSAI >= 9 && currentSAI < 45) // L3 L4
+	{
+		if(RM_RANDOM_ACCESS_PROFILE == 1) // 2 way
+		{
+			if(m_2WayRAProfileLF7[currentRegion][currentPixelSupportPosY][currentPixelSupportPosX])
+				return true;
+		}
+		else if(RM_RANDOM_ACCESS_PROFILE == 2) // 4 way
+		{
+			if(m_4WayRAProfileLF7[currentRegion][currentPixelSupportPosY][currentPixelSupportPosX])
+				return true;
+		}
+		else if(RM_RANDOM_ACCESS_PROFILE == 3) // 9 way
+		{
+			if(m_9WayRAProfileLF7[currentRegion][currentPixelSupportPosY][currentPixelSupportPosX])
+				return true;
+		}
+	}
+	else // L5 L6
+	{
+		if(RM_RANDOM_ACCESS_PROFILE == 1) // 2 way
+		{
+			if(m_2WayRAProfileLF13[currentRegion][currentPixelSupportPosY][currentPixelSupportPosX])
+				return true;
+		}
+		else if(RM_RANDOM_ACCESS_PROFILE == 2) // 4 way
+		{
+			if(m_4WayRAProfileLF13[currentRegion][currentPixelSupportPosY][currentPixelSupportPosX])
+				return true;
+		}
+		else if(RM_RANDOM_ACCESS_PROFILE == 3) // 9 way
+		{
+			if(m_9WayRAProfileLF13[currentRegion][currentPixelSupportPosY][currentPixelSupportPosX])
+				return true;
+		}
+	}
+	return false;
+}
+
+Int TComPrediction::getCurrentRegion(Int currentSAI, Int currentPixelPosY, Int currentPixelPosX)
+{
+	if(currentSAI < 9) // L1 L2
+	{
+		if(RM_RANDOM_ACCESS_PROFILE == 1) // 2 way
+		{
+			for(int r=0; r<2; r++)
+				if(m_2WayRAProfileLF3[r][currentPixelPosY][currentPixelPosX])
+					return r;
+		}
+		else if(RM_RANDOM_ACCESS_PROFILE == 2) // 4 way
+		{
+			for(int r=0; r<4; r++)
+				if(m_4WayRAProfileLF3[r][currentPixelPosY][currentPixelPosX])
+					return r;
+		}
+		else if(RM_RANDOM_ACCESS_PROFILE == 3) // 9 way
+		{
+			for(int r=0; r<9; r++)
+				if(m_9WayRAProfileLF3[r][currentPixelPosY][currentPixelPosX])
+					return r;
+		}
+	}
+	else if(currentSAI >= 9 && currentSAI < 45) // L3 L4
+	{
+		if(RM_RANDOM_ACCESS_PROFILE == 1) // 2 way
+		{
+			for(int r=0; r<2; r++)
+				if(m_2WayRAProfileLF7[r][currentPixelPosY][currentPixelPosX])
+					return r;
+		}
+		else if(RM_RANDOM_ACCESS_PROFILE == 2) // 4 way
+		{
+			for(int r=0; r<4; r++)
+				if(m_4WayRAProfileLF7[r][currentPixelPosY][currentPixelPosX])
+					return r;
+		}
+		else if(RM_RANDOM_ACCESS_PROFILE == 3) // 9 way
+		{
+			for(int r=0; r<9; r++)
+				if(m_9WayRAProfileLF7[r][currentPixelPosY][currentPixelPosX])
+					return r;
+		}
+	}
+	else // L5 L6
+	{
+		if(RM_RANDOM_ACCESS_PROFILE == 1) // 2 way
+		{
+			for(int r=0; r<2; r++)
+				if(m_2WayRAProfileLF13[r][currentPixelPosY][currentPixelPosX])
+					return r;
+		}
+		else if(RM_RANDOM_ACCESS_PROFILE == 2) // 4 way
+		{
+			for(int r=0; r<4; r++)
+				if(m_4WayRAProfileLF13[r][currentPixelPosY][currentPixelPosX])
+					return r;
+		}
+		else if(RM_RANDOM_ACCESS_PROFILE == 3) // 9 way
+		{
+			for(int r=0; r<9; r++)
+				if(m_9WayRAProfileLF13[r][currentPixelPosY][currentPixelPosX])
+					return r;
+		}
+	}
+	return 0;
+}
+
+#endif
 
 /** Check for identical motion in both motion vector direction of a bi-directional predicted CU
   * \returns true, if motion vectors and reference pictures match

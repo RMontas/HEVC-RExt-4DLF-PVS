@@ -55,7 +55,7 @@ for l = 2:num_Layers % starts with 2 because Frame 1 is on layer 2
                 for i = 1:size(refSAIs); fprintf('%d ',refSAIs(i)); end
                 fprintf('\t0\n');
             else
-                fprintf('Frame%d:\tI\t%d\t%d\t0\t0\t%f\t0\t0\t0\t%d\t%d\t',POC,POC,0,0,refPicsActive,POC);
+                fprintf('Frame%d:\tI\t%d\t%d\t0\t0\t%f\t0\t0\t0\t%d\t%d\t',POC,POC,0,QPFactor(qp),refPicsActive,POC);
                 for i = 1:size(refSAIs); fprintf('%d ',refSAIs(i)); end
                 fprintf('\t0\n');
             end

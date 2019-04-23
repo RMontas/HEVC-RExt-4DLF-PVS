@@ -69,7 +69,20 @@ class TComPrediction : public TComWeightPrediction
 {
 private:
   static const UChar m_aucIntraFilter[MAX_NUM_CHANNEL_TYPE][MAX_INTRA_FILTER_DEPTHS];
-
+#if RM_SCALABLE && RM_RANDOM_ACCESS_PROFILE > 0
+  // 2 WAY
+  static const Bool m_2WayRAProfileLF3[2][3][3];
+  static const Bool m_2WayRAProfileLF7[2][7][7];
+  static const Bool m_2WayRAProfileLF13[2][13][13];
+  // 4 WAY
+  static const Bool m_4WayRAProfileLF3[4][3][3];
+  static const Bool m_4WayRAProfileLF7[4][7][7];
+  static const Bool m_4WayRAProfileLF13[4][13][13];
+  // 9 WAY
+  static const Bool m_9WayRAProfileLF3[9][3][3];
+  static const Bool m_9WayRAProfileLF7[9][7][7];
+  static const Bool m_9WayRAProfileLF13[9][13][13];
+#endif
 protected:
   Pel*      m_piYuvExt[MAX_NUM_COMPONENT][NUM_PRED_BUF];
   Int       m_iYuvExtSize;
@@ -86,27 +99,71 @@ protected:
 
   Void xPredIntraAng            ( Int bitDepth, const Pel* pSrc, Int srcStride, Pel* pDst, Int dstStride, UInt width, UInt height, ChannelType channelType, UInt dirMode, const Bool bEnableEdgeFilters );
 #if RM_4DLF_MI_INTRA_MODE_DC_3x3
-  Void xPred4DLFMI_DC_3x3       ( Int bitDepth, const Pel* pSrc, Int srcStride, Pel* pTrueDst, Int dstStrideTrue, UInt uiWidth, UInt uiHeight, ChannelType channelType, UInt dirMode, TComPicYuv *const pcPic4DLFMI, UInt miSize, UInt currentSAIsSpiralPosX, UInt currentSAIsSpiralPosY, UInt totalNumberOfSAIs, UInt currentSAI, UInt uiAbsPartIdxInRaster, UInt uiPosX, UInt uiPosY, ComponentID compID );
+  Void xPred4DLFMI_DC_3x3       ( Int bitDepth, const Pel* pSrc, Int srcStride, Pel* pTrueDst, Int dstStrideTrue, UInt uiWidth, UInt uiHeight, ChannelType channelType, UInt dirMode, TComPicYuv *const pcPic4DLFMI, UInt miSize, UInt currentSAIsSpiralPosX, UInt currentSAIsSpiralPosY, UInt totalNumberOfSAIs, UInt currentSAI, UInt uiAbsPartIdxInRaster, UInt uiPosX, UInt uiPosY, ComponentID compID
+#if RM_SCALABLE && RM_RANDOM_ACCESS_PROFILE
+							  ,Int currentRegionRA
+#endif
+  );
 #endif
 #if RM_4DLF_MI_INTRA_MODE_LOCO_I
-  Void xPred4DLFMI_LOCO_I       ( Int bitDepth, const Pel* pSrc, Int srcStride, Pel* pTrueDst, Int dstStrideTrue, UInt uiWidth, UInt uiHeight, ChannelType channelType, UInt dirMode, TComPicYuv *const pcPic4DLFMI, UInt miSize, UInt currentSAIsSpiralPosX, UInt currentSAIsSpiralPosY, UInt totalNumberOfSAIs, UInt currentSAI, UInt uiAbsPartIdxInRaster, UInt uiPosX, UInt uiPosY, ComponentID compID );
+  Void xPred4DLFMI_LOCO_I       ( Int bitDepth, const Pel* pSrc, Int srcStride, Pel* pTrueDst, Int dstStrideTrue, UInt uiWidth, UInt uiHeight, ChannelType channelType, UInt dirMode, TComPicYuv *const pcPic4DLFMI, UInt miSize, UInt currentSAIsSpiralPosX, UInt currentSAIsSpiralPosY, UInt totalNumberOfSAIs, UInt currentSAI, UInt uiAbsPartIdxInRaster, UInt uiPosX, UInt uiPosY, ComponentID compID
+#if RM_SCALABLE && RM_RANDOM_ACCESS_PROFILE
+							  ,Int currentRegionRA
+#endif
+  );
   Int  median_3x3				( Pel* p4DLFMI, UInt const current_pixel_pos, UInt const stride );
 #endif
 #if RM_4DLF_MI_INTRA_MODE_GAP
-  Void xPred4DLFMI_GAP       ( Int bitDepth, const Pel* pSrc, Int srcStride, Pel* pTrueDst, Int dstStrideTrue, UInt uiWidth, UInt uiHeight, ChannelType channelType, UInt dirMode, TComPicYuv *const pcPic4DLFMI, UInt miSize, UInt currentSAIsSpiralPosX, UInt currentSAIsSpiralPosY, UInt totalNumberOfSAIs, UInt currentSAI, UInt uiAbsPartIdxInRaster, UInt uiPosX, UInt uiPosY, ComponentID compID );
+  Void xPred4DLFMI_GAP       ( Int bitDepth, const Pel* pSrc, Int srcStride, Pel* pTrueDst, Int dstStrideTrue, UInt uiWidth, UInt uiHeight, ChannelType channelType, UInt dirMode, TComPicYuv *const pcPic4DLFMI, UInt miSize, UInt currentSAIsSpiralPosX, UInt currentSAIsSpiralPosY, UInt totalNumberOfSAIs, UInt currentSAI, UInt uiAbsPartIdxInRaster, UInt uiPosX, UInt uiPosY, ComponentID compID
+#if RM_SCALABLE && RM_RANDOM_ACCESS_PROFILE
+							  ,Int currentRegionRA
+#endif
+  );
 #endif
 #if RM_4DLF_MI_INTRA_MODE_AGSP
-  Void xPred4DLFMI_AGSP       ( Int bitDepth, const Pel* pSrc, Int srcStride, Pel* pTrueDst, Int dstStrideTrue, UInt uiWidth, UInt uiHeight, ChannelType channelType, UInt dirMode, TComPicYuv *const pcPic4DLFMI, UInt miSize, UInt currentSAIsSpiralPosX, UInt currentSAIsSpiralPosY, UInt totalNumberOfSAIs, UInt currentSAI, UInt uiAbsPartIdxInRaster, UInt uiPosX, UInt uiPosY, ComponentID compID );
+  Void xPred4DLFMI_AGSP       ( Int bitDepth, const Pel* pSrc, Int srcStride, Pel* pTrueDst, Int dstStrideTrue, UInt uiWidth, UInt uiHeight, ChannelType channelType, UInt dirMode, TComPicYuv *const pcPic4DLFMI, UInt miSize, UInt currentSAIsSpiralPosX, UInt currentSAIsSpiralPosY, UInt totalNumberOfSAIs, UInt currentSAI, UInt uiAbsPartIdxInRaster, UInt uiPosX, UInt uiPosY, ComponentID compID
+#if RM_SCALABLE && RM_RANDOM_ACCESS_PROFILE
+							  ,Int currentRegionRA
+#endif
+  );
 #endif
 #if RM_4DLF_MI_INTRA_MODE_LSP
-  Void xPred4DLFMI_LSP       ( Int bitDepth, const Pel* pSrc, Int srcStride, Pel* pTrueDst, Int dstStrideTrue, UInt uiWidth, UInt uiHeight, ChannelType channelType, UInt dirMode, TComPicYuv *const pcPic4DLFMI, UInt miSize, UInt currentSAIsSpiralPosX, UInt currentSAIsSpiralPosY, UInt totalNumberOfSAIs, UInt currentSAI, UInt uiAbsPartIdxInRaster, UInt uiPosX, UInt uiPosY, ComponentID compID );
-  Void xPred4DLFMI_LSP3       ( Int bitDepth, const Pel* pSrc, Int srcStride, Pel* pTrueDst, Int dstStrideTrue, UInt uiWidth, UInt uiHeight, ChannelType channelType, UInt dirMode, TComPicYuv *const pcPic4DLFMI, UInt miSize, UInt currentSAIsSpiralPosX, UInt currentSAIsSpiralPosY, UInt totalNumberOfSAIs, UInt currentSAI, UInt uiAbsPartIdxInRaster, UInt uiPosX, UInt uiPosY, ComponentID compID );
-  Void xPred4DLFMI_LSP5       ( Int bitDepth, const Pel* pSrc, Int srcStride, Pel* pTrueDst, Int dstStrideTrue, UInt uiWidth, UInt uiHeight, ChannelType channelType, UInt dirMode, TComPicYuv *const pcPic4DLFMI, UInt miSize, UInt currentSAIsSpiralPosX, UInt currentSAIsSpiralPosY, UInt totalNumberOfSAIs, UInt currentSAI, UInt uiAbsPartIdxInRaster, UInt uiPosX, UInt uiPosY, ComponentID compID );
-  Void xPred4DLFMI_LSP7       ( Int bitDepth, const Pel* pSrc, Int srcStride, Pel* pTrueDst, Int dstStrideTrue, UInt uiWidth, UInt uiHeight, ChannelType channelType, UInt dirMode, TComPicYuv *const pcPic4DLFMI, UInt miSize, UInt currentSAIsSpiralPosX, UInt currentSAIsSpiralPosY, UInt totalNumberOfSAIs, UInt currentSAI, UInt uiAbsPartIdxInRaster, UInt uiPosX, UInt uiPosY, ComponentID compID );
-  Void xPred4DLFMI_LSP9       ( Int bitDepth, const Pel* pSrc, Int srcStride, Pel* pTrueDst, Int dstStrideTrue, UInt uiWidth, UInt uiHeight, ChannelType channelType, UInt dirMode, TComPicYuv *const pcPic4DLFMI, UInt miSize, UInt currentSAIsSpiralPosX, UInt currentSAIsSpiralPosY, UInt totalNumberOfSAIs, UInt currentSAI, UInt uiAbsPartIdxInRaster, UInt uiPosX, UInt uiPosY, ComponentID compID );
-  Void xPred4DLFMI_LSPM       ( Int bitDepth, const Pel* pSrc, Int srcStride, Pel* pTrueDst, Int dstStrideTrue, UInt uiWidth, UInt uiHeight, ChannelType channelType, UInt dirMode, TComPicYuv *const pcPic4DLFMI, UInt miSize, UInt currentSAIsSpiralPosX, UInt currentSAIsSpiralPosY, UInt totalNumberOfSAIs, UInt currentSAI, UInt uiAbsPartIdxInRaster, UInt uiPosX, UInt uiPosY, ComponentID compID, Int predOrder );
+  Void xPred4DLFMI_LSP       ( Int bitDepth, const Pel* pSrc, Int srcStride, Pel* pTrueDst, Int dstStrideTrue, UInt uiWidth, UInt uiHeight, ChannelType channelType, UInt dirMode, TComPicYuv *const pcPic4DLFMI, UInt miSize, UInt currentSAIsSpiralPosX, UInt currentSAIsSpiralPosY, UInt totalNumberOfSAIs, UInt currentSAI, UInt uiAbsPartIdxInRaster, UInt uiPosX, UInt uiPosY, ComponentID compID
+#if RM_SCALABLE && RM_RANDOM_ACCESS_PROFILE
+							  ,Int currentRegionRA
+#endif
+  );
+  Void xPred4DLFMI_LSP3       ( Int bitDepth, const Pel* pSrc, Int srcStride, Pel* pTrueDst, Int dstStrideTrue, UInt uiWidth, UInt uiHeight, ChannelType channelType, UInt dirMode, TComPicYuv *const pcPic4DLFMI, UInt miSize, UInt currentSAIsSpiralPosX, UInt currentSAIsSpiralPosY, UInt totalNumberOfSAIs, UInt currentSAI, UInt uiAbsPartIdxInRaster, UInt uiPosX, UInt uiPosY, ComponentID compID
+#if RM_SCALABLE && RM_RANDOM_ACCESS_PROFILE
+							  ,Int currentRegionRA
+#endif
+  );
+  Void xPred4DLFMI_LSP5       ( Int bitDepth, const Pel* pSrc, Int srcStride, Pel* pTrueDst, Int dstStrideTrue, UInt uiWidth, UInt uiHeight, ChannelType channelType, UInt dirMode, TComPicYuv *const pcPic4DLFMI, UInt miSize, UInt currentSAIsSpiralPosX, UInt currentSAIsSpiralPosY, UInt totalNumberOfSAIs, UInt currentSAI, UInt uiAbsPartIdxInRaster, UInt uiPosX, UInt uiPosY, ComponentID compID
+#if RM_SCALABLE && RM_RANDOM_ACCESS_PROFILE
+							  ,Int currentRegionRA
+#endif
+  );
+  Void xPred4DLFMI_LSP7       ( Int bitDepth, const Pel* pSrc, Int srcStride, Pel* pTrueDst, Int dstStrideTrue, UInt uiWidth, UInt uiHeight, ChannelType channelType, UInt dirMode, TComPicYuv *const pcPic4DLFMI, UInt miSize, UInt currentSAIsSpiralPosX, UInt currentSAIsSpiralPosY, UInt totalNumberOfSAIs, UInt currentSAI, UInt uiAbsPartIdxInRaster, UInt uiPosX, UInt uiPosY, ComponentID compID
+#if RM_SCALABLE && RM_RANDOM_ACCESS_PROFILE
+							  ,Int currentRegionRA
+#endif
+  );
+  Void xPred4DLFMI_LSP9       ( Int bitDepth, const Pel* pSrc, Int srcStride, Pel* pTrueDst, Int dstStrideTrue, UInt uiWidth, UInt uiHeight, ChannelType channelType, UInt dirMode, TComPicYuv *const pcPic4DLFMI, UInt miSize, UInt currentSAIsSpiralPosX, UInt currentSAIsSpiralPosY, UInt totalNumberOfSAIs, UInt currentSAI, UInt uiAbsPartIdxInRaster, UInt uiPosX, UInt uiPosY, ComponentID compID
+#if RM_SCALABLE && RM_RANDOM_ACCESS_PROFILE
+							  ,Int currentRegionRA
+#endif
+  );
+  Void xPred4DLFMI_LSPM       ( Int bitDepth, const Pel* pSrc, Int srcStride, Pel* pTrueDst, Int dstStrideTrue, UInt uiWidth, UInt uiHeight, ChannelType channelType, UInt dirMode, TComPicYuv *const pcPic4DLFMI, UInt miSize, UInt currentSAIsSpiralPosX, UInt currentSAIsSpiralPosY, UInt totalNumberOfSAIs, UInt currentSAI, UInt uiAbsPartIdxInRaster, UInt uiPosX, UInt uiPosY, ComponentID compID, Int predOrder
+#if RM_SCALABLE && RM_RANDOM_ACCESS_PROFILE
+							  , Int currentRegionRA
+#endif
+  );
   Double* trainSpiralLSP( Int current_SAI, Int total_number_of_SAIS, Pel* p4DLFMI, Int const origin_pixel_pos, Int const current_pixel_pos, Int const stride );
-  Double* trainRasterLSP( Int* causalSupportX, Int* causalSupportY, Int current_SAI, Int miSize, Pel* p4DLFMI, Int const origin_pixel_pos, Int const current_pixel_pos, Int const stride, Int W, Int H, Int predOrder, Int predOrderExt);
+  Double* trainRasterLSP( Int* causalSupportX, Int* causalSupportY, Int current_SAI, Int miSize, Pel* p4DLFMI, Int const origin_pixel_pos, Int const current_pixel_pos, Int const stride, Int W, Int H, Int predOrder, Int predOrderExt
+#if RM_SCALABLE && RM_RANDOM_ACCESS_PROFILE
+		  ,Int currentSAIsSpiralPosX, Int currentSAIsSpiralPosY, Int currentRegionRA
+#endif
+  );
   Void leastSquares( Double **C, Double *y, Double *a, Int m, Int n );
   UInt LSP( Double *lspCoefs, Int M, Pel* p4DLFMI, Int current_SAI, Int total_number_of_SAIS, Int current_pixel_pos, Int stride);
   UInt LSP3( Double *lspCoefs, Int M, Pel* p4DLFMI, Int current_SAI, Int total_number_of_SAIS, Int current_pixel_pos, Int stride);;
@@ -118,16 +175,36 @@ protected:
   double **doublematrix(long nr, long nc);
   void free_doublematrix(double **matrix, int nr, int nc);
 #endif
+#if RM_SCALABLE && RM_RANDOM_ACCESS_PROFILE > 0
+  Int getCurrentRegion(Int currentSAI, Int currentPixelPosY, Int currentPixelPosX);
+  Bool xCheckIfInTheSameRegion(Int currentRegion, Int currentSAI, Int currentPixelSupportPosY, Int currentPixelSupportPosX);
+#endif
 #if RM_4DLF_MI_BUFFER
-  Void getCausalSupportFromSpiral_AGSP( Int* w, Int* ww, Int* n, Int* nn, Int* nw, Int* ne, Int* nne, Int* nww, Int* nnw, Int current_SAI, Int total_number_of_SAIS, Pel* p4DLFMI, Int const current_pixel_pos, Int const stride );
+  Void getCausalSupportFromSpiral_AGSP( Int* w, Int* ww, Int* n, Int* nn, Int* nw, Int* ne, Int* nne, Int* nww, Int* nnw, Int current_SAI, Int total_number_of_SAIS, Pel* p4DLFMI, Int const current_pixel_pos, Int const stride
+#if RM_SCALABLE && RM_RANDOM_ACCESS_PROFILE
+		  ,Int currentSAIsSpiralPosX, Int currentSAIsSpiralPosY, Int currentRegionRA
+#endif
+  );
   Int AGSP( Int w, Int ww, Int n, Int nn, Int nw, Int ne, Int nee, Int nww, Int nnw );
-  Void getCausalSupportFromSpiral_GAP( Int* w, Int* ww, Int* n, Int* nn, Int* nw, Int* ne, Int *nee, Int current_SAI, Int total_number_of_SAIS, Pel* p4DLFMI, Int const current_pixel_pos, Int const stride );
+  Void getCausalSupportFromSpiral_GAP( Int* w, Int* ww, Int* n, Int* nn, Int* nw, Int* ne, Int *nee, Int current_SAI, Int total_number_of_SAIS, Pel* p4DLFMI, Int const current_pixel_pos, Int const stride
+#if RM_SCALABLE && RM_RANDOM_ACCESS_PROFILE
+		  ,Int currentSAIsSpiralPosX, Int currentSAIsSpiralPosY, Int currentRegionRA
+#endif
+  );
   Int GAP( Int w, Int ww, Int n, Int nn, Int nw, Int ne, Int nee );
-  Void getCausalSupportFromSpiral_LOCO_I( Int* a, Int* b, Int* c, Int current_SAI, Int total_number_of_SAIS, Pel* p4DLFMI, Int const current_pixel_pos, Int const stride );
+  Void getCausalSupportFromSpiral_LOCO_I( Int* a, Int* b, Int* c, Int current_SAI, Int total_number_of_SAIS, Pel* p4DLFMI, Int const current_pixel_pos, Int const stride
+#if RM_SCALABLE && RM_RANDOM_ACCESS_PROFILE
+		  ,Int currentSAIsSpiralPosX, Int currentSAIsSpiralPosY, Int currentRegionRA
+#endif
+  );
   Int  LOCO_I					( Int a, Int b, Int c );
   Int spiral					(UInt idx, UInt size, UInt* x, UInt* y);
   Int spiralScalable(UInt idx, UInt size, UInt* x, UInt* y);
-  Int getCausalSupportAdaptive( Int M, Int MExt, Int* causalSupportX, Int* causalSupportY, Int currentSAI, Int origin_pixel_pos_MI, Int current_pixel_pos, Int mi, Int stride );
+  Int getCausalSupportAdaptive( Int M, Int MExt, Int* causalSupportX, Int* causalSupportY, Int currentSAI, Int origin_pixel_pos_MI, Int current_pixel_pos, Int mi, Int stride
+#if RM_SCALABLE && RM_RANDOM_ACCESS_PROFILE
+		  ,Int currentSAIsSpiralPosX, Int currentSAIsSpiralPosY, Int currentRegionRA
+#endif
+  );
   Void extendedSupportSearch( Pel* p4DLFMI, Int M, Int MExt, Int* causalSupportX, Int* causalSupportY, Int currentSAI, Int origin_pixel_pos_MI, Int current_pixel_pos, Int mi, Int stride );
 #endif
   Void xPredIntraPlanar         ( const Pel* pSrc, Int srcStride, Pel* rpDst, Int dstStride, UInt width, UInt height );
