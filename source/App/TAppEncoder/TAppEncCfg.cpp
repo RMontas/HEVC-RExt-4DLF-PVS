@@ -848,7 +848,11 @@ Bool TAppEncCfg::parseCfg( Int argc, TChar* argv[] )
   ("LFCrossSliceBoundaryFlag",                        m_bLFCrossSliceBoundaryFlag,                       true)
 
   ("ConstrainedIntraPred",                            m_bUseConstrainedIntraPred,                       false, "Constrained Intra Prediction")
+//#if !RM_4DLF_MI_BUFFER
   ("FastUDIUseMPMEnabled",                            m_bFastUDIUseMPMEnabled,                           true, "If enabled, adapt intra direction search, accounting for MPM")
+//#else
+//  ("FastUDIUseMPMEnabled",                            m_bFastUDIUseMPMEnabled,                           false, "If enabled, adapt intra direction search, accounting for MPM")
+//#endif
   ("FastMEForGenBLowDelayEnabled",                    m_bFastMEForGenBLowDelayEnabled,                   true, "If enabled use a fast ME for generalised B Low Delay slices")
   ("UseBLambdaForNonKeyLowDelayPictures",             m_bUseBLambdaForNonKeyLowDelayPictures,            true, "Enables use of B-Lambda for non-key low-delay pictures")
   ("PCMEnabledFlag",                                  m_usePCM,                                         false)

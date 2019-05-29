@@ -191,7 +191,7 @@ protected:
 		  ,Int currentSAIsSpiralPosX, Int currentSAIsSpiralPosY, Int currentRegionRA
 #endif
   );
-  Int GAP( Int w, Int ww, Int n, Int nn, Int nw, Int ne, Int nee );
+  Int GAP( Int bitDepth, Int w, Int ww, Int n, Int nn, Int nw, Int ne, Int nee );
   Void getCausalSupportFromSpiral_LOCO_I( Int* a, Int* b, Int* c, Int current_SAI, Int total_number_of_SAIS, Pel* p4DLFMI, Int const current_pixel_pos, Int const stride
 #if RM_SCALABLE && RM_RANDOM_ACCESS_PROFILE
 		  ,Int currentSAIsSpiralPosX, Int currentSAIsSpiralPosY, Int currentRegionRA

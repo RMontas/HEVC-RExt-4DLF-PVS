@@ -1,4 +1,4 @@
-function [] = genConfigFileForSpiralSCL(max_ref_pics, SCL_FLAG, RA_FLAG)
+function [] = genConfigFileForSpiralSCL(max_ref_pics, SCL_FLAG, RA_FLAG, MAX_REF_LAYER)
 
 num_MIs = 13;
 %% SCALABILITY
@@ -49,7 +49,7 @@ for l = 2:num_Layers % starts with 2 because Frame 1 is on layer 2
         [ypos, xpos] = find(cc_spiral == j);
         if layerMask(ypos,xpos) == l
             refPicsActive = 0;
-            [refSAIs, refPicsActive] = getRefSAIs(POC, [ypos xpos], SAIUsage, max_ref_pics, cc_spiral, layerMask, getCurrentRALayer([ypos xpos], raLayerMask), raLayerMask);
+            [refSAIs, refPicsActive] = getRefSAIs(POC, [ypos xpos], SAIUsage, max_ref_pics, cc_spiral, layerMask, getCurrentRALayer([ypos xpos], raLayerMask), raLayerMask, MAX_REF_LAYER);
             if refPicsActive > 0
                 fprintf('Frame%d:\tB\t%d\t%d\t0\t0\t%f\t0\t0\t0\t%d\t%d\t',POC,POC,QPOffset(qp),QPFactor(qp),refPicsActive,POC);
                 for i = 1:size(refSAIs); fprintf('%d ',refSAIs(i)); end
@@ -69,7 +69,7 @@ for l = 2:num_Layers % starts with 2 because Frame 1 is on layer 2
 end
 end
 
-function [refSAIs, num_ref_pics] = getRefSAIs(currentSAI, currentSAIPos, SAIUsage, max_ref_pics, cc_spiral, layerMask, currentRALayers, raLayerMask)
+function [refSAIs, num_ref_pics] = getRefSAIs(currentSAI, currentSAIPos, SAIUsage, max_ref_pics, cc_spiral, layerMask, currentRALayers, raLayerMask, MAX_REF_LAYER)
 % criteria 1 : lowest euclidean distance
 % criteria 2 : lowest POC
 
@@ -109,6 +109,22 @@ for l = 1:num_Layers
     end
 end
 distanceL2toCurrentSAI(distanceL2toCurrentSAI(:,:) == 0) = Inf; % overwrite currentSAI distance
+%%
+% discard references that are on layers with higher number than MAX_REF_LAYER
+% e.g. MAX_REF_LAYER = 4, we can only use ref frames from L1, L2, L3 and L4
+for l = 1:num_Layers
+    for j = 0:(num_MIs * num_MIs)-1
+        [ypos, xpos] = find(cc_spiral == j);
+        if layerMask(ypos,xpos) == l
+            if SAIUsage(ypos,xpos) ~= 0
+                if l > MAX_REF_LAYER
+                    distanceL2toCurrentSAI(ypos,xpos) = Inf; 
+                end
+            end
+        end
+    end
+end
+%%
 
 for i = 1:currentSAI
     lowestDistance = Inf;

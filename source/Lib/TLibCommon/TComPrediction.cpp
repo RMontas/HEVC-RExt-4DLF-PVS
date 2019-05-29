@@ -1106,7 +1106,7 @@ Void TComPrediction::xPred4DLFMI_GAP(       Int bitDepth,
 					predictor = LOCO_I( w, n, nw );
 				}
 				else
-					predictor = GAP( w, ww, n, nn, nw, ne, nne );
+					predictor = GAP( bitDepth, w, ww, n, nn, nw, ne, nne );
 				if(w == NOT_VALID && ww == NOT_VALID && n == NOT_VALID && nn == NOT_VALID && nw == NOT_VALID && ne == NOT_VALID && nne == NOT_VALID)
 					predictor = 0;
 
@@ -2529,6 +2529,7 @@ Void TComPrediction::getCausalSupportFromSpiral_GAP( Int* w, Int* ww, Int* n, In
 		dir_idx = spiralScalable(current_SAI, sqrt(total_number_of_SAIS), &x, &y);
 #endif
 #if !(RM_SCALABLE && RM_RANDOM_ACCESS_PROFILE)
+#if !RM_BUG_CORRECTION_PIXEL_MODELS_29042019
 		if(current_direction[dir_idx] == 'R')
 		{
 			W = p4DLFMI[current_pixel_pos + 1]; // RIGHT
@@ -2569,6 +2570,48 @@ Void TComPrediction::getCausalSupportFromSpiral_GAP( Int* w, Int* ww, Int* n, In
 			NE = p4DLFMI[current_pixel_pos + 1 + stride]; // DOWN RIGHT
 			NNE = p4DLFMI[current_pixel_pos + 2 + stride]; // DOWN 2RIGHT
 		}
+#else
+		if(current_direction[dir_idx] == 'R') // NO UP
+		{
+			W = p4DLFMI[current_pixel_pos - 1]; // LEFT
+			WW = p4DLFMI[current_pixel_pos - 2]; // 2LEFT
+			N = p4DLFMI[current_pixel_pos + stride]; // DOWN
+			NN = p4DLFMI[current_pixel_pos + 2*stride]; // 2DOWN
+			NW = p4DLFMI[current_pixel_pos - 1 + stride]; // DOWN LEFT
+			NE = p4DLFMI[current_pixel_pos + 1 + stride]; // DOWN RIGHT
+			NNE = p4DLFMI[current_pixel_pos + 1 + 2*stride]; // 2DOWN RIGHT
+		}
+		else if(current_direction[dir_idx] == 'D') // NO RIGHT
+		{
+			W = p4DLFMI[current_pixel_pos - stride]; // UP
+			WW = p4DLFMI[current_pixel_pos - 2*stride]; // 2UP
+			N = p4DLFMI[current_pixel_pos - 1]; // LEFT
+			NN = p4DLFMI[current_pixel_pos - 2]; // 2LEFT
+			NW = p4DLFMI[current_pixel_pos - 1 - stride]; // UP LEFT
+			NE = p4DLFMI[current_pixel_pos - 1 + stride]; // DOWN LEFT
+			NNE = p4DLFMI[current_pixel_pos - 2 + stride]; // DOWN 2LEFT
+		}
+		else if(current_direction[dir_idx] == 'L') // NO DOWN
+		{
+			W = p4DLFMI[current_pixel_pos + 1]; // RIGHT
+			WW = p4DLFMI[current_pixel_pos + 2]; // 2RIGHT
+			N = p4DLFMI[current_pixel_pos - stride]; // UP
+			NN = p4DLFMI[current_pixel_pos - 2*stride]; // 2UP
+			NW = p4DLFMI[current_pixel_pos + 1 - stride]; // UP RIGHT
+			NE = p4DLFMI[current_pixel_pos - 1 - stride]; // UP LEFT
+			NNE = p4DLFMI[current_pixel_pos - 1 - 2*stride]; // 2UP LEFT
+		}
+		else // NO LEFT
+		{
+			W = p4DLFMI[current_pixel_pos + stride]; // DOWN
+			WW = p4DLFMI[current_pixel_pos + 2*stride]; // 2DOWN
+			N = p4DLFMI[current_pixel_pos + 1]; // RIGHT
+			NN = p4DLFMI[current_pixel_pos + 2]; // 2RIGHT
+			NW = p4DLFMI[current_pixel_pos + 1 + stride]; // DOWN RIGHT
+			NE = p4DLFMI[current_pixel_pos + 1 - stride]; // UP RIGHT
+			NNE = p4DLFMI[current_pixel_pos + 2 - stride]; // UP 2RIGHT
+		}
+#endif
 #else
 		if(current_direction[dir_idx] == 'R')
 		{
@@ -2637,8 +2680,8 @@ Void TComPrediction::getCausalSupportFromSpiral_GAP( Int* w, Int* ww, Int* n, In
 			W = NW;
 		}
 	}
-	if(current_SAI >= 9)
-		if(W == NOT_VALID || WW == NOT_VALID || N == NOT_VALID || NN == NOT_VALID || NW == NOT_VALID ||	NE == NOT_VALID || NNE == NOT_VALID)
+	//if(current_SAI >= 9)
+		//if(W == NOT_VALID || WW == NOT_VALID || N == NOT_VALID || NN == NOT_VALID || NW == NOT_VALID ||	NE == NOT_VALID || NNE == NOT_VALID)
 			//cout << "at least one pixel is not available" << endl;
 
 	*w = W;
@@ -2650,25 +2693,27 @@ Void TComPrediction::getCausalSupportFromSpiral_GAP( Int* w, Int* ww, Int* n, In
 	*nne = NNE;
 }
 
-Int TComPrediction::GAP( Int w, Int ww, Int n, Int nn, Int nw, Int ne, Int nne )
+Int TComPrediction::GAP( Int bitDepth, Int w, Int ww, Int n, Int nn, Int nw, Int ne, Int nne )
 {
+	Int bitDepthMultiplier = (bitDepth > 8 ? 4 : 1);
+
 	Int dx = abs(w - ww) + abs(n - nw) + abs(ne - n);
 	Int dy = abs(w - nw) + abs(n - nn) + abs(ne - nne);
 
-	if(dy - dx > 80)
+	if(dy - dx > 80 * bitDepthMultiplier)
 		return w;
-	else if(dy - dx < -80)
+	else if(dy - dx < -80 * bitDepthMultiplier)
 		return n;
 	else
 	{
 		Double aux = (w + n)/2 + (ne - nw)/4;
-		if(dy - dx > 32)
+		if(dy - dx > 32 * bitDepthMultiplier)
 			return (Int)((aux + w)/2);
-		else if(dy - dx < -32)
+		else if(dy - dx < -32 * bitDepthMultiplier)
 			return (Int)((aux + n)/2);
-		else if(dy - dx > 8)
+		else if(dy - dx > 8 * bitDepthMultiplier)
 			return (Int)((3*aux + w)/4);
-		else if(dy - dx < -8)
+		else if(dy - dx < -8 * bitDepthMultiplier)
 			return (Int)((3*aux + n)/4);
 		else
 			return (Int)(aux);
@@ -2705,6 +2750,7 @@ Void TComPrediction::getCausalSupportFromSpiral_AGSP( Int* w, Int* ww, Int* n, I
 		dir_idx = spiralScalable(current_SAI, sqrt(total_number_of_SAIS), &x, &y);
 #endif
 #if !(RM_SCALABLE && RM_RANDOM_ACCESS_PROFILE)
+#if !RM_BUG_CORRECTION_PIXEL_MODELS_29042019
 		if(current_direction[dir_idx] == 'R')
 		{
 			W = p4DLFMI[current_pixel_pos + 1]; // RIGHT
@@ -2753,6 +2799,56 @@ Void TComPrediction::getCausalSupportFromSpiral_AGSP( Int* w, Int* ww, Int* n, I
 			NWW = p4DLFMI[current_pixel_pos + 1 - 2*stride]; // 2UP RIGHT
 			NNW = p4DLFMI[current_pixel_pos + 2 - stride];; // UP 2RIGHT
 		}
+#else
+		if(current_direction[dir_idx] == 'R')
+		{
+			W = p4DLFMI[current_pixel_pos - 1]; // LEFT
+			WW = p4DLFMI[current_pixel_pos - 2]; // 2LEFT
+			N = p4DLFMI[current_pixel_pos + stride]; // DOWN
+			NN = p4DLFMI[current_pixel_pos + 2*stride]; // 2DOWN
+			NW = p4DLFMI[current_pixel_pos - 1 + stride]; // DOWN LEFT
+			NE = p4DLFMI[current_pixel_pos + 1 + stride]; // DOWN RIGHT
+			NNE = p4DLFMI[current_pixel_pos + 1 + 2*stride]; // 2DOWN RIGHT
+			NWW = p4DLFMI[current_pixel_pos - 2 + stride]; // DOWN 2LEFT
+			NNW = p4DLFMI[current_pixel_pos - 1 + 2*stride];; // 2DOWN LEFT
+		}
+		else if(current_direction[dir_idx] == 'D')
+		{
+			W = p4DLFMI[current_pixel_pos - stride]; // UP
+			WW = p4DLFMI[current_pixel_pos - 2*stride]; // 2UP
+			N = p4DLFMI[current_pixel_pos - 1]; // LEFT
+			NN = p4DLFMI[current_pixel_pos - 2]; // 2LEFT
+			NW = p4DLFMI[current_pixel_pos - 1 - stride]; // UP LEFT
+			NE = p4DLFMI[current_pixel_pos - 1 + stride]; // DOWN LEFT
+			NNE = p4DLFMI[current_pixel_pos - 2 + stride]; // DOWN 2LEFT
+			NWW = p4DLFMI[current_pixel_pos - 1 - 2*stride]; // 2UP LEFT
+			NNW = p4DLFMI[current_pixel_pos - 2 - stride]; // UP 2LEFT
+		}
+		else if(current_direction[dir_idx] == 'L')
+		{
+			W = p4DLFMI[current_pixel_pos + 1]; // RIGHT
+			WW = p4DLFMI[current_pixel_pos + 2]; // 2RIGHT
+			N = p4DLFMI[current_pixel_pos - stride]; // UP
+			NN = p4DLFMI[current_pixel_pos - 2*stride]; // 2UP
+			NW = p4DLFMI[current_pixel_pos + 1 - stride]; // UP RIGHT
+			NE = p4DLFMI[current_pixel_pos - 1 - stride]; // UP LEFT
+			NNE = p4DLFMI[current_pixel_pos - 1 - 2*stride]; // 2UP LEFT
+			NWW = p4DLFMI[current_pixel_pos + 2 - stride]; // UP 2RIGHT
+			NNW = p4DLFMI[current_pixel_pos + 1 - 2*stride];// 2UP RIGHT
+		}
+		else
+		{
+			W = p4DLFMI[current_pixel_pos + stride]; // DOWN
+			WW = p4DLFMI[current_pixel_pos + 2*stride]; // 2DOWN
+			N = p4DLFMI[current_pixel_pos + 1]; // RIGHT
+			NN = p4DLFMI[current_pixel_pos + 2]; // 2RIGHT
+			NW = p4DLFMI[current_pixel_pos + 1 + stride]; // DOWN RIGHT
+			NE = p4DLFMI[current_pixel_pos + 1 - stride]; // UP RIGHT
+			NNE = p4DLFMI[current_pixel_pos + 2 - stride]; // UP 2RIGHT
+			NWW = p4DLFMI[current_pixel_pos + 1 + 2*stride]; // 2DOWN RIGHT
+			NNW = p4DLFMI[current_pixel_pos + 2 + stride];; // DOWN 2RIGHT
+		}
+#endif
 #else
 		// xCheckIfInTheSameRegion(currentRegionRA, current_SAI, currentSAIsSpiralPosX, currentSAIsSpiralPosY) ?
 		if(current_direction[dir_idx] == 'R')
@@ -2844,8 +2940,8 @@ Void TComPrediction::getCausalSupportFromSpiral_AGSP( Int* w, Int* ww, Int* n, I
 			W = NW;
 		}
 	}
-	if(current_SAI >= 9)
-		if(W == NOT_VALID || WW == NOT_VALID || N == NOT_VALID || NN == NOT_VALID || NW == NOT_VALID ||	NE == NOT_VALID || NNE == NOT_VALID)
+	//if(current_SAI >= 9)
+		//if(W == NOT_VALID || WW == NOT_VALID || N == NOT_VALID || NN == NOT_VALID || NW == NOT_VALID ||	NE == NOT_VALID || NNE == NOT_VALID)
 			//cout << "at least one pixel is not available" << endl;
 
 	*w = W;

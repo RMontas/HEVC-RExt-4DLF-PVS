@@ -1400,6 +1400,12 @@ Void TComDataCU::getAllowedChromaDir( UInt uiAbsPartIdx, UInt uiModeList[NUM_CHR
 */
 Void TComDataCU::getIntraDirPredictor( UInt uiAbsPartIdx, Int uiIntraDirPred[NUM_MOST_PROBABLE_MODES], const ComponentID compID, Int* piMode ) const
 {
+#if RM_INTRA_PREDICTOR_OPTIMIZATION
+	Int RM_LSP7_IDX = 27;
+	Int RM_LSP5_IDX = 23;
+	Int RM_DC_IDX = 3;
+	Int currentSAI = getPic()->getPOC();
+#endif
   UInt        LeftPartIdx  = MAX_UINT;
   UInt        AbovePartIdx = MAX_UINT;
   Int         iLeftIntraDir, iAboveIntraDir;
@@ -1415,7 +1421,20 @@ Void TComDataCU::getIntraDirPredictor( UInt uiAbsPartIdx, Int uiIntraDirPred[NUM
   {
     LeftPartIdx = getChromasCorrespondingPULumaIdx(LeftPartIdx, chForm, partsPerMinCU);
   }
+#if !RM_INTRA_PREDICTOR_OPTIMIZATION
   iLeftIntraDir  = pcCULeft ? ( pcCULeft->isIntra( LeftPartIdx ) ? pcCULeft->getIntraDir( chType, LeftPartIdx ) : DC_IDX ) : DC_IDX;
+#else
+  /*if(currentSAI <= 3)
+	  iLeftIntraDir  = pcCULeft ? ( pcCULeft->isIntra( LeftPartIdx ) ? pcCULeft->getIntraDir( chType, LeftPartIdx ) : DC_IDX ) : DC_IDX;
+  else if(currentSAI <= 5)
+	  iLeftIntraDir  = pcCULeft ? ( pcCULeft->isIntra( LeftPartIdx ) ? pcCULeft->getIntraDir( chType, LeftPartIdx ) : RM_DC_IDX ) : RM_DC_IDX;
+  else if(currentSAI <= 7)
+	  iLeftIntraDir  = pcCULeft ? ( pcCULeft->isIntra( LeftPartIdx ) ? pcCULeft->getIntraDir( chType, LeftPartIdx ) : RM_LSP5_IDX ) : RM_LSP5_IDX;
+  else
+	  iLeftIntraDir  = pcCULeft ? ( pcCULeft->isIntra( LeftPartIdx ) ? pcCULeft->getIntraDir( chType, LeftPartIdx ) : RM_LSP7_IDX ) : RM_LSP7_IDX;
+	  */
+  iLeftIntraDir  = pcCULeft ? ( pcCULeft->isIntra( LeftPartIdx ) ? pcCULeft->getIntraDir( chType, LeftPartIdx ) : RM_LSP7_IDX ) : RM_LSP7_IDX;
+#endif
 
   // Get intra direction of above PU
   const TComDataCU *pcCUAbove = getPUAbove( AbovePartIdx, m_absZIdxInCtu + uiAbsPartIdx, true, true );
@@ -1424,7 +1443,20 @@ Void TComDataCU::getIntraDirPredictor( UInt uiAbsPartIdx, Int uiIntraDirPred[NUM
   {
     AbovePartIdx = getChromasCorrespondingPULumaIdx(AbovePartIdx, chForm, partsPerMinCU);
   }
+#if !RM_INTRA_PREDICTOR_OPTIMIZATION
   iAboveIntraDir = pcCUAbove ? ( pcCUAbove->isIntra( AbovePartIdx ) ? pcCUAbove->getIntraDir( chType, AbovePartIdx ) : DC_IDX ) : DC_IDX;
+#else
+  /*if(currentSAI <= 3)
+	  iAboveIntraDir = pcCUAbove ? ( pcCUAbove->isIntra( AbovePartIdx ) ? pcCUAbove->getIntraDir( chType, AbovePartIdx ) : DC_IDX ) : DC_IDX;
+  else if(currentSAI <= 5)
+	  iAboveIntraDir = pcCUAbove ? ( pcCUAbove->isIntra( AbovePartIdx ) ? pcCUAbove->getIntraDir( chType, AbovePartIdx ) : RM_DC_IDX ) : RM_DC_IDX;
+  else if(currentSAI <= 7)
+	  iAboveIntraDir = pcCUAbove ? ( pcCUAbove->isIntra( AbovePartIdx ) ? pcCUAbove->getIntraDir( chType, AbovePartIdx ) : RM_LSP5_IDX ) : RM_LSP5_IDX;
+  else
+	  iAboveIntraDir = pcCUAbove ? ( pcCUAbove->isIntra( AbovePartIdx ) ? pcCUAbove->getIntraDir( chType, AbovePartIdx ) : RM_LSP7_IDX ) : RM_LSP7_IDX;
+	  */
+  iAboveIntraDir = pcCUAbove ? ( pcCUAbove->isIntra( AbovePartIdx ) ? pcCUAbove->getIntraDir( chType, AbovePartIdx ) : RM_LSP7_IDX ) : RM_LSP7_IDX;
+#endif
 
   if (isChroma(chType))
   {
@@ -1448,15 +1480,56 @@ Void TComDataCU::getIntraDirPredictor( UInt uiAbsPartIdx, Int uiIntraDirPred[NUM
 
     if (iLeftIntraDir > 1) // angular modes
     {
+#if !RM_INTRA_PREDICTOR_OPTIMIZATION
       uiIntraDirPred[0] = iLeftIntraDir;
       uiIntraDirPred[1] = ((iLeftIntraDir + 29) % 32) + 2;
       uiIntraDirPred[2] = ((iLeftIntraDir - 1 ) % 32) + 2;
+#else
+      /*if(((iLeftIntraDir-3)%4) || currentSAI <= 3) // DIRECTIONAL MODES INTRA
+      { // example: mode = 6
+    	  uiIntraDirPred[0] = iLeftIntraDir; // c0 = 6
+    	  uiIntraDirPred[1] = ((iLeftIntraDir + 29) % 32) + 2;
+    	  if (!((uiIntraDirPred[1]-3)%4)) // c1 = 7 (MED)
+    		  uiIntraDirPred[1]++; // c1 --> 8
+    	  uiIntraDirPred[2] = ((iLeftIntraDir - 1 ) % 32) + 2;
+    	  if (!((uiIntraDirPred[2]-3)%4)) // c2 = 5
+    		  uiIntraDirPred[2]--;
+      }
+      else // MY MODES
+      {
+    	  uiIntraDirPred[0] = iLeftIntraDir;
+    	  uiIntraDirPred[1] = iLeftIntraDir == RM_LSP7_IDX ? RM_LSP5_IDX : RM_LSP7_IDX;
+    	  uiIntraDirPred[2] = uiIntraDirPred[1] == RM_LSP5_IDX ? ( RM_DC_IDX ) : ( uiIntraDirPred[0] == RM_LSP5_IDX ? RM_DC_IDX : RM_LSP5_IDX);
+
+      }*/
+      uiIntraDirPred[0] = iLeftIntraDir;
+      uiIntraDirPred[1] = ((iLeftIntraDir + 29) % 32) + 2;
+      uiIntraDirPred[2] = ((iLeftIntraDir - 1 ) % 32) + 2;
+#endif
     }
     else //non-angular
     {
+#if !RM_INTRA_PREDICTOR_OPTIMIZATION
       uiIntraDirPred[0] = PLANAR_IDX;
       uiIntraDirPred[1] = DC_IDX;
       uiIntraDirPred[2] = VER_IDX;
+#else
+      /*if(currentSAI <= 3)
+      {
+          uiIntraDirPred[0] = PLANAR_IDX;
+          uiIntraDirPred[1] = DC_IDX;
+          uiIntraDirPred[2] = VER_IDX;
+      }
+      else
+      {
+      uiIntraDirPred[0] = RM_LSP7_IDX;
+      uiIntraDirPred[1] = RM_LSP5_IDX;
+      uiIntraDirPred[2] = RM_DC_IDX;
+      }*/
+      uiIntraDirPred[0] = PLANAR_IDX;
+      uiIntraDirPred[1] = DC_IDX;
+      uiIntraDirPred[2] = VER_IDX;
+#endif
     }
   }
   else
@@ -1467,7 +1540,7 @@ Void TComDataCU::getIntraDirPredictor( UInt uiAbsPartIdx, Int uiIntraDirPred[NUM
     }
     uiIntraDirPred[0] = iLeftIntraDir;
     uiIntraDirPred[1] = iAboveIntraDir;
-
+#if !RM_INTRA_PREDICTOR_OPTIMIZATION
     if (iLeftIntraDir && iAboveIntraDir ) //both modes are non-planar
     {
       uiIntraDirPred[2] = PLANAR_IDX;
@@ -1475,7 +1548,40 @@ Void TComDataCU::getIntraDirPredictor( UInt uiAbsPartIdx, Int uiIntraDirPred[NUM
     else
     {
       uiIntraDirPred[2] =  (iLeftIntraDir+iAboveIntraDir)<2? VER_IDX : DC_IDX;
+
     }
+#else
+    /*if(currentSAI <= 3)
+    {
+    	if (iLeftIntraDir && iAboveIntraDir ) //both modes are non-planar
+    	{
+    		uiIntraDirPred[2] = PLANAR_IDX;
+    	}
+    	else
+    	{
+    		uiIntraDirPred[2] =  (iLeftIntraDir+iAboveIntraDir)<2? VER_IDX : DC_IDX;
+
+    	}
+    }
+    else
+    {
+    	if (iLeftIntraDir != RM_LSP7_IDX && iAboveIntraDir != RM_LSP7_IDX )
+    		uiIntraDirPred[2] = RM_LSP7_IDX;
+    	else if (iLeftIntraDir != RM_LSP5_IDX && iAboveIntraDir != RM_LSP5_IDX)
+    		uiIntraDirPred[2] = RM_LSP5_IDX;
+    	else
+    		uiIntraDirPred[2] = RM_DC_IDX;
+    }*/
+    if (iLeftIntraDir && iAboveIntraDir ) //both modes are non-planar
+    {
+    	uiIntraDirPred[2] = PLANAR_IDX;
+    }
+    else
+    {
+    	uiIntraDirPred[2] =  (iLeftIntraDir+iAboveIntraDir)<2? VER_IDX : DC_IDX;
+
+    }
+#endif
   }
   for (UInt i=0; i<NUM_MOST_PROBABLE_MODES; i++)
   {

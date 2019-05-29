@@ -551,6 +551,7 @@ const UChar g_aucIntraModeNumFast_UseMPM[MAX_CU_DEPTH] =
   3,  //  32x32
   3   //  64x64
 };
+//#if !RM_4DLF_MI_BUFFER
 const UChar g_aucIntraModeNumFast_NotUseMPM[MAX_CU_DEPTH] =
 {
   3,  //   2x2
@@ -560,6 +561,17 @@ const UChar g_aucIntraModeNumFast_NotUseMPM[MAX_CU_DEPTH] =
   4,  //  32x32   33
   5   //  64x64   33
 };
+//#else
+//const UChar g_aucIntraModeNumFast_NotUseMPM[MAX_CU_DEPTH] =
+//{
+//  35,  //   2x2
+//  35,  //   4x4
+//  35,  //   8x8
+//  35,  //  16x16   33
+//  35,  //  32x32   33
+//  35   //  64x64   33
+//};
+//#endif
 
 const UChar g_chroma422IntraAngleMappingTable[NUM_INTRA_MODE] =
   //0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, DM
