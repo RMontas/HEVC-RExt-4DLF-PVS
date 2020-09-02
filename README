@@ -1,8 +1,8 @@
 This codec uses Rec. ITU-T H.265 | ISO/IEC 23008-2 High efficiency video coding (HEVC) as its basis implementation (HM v16 reference software).
 
 It implements the codec used for the following publications:
-[1] R. Monteiro, N. Rodrigues, S. Faria, P. Nunes, Light Field Image Coding Based on Hybrid Data Representation, IEEE Access, Vol. 8, No. -, pp. 115728 - 115744, June, 2020
-[2] R. Monteiro, P. Nunes, S. Faria, N. Rodrigues, Optimized Reference Picture Selection for Light Field Image Coding, European Signal Processing Conference EUSIPCO, La Coruna, Spain, Vol., pp. -, September, 2019
+- R. Monteiro, N. Rodrigues, S. Faria, P. Nunes, Light Field Image Coding Based on Hybrid Data Representation, IEEE Access, Vol. 8, No. -, pp. 115728 - 115744, June, 2020
+- R. Monteiro, P. Nunes, S. Faria, N. Rodrigues, Optimized Reference Picture Selection for Light Field Image Coding, European Signal Processing Conference EUSIPCO, La Coruna, Spain, Vol., pp. -, September, 2019
 
 
 
