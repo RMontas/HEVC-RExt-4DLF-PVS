@@ -1,8 +1,8 @@
-This software package is the reference software for Rec. ITU-T H.265 | ISO/IEC 23008-2 High efficiency video coding (HEVC). The reference software includes both encoder and decoder functionality.
+This codec uses Rec. ITU-T H.265 | ISO/IEC 23008-2 High efficiency video coding (HEVC) as its basis implementation (HM v16 reference software).
 
-Reference software is useful in aiding users of a video coding standard to establish and test conformance and interoperability, and to educate users and demonstrate the capabilities of the standard. For these purposes, this software is provided as an aid for the study and implementation of Rec. ITU-T H.265 | ISO/IEC 23008-2 High efficiency video coding.
+It implements the codec used for the following publications:
+[1] R. Monteiro, N. Rodrigues, S. Faria, P. Nunes, Light Field Image Coding Based on Hybrid Data Representation, IEEE Access, Vol. 8, No. -, pp. 115728 - 115744, June, 2020
+[2] R. Monteiro, P. Nunes, S. Faria, N. Rodrigues, Optimized Reference Picture Selection for Light Field Image Coding, European Signal Processing Conference EUSIPCO, La Coruna, Spain, Vol., pp. -, September, 2019
 
-The software has been jointly developed by the ITU-T Video Coding Experts Group (VCEG, Question 6 of ITU-T Study Group 16) and the ISO/IEC Moving Picture Experts Group (MPEG, Working Group 11 of Subcommittee 29 of ISO/IEC Joint Technical Committee 1).
 
-A software manual, which contains usage instructions, can be found in the "doc" subdirectory of this software package.
 
